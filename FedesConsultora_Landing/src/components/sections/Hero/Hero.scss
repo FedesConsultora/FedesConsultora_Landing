@@ -1,0 +1,11 @@
+@import '../../../styles/_variables.scss';
+
+.hero-section {
+  text-align: center;
+  background-color: var(--bg-color);
+
+  h1 {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+  }
+}

@@ -1,3 +1,42 @@
-// src/styles/main.scss
-@use './base/reset';
-@use './base/globals';
+@import 'variables';
+
+:root {
+    --primary-color: #{$primary-color};
+    --bg-color: #{$bg-color};
+    --bg-secondary: #{$bg-secondary};
+    --text-color: #{$text-color};
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: $font-main;
+    color: var(--text-color);
+    background-color: var(--bg-color);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    width: 100%;
+}
+
+section {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    scroll-margin-top: 100px;
+}
