@@ -6,8 +6,8 @@ const Hero = () => {
     <section id="inicio" className="hero-section">
       <div className="container">
 
-        <h1>DESBLOQUEA EL POTENCIAL DE TU EMPRESA</h1>
-        <p>Impulsamos el éxito sostenible de tu negocio con publicidad innovadora, estrategias de posicionamiento <br />
+        <h1 className='hero-title'>DESBLOQUEA <br />EL POTENCIAL <br /> DE TU EMPRESA</h1>
+        <p className='hero-subtitle'>Impulsamos el éxito sostenible de tu negocio con publicidad innovadora, estrategias de posicionamiento <br />
           y consultoría experta para aumentar tu facturación y consolidar tu posición como lider del mercado</p>
 
       </div>

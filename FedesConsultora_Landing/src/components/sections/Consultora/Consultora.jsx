@@ -19,7 +19,7 @@ const Consultora = () => {
                 <div className="pain-points-stack">
                     {painPoints.map((text, index) => (
                         <div key={index} className="pain-point-card">
-                            <h2>{text}</h2>
+                            <p>{text}</p>
                         </div>
                     ))}
                 </div>

@@ -56,7 +56,8 @@
                     transition: width 0.3s ease;
                 }
 
-                &:hover {
+                &:hover,
+                &.active {
                     color: var(--primary-color);
 
                     &::after {

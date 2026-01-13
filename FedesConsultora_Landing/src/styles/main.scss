@@ -18,11 +18,17 @@ html {
 }
 
 body {
-    font-family: $font-main;
+    font-family: $font-body;
     color: var(--text-color);
     background-color: var(--bg-color);
     line-height: 1.6;
     overflow-x: hidden;
+}
+
+h1,
+h2 {
+    font-family: $font-title;
+    font-weight: 400;
 }
 
 .container {
