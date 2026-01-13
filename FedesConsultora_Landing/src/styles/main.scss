@@ -27,8 +27,17 @@ body {
 
 h1,
 h2 {
+
     font-family: $font-title;
     font-weight: 400;
+
+    .dark {
+        color: #363636;
+    }
+
+    .blue {
+        color: #3A54FF;
+    }
 }
 
 .container {
@@ -36,6 +45,10 @@ h2 {
     margin: 0 auto;
     padding: 0 20px;
     width: 100%;
+
+    @media (max-width: 768px) {
+        padding: 0 15px;
+    }
 }
 
 section {
@@ -45,4 +58,20 @@ section {
     align-items: center;
     justify-content: center;
     scroll-margin-top: 100px;
+
+    @media (max-width: 768px) {
+        min-height: auto;
+        padding: 60px 0;
+    }
+}
+
+// Global Heading Adjustments for Mobile
+@media (max-width: 768px) {
+    h1 {
+        font-size: 3.5rem !important;
+    }
+
+    h2 {
+        font-size: 2.22rem !important;
+    }
 }

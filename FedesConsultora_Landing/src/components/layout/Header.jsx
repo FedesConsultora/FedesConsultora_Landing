@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import './Header.scss';
+import FedesLogo from '../../assets/img/FedesLogo.webp'
 
 const Header = () => {
   const navItems = [
@@ -14,7 +15,7 @@ const Header = () => {
   return (
     <div className="header-container">
       <Link to="/" className="logo">
-        Fedes Consultora
+        <img src={FedesLogo} alt="Fedes Consultora Logo" />
       </Link>
       <header className="site-header">
         <nav>
@@ -33,7 +34,7 @@ const Header = () => {
         </nav>
       </header>
       <Link to="/contacto" className="btn-appointment">
-        Agendar una reunión
+        Contactanos
       </Link>
     </div>
   );

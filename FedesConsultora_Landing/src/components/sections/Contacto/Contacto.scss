@@ -1,7 +1,7 @@
 @import '../../../styles/_variables.scss';
 
 .contacto-section {
-    background-color: var(--bg-color);
+    background-color: #F3F3F3;
     padding: 100px 0;
 
     .contacto-wrapper {
@@ -15,7 +15,13 @@
         flex: 0.8;
 
         .contacto-header {
-
+            h2 {
+                font-size: 3rem;
+                font-weight: 800;
+                margin-bottom: 30px;
+                color: var(--text-color);
+                line-height: 1.1;
+            }
 
             .info-items {
                 display: flex;

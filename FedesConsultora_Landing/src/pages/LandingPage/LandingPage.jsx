@@ -1,9 +1,18 @@
 import React from 'react';
+import Consultora from '../../components/sections/Consultora/Consultora';
+import Agencia from '../../components/sections/Agencia/Agencia';
+import Nosotros from '../../components/sections/Nosotros/Nosotros';
+import Blog from '../../components/sections/Blog/Blog';
+import Contacto from '../../components/sections/Contacto/Contacto';
 
 const LandingPage = () => {
     return (
         <main>
-            {/* La sección Hero ahora es global y vive en MainLayout */}
+            <Consultora />
+            <Agencia />
+            <Nosotros />
+            <Blog />
+            <Contacto />
         </main>
     );
 };

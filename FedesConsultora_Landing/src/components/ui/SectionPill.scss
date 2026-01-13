@@ -1,0 +1,19 @@
+@import '../../styles/_variables.scss';
+
+.section-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #00000080;
+    padding: 8px 20px;
+    border-radius: 50px;
+    margin-bottom: 20px;
+
+    span {
+        color: #ffffff;
+        font-family: $font-body;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+    }
+}

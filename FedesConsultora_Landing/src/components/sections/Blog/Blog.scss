@@ -1,1 +1,21 @@
-.blog-section {}
+@import '../../../styles/_variables.scss';
+
+.blog-section {
+    padding: 100px 0;
+    text-align: center;
+
+    h2 {
+        font-size: 3rem;
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .blog-section {
+        padding: 60px 20px;
+
+        h2 {
+            font-size: 2.22rem;
+        }
+    }
+}

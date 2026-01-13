@@ -1,4 +1,4 @@
-import React from 'react';
+import SectionPill from '../../ui/SectionPill';
 import './Consultora.scss';
 
 const Consultora = () => {
@@ -12,8 +12,9 @@ const Consultora = () => {
         <section id="consultora" className="consultora-section">
             <div className="container">
                 <div className="intro">
-                    <h2>PRIMERO, EL NEGOCIO.</h2>
-                    <p>De nada sirve un logo lindo si los números no cierran. Antes de ejecutar, ordenamos la casa.</p>
+                    <SectionPill text="Consultora" />
+                    <h2><span className="dark">PRIMERO,</span> <span className="blue">EL NEGOCIO.</span></h2>
+                    <p >De nada sirve un logo lindo si los números no cierran. Antes de ejecutar, ordenamos la casa.</p>
                 </div>
 
                 <div className="pain-points-stack">
@@ -22,6 +23,9 @@ const Consultora = () => {
                             <p>{text}</p>
                         </div>
                     ))}
+                    <div className="btn-container">
+                        <a href="/contacto" className="btn-appointment">Agendá una reunión</a>
+                    </div>
                 </div>
             </div>
         </section>
