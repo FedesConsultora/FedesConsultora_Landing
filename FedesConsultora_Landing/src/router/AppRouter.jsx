@@ -17,7 +17,7 @@ export default function AppRouter() {
           <Route path="/agencia" element={<Agencia />} />
           <Route path="/nosotros" element={<Nosotros />} />
           <Route path="/blog" element={<Blog />} />
-          <Route path="/contacto" element={<Contacto />} />
+          <Route path="/contacto" element={<></>} />
         </Route>
       </Routes>
     </BrowserRouter>

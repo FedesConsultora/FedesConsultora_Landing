@@ -10,6 +10,11 @@
     align-items: center;
     justify-content: space-between;
     z-index: 1000;
+    transition: padding 0.3s ease, top 0.3s ease, background 0.3s ease;
+
+    &.menu-open {
+        background: transparent;
+    }
 
     @media (max-width: 992px) {
         padding: 0 20px;
@@ -17,15 +22,18 @@
     }
 
     .logo {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: var(--text-color);
-        text-decoration: none;
-        letter-spacing: -0.5px;
-        white-space: nowrap;
+        z-index: 1001;
+
+        img {
+            height: 30px;
+            width: auto;
+            display: block;
+        }
 
         @media (max-width: 768px) {
-            font-size: 1rem;
+            img {
+                height: 35px;
+            }
         }
     }
 
@@ -46,13 +54,7 @@
         }
 
         @media (max-width: 992px) {
-            width: auto;
-            flex: 1;
-            margin: 0 15px;
-        }
-
-        @media (max-width: 768px) {
-            display: none; // Hide desktop menu on mobile for now, we can add a toggle later
+            display: none;
         }
 
         .nav-links {
@@ -60,13 +62,9 @@
             gap: 25px;
             list-style: none;
 
-            @media (max-width: 1024px) {
-                gap: 15px;
-            }
-
             a {
                 text-decoration: none;
-                color: var(--text-color);
+                color: #19222B;
                 font-weight: 700;
                 font-size: 0.85rem;
                 transition: color 0.3s ease;
@@ -79,41 +77,139 @@
                     left: 0;
                     width: 0;
                     height: 2px;
-                    background-color: #333333;
+                    background-color: $primary-color;
                     transition: width 0.3s ease;
                 }
 
                 &:hover,
                 &.active {
-                    color: #333333;
+                    color: $primary-color;
 
                     &::after {
                         width: 100%;
-                        background-color: #333333;
                     }
                 }
             }
         }
     }
 
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        z-index: 1001;
+    }
+
     .btn-appointment {
-        background-color: var(--primary-color);
+        background-color: $primary-color;
         color: white;
-        padding: 10px 20px;
+        padding: 10px 25px;
         border-radius: 50px;
         text-decoration: none;
-        font-weight: 600;
-        font-size: 0.85rem;
+        font-weight: 700;
+        font-size: 0.9rem;
         transition: $transition-base;
         white-space: nowrap;
 
         @media (max-width: 768px) {
-            padding: 8px 15px;
-            font-size: 0.75rem;
+            display: none; // Hide in pure mobile header row, keep in mobile menu
         }
 
         &:hover {
             filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+    }
+
+    // Hamburger Menu Icon Button
+    .hamburger-icon-btn {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        color: #19222B;
+        border: none;
+        cursor: pointer;
+        padding: 5px;
+        z-index: 1002;
+        transition: $transition-base;
+
+        @media (max-width: 992px) {
+            display: flex;
+        }
+
+        &:hover {
+            filter: brightness(1.1);
+        }
+
+        svg {
+            display: block;
+        }
+    }
+
+    // Mobile Overlay Menu
+    .mobile-menu {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 100%;
+        height: 100vh;
+        background: white;
+        z-index: 1000;
+        transition: all 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &.active {
+            right: 0;
+        }
+
+        .mobile-nav-links {
+            list-style: none;
+            text-align: center;
+            padding: 0;
+
+            li {
+                margin-bottom: 30px;
+                opacity: 0;
+                transform: translateY(20px);
+                transition: all 0.3s ease;
+            }
+
+            a {
+                text-decoration: none;
+                color: #19222B;
+                font-size: 2rem;
+                font-family: $font-title;
+                font-weight: 700;
+                transition: color 0.3s ease;
+
+                &:hover {
+                    color: $primary-color;
+                }
+            }
+
+            .mobile-btn-contact {
+                margin-top: 20px;
+                display: inline-block;
+                background: $primary-color;
+                color: white;
+                padding: 15px 40px;
+                border-radius: 50px;
+                font-size: 1.2rem;
+            }
+        }
+
+        &.active .mobile-nav-links li {
+            opacity: 1;
+            transform: translateY(0);
+
+            @for $i from 1 through 6 {
+                &:nth-child(#{$i}) {
+                    transition-delay: 0.1s * $i;
+                }
+            }
         }
     }
 }

@@ -1,32 +1,148 @@
 @import '../../../styles/_variables.scss';
 
 .nosotros-section {
-    padding: 100px 0;
+    padding: 60px 0;
     text-align: center;
+    background-image: url('../../../assets/img/backgrounds/fedes-background.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
 
-    h2 {
-        font-size: 3rem;
-        margin-bottom: 20px;
+    width: 100%;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(0deg, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)),
+            linear-gradient(180deg, rgba(134, 150, 255, 0) 66.06%, rgba(134, 150, 255, 0.2) 100%);
+        z-index: 0;
     }
 
-    p {
-        max-width: 700px;
-        margin: 0 auto;
-        color: var(--secondary-color);
-        font-size: 1.2rem;
+    .container {
+        position: relative;
+        z-index: 1;
+    }
+
+    .nosotros-header {
+        margin-bottom: 40px;
+
+        h2 {
+            font-size: 2.8rem; // Reduced from 3.5rem
+            margin-bottom: 6px;
+            line-height: 1.1;
+
+            .dark {
+                color: white;
+            }
+
+            .blue {
+                color: #3A54FF;
+            }
+        }
+
+        p {
+            margin: 0 auto;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem; // Reduced from 1rem
+            line-height: 1.1;
+
+        }
+    }
+
+    .leaders-grid {
+        display: flex;
+        justify-content: center;
+        gap: 36px; // Reduced from 20px
+        margin-bottom: 10px;
+        margin-top: 30px; // Increased to move parallax container further down
+        flex-wrap: nowrap;
+        width: 100%;
+
+        .service-card {
+            flex: 0 1 200px;
+            height: 360px;
+
+        }
+    }
+
+    // Parallax Scroll Styles
+    .team-parallax-container {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        position: relative;
+        z-index: 1;
+        padding: 24px 0;
+        overflow: hidden;
+
+        .parallax-row {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            overflow: visible;
+
+            .row-content {
+                display: flex;
+                align-items: center;
+                gap: 45px;
+                padding: 15px 0; // Space for shadows
+                white-space: nowrap;
+                will-change: transform;
+            }
+
+
+            mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+        }
+    }
+}
+
+@media (max-width: 1200px) {
+    .nosotros-section {
+        padding: 40px 20px;
     }
 }
 
 @media (max-width: 768px) {
     .nosotros-section {
-        padding: 60px 20px;
+        padding: 30px 15px;
 
-        h2 {
-            font-size: 2.22rem;
+        .nosotros-header {
+            h2 {
+                font-size: 2.22rem !important;
+            }
+
+            p {
+                font-size: 0.9rem;
+            }
         }
 
-        p {
-            font-size: 1.1rem;
+        .leaders-grid {
+            flex-wrap: wrap;
+            justify-content: center;
+
+            .service-card {
+                flex: 1 1 100%;
+                max-width: 280px;
+                height: 300px;
+            }
+        }
+
+        .team-parallax-container {
+            gap: 10px;
+
+            .row-content {
+                gap: 10px;
+            }
         }
     }
 }

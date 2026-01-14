@@ -2,18 +2,66 @@
 
 .agencia-section {
     padding: 100px 0;
-    text-align: center;
+    background-color: white;
+    display: block; // Override global flex centering to allow top-to-bottom flow
+    min-height: auto; // Allow content to define height
 
-    h2 {
-        font-size: 3rem;
-        margin-bottom: 20px;
+    .agencia-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 60px;
+        width: 100%;
+
+        .title-area {
+            text-align: left;
+
+            h2 {
+                font-size: 3.5rem;
+                margin: 0;
+                line-height: 1.1;
+
+                .dark {
+                    color: #19222B;
+                }
+
+                .blue {
+                    color: #3A54FF;
+                }
+            }
+        }
+
+        .action-area {
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+
+
+            .btn-primary {
+                background-color: $primary-color;
+                color: white;
+                padding: 15px 35px;
+                border-radius: 50px;
+                text-decoration: none;
+                font-weight: 700;
+                font-size: 1rem;
+                transition: $transition-base;
+                display: inline-block;
+
+                &:hover {
+                    background-color: #2b92ff;
+                }
+            }
+        }
     }
 
-    p {
-        max-width: 700px;
-        margin: 0 auto;
-        color: var(--secondary-color);
-        font-size: 1.2rem;
+    .services-grid {
+        display: flex;
+        gap: 30px;
+        justify-content: center;
+        flex-wrap: wrap;
+        width: 100%;
     }
 }
 
@@ -21,12 +69,20 @@
     .agencia-section {
         padding: 60px 20px;
 
-        h2 {
-            font-size: 2.2rem;
+        .agencia-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 30px;
+
+            .title-area {
+                h2 {
+                    font-size: 2.5rem;
+                }
+            }
         }
 
-        p {
-            font-size: 1.1rem;
+        .services-grid {
+            gap: 20px;
         }
     }
 }

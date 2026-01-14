@@ -1,0 +1,79 @@
+@import '../../styles/_variables.scss';
+
+.team-chip {
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 6px 16px; // Increased padding
+    border-radius: 100px;
+    gap: 10px; // Increased gap
+    min-width: fit-content;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: $transition-base;
+    flex-shrink: 0; // Crucial for marquee
+    border: 1px solid rgba(0, 0, 0, 0.05);
+
+    .avatar-container {
+        width: 38px; // Increased from 32px
+        height: 38px; // Increased from 32px
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+
+        .avatar {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-placeholder {
+            width: 100%;
+            height: 100%;
+            background: #e0e0e0;
+        }
+    }
+
+    .chip-info {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: left;
+
+        .chip-name {
+            color: #19222B;
+            font-size: 0.85rem; // Increased from 0.75rem
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 2px;
+            white-space: nowrap;
+        }
+
+        .chip-role {
+            color: #8F8F8F;
+            font-size: 0.7rem; // Increased for better readability
+            font-weight: 400;
+            line-height: 1;
+            white-space: nowrap;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .team-chip {
+        padding: 4px 10px;
+        gap: 6px;
+
+        .avatar-container {
+            width: 28px;
+            height: 28px;
+        }
+
+        .chip-name {
+            font-size: 0.7rem;
+        }
+
+        .chip-role {
+            font-size: 0.6rem;
+        }
+    }
+}
