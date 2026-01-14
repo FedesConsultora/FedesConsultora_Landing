@@ -2,18 +2,37 @@
 
 .hero-section {
   text-align: center;
-  background-color: var(--bg-color);
+  background-color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+
+
+  .hero-render {
+    position: absolute;
+    top: calc(50% - 56px);
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: calc(100% + 180px);
+    object-fit: cover;
+    opacity: 0.6;
+    z-index: 0;
+    pointer-events: none;
+  }
 
   .container {
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     align-items: center;
-    height: 100vh;
+    height: 100%;
+    padding-top: 8rem;
     padding-bottom: 4rem;
+    position: relative;
+    z-index: 1;
 
     @media (max-width: 768px) {
-      height: 90vh;
       padding-bottom: 3rem;
       justify-content: center;
     }
@@ -58,5 +77,9 @@
       line-height: 1.5;
       padding: 0 10px;
     }
+  }
+
+  @media (max-width: 768px) {
+    height: 90vh;
   }
 }

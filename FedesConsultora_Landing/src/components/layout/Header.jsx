@@ -18,6 +18,7 @@ const Header = () => {
     { name: 'Inicio', path: '/' },
     { name: 'Consultora', path: '/consultora' },
     { name: 'Agencia', path: '/agencia' },
+    { name: 'Galería', path: '/galeria' },
     { name: 'Nosotros', path: '/nosotros' },
     { name: 'Blog', path: '/blog' },
   ];
@@ -85,6 +86,7 @@ const Header = () => {
               <li key={item.name}>
                 <NavLink
                   to={item.path}
+                  end={item.path === '/'}
                   className={({ isActive }) => isActive ? 'active' : ''}
                 >
                   {item.name}
@@ -116,6 +118,7 @@ const Header = () => {
               <li key={item.name}>
                 <NavLink
                   to={item.path}
+                  end={item.path === '/'}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}

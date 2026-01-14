@@ -1,0 +1,111 @@
+@import '../../../styles/_variables.scss';
+
+.blog-card {
+    background: white;
+    border-radius: 30px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    transition: $transition-base;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-image-container {
+        position: relative;
+        height: 240px;
+        width: 100%;
+        overflow: hidden;
+
+        .card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .card-badges {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 2;
+
+            .badge {
+                padding: 6px 15px;
+                border-radius: 50px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                backdrop-filter: blur(4px);
+            }
+
+            .category-badge {
+                background: #3A54FF;
+                color: white;
+            }
+
+            .date-badge {
+                background: rgba(255, 255, 255, 0.85);
+                color: #19222B;
+            }
+        }
+    }
+
+    &:hover .card-image {
+        transform: scale(1.05);
+    }
+
+    .card-body {
+        padding: 25px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+
+        .card-title {
+            font-family: $font-body;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #19222B;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .card-excerpt {
+            color: #8F8F8F;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .blog-card {
+        .card-image-container {
+            height: 200px;
+        }
+
+        .card-body {
+            padding: 20px;
+
+            .card-title {
+                font-size: 1.15rem;
+            }
+
+            .card-excerpt {
+                font-size: 0.85rem;
+            }
+        }
+    }
+}

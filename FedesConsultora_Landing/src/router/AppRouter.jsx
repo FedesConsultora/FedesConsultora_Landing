@@ -5,6 +5,7 @@ import Consultora from '../components/sections/Consultora/Consultora'
 import Agencia from '../components/sections/Agencia/Agencia'
 import Nosotros from '../components/sections/Nosotros/Nosotros'
 import Blog from '../components/sections/Blog/Blog'
+import Galeria from '../components/sections/Galeria/Galeria'
 import Contacto from '../components/sections/Contacto/Contacto'
 
 export default function AppRouter() {
@@ -15,6 +16,7 @@ export default function AppRouter() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/consultora" element={<Consultora />} />
           <Route path="/agencia" element={<Agencia />} />
+          <Route path="/galeria" element={<Galeria />} />
           <Route path="/nosotros" element={<Nosotros />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/contacto" element={<></>} />

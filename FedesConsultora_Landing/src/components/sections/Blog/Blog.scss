@@ -2,20 +2,104 @@
 
 .blog-section {
     padding: 100px 0;
-    text-align: center;
+    background-color: #FAFAFA; // Slightly off-white for contrast
+    position: relative;
+    overflow: hidden;
 
-    h2 {
-        font-size: 3rem;
-        margin-bottom: 20px;
+    .blog-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 60px;
+        gap: 30px;
+
+        .header-info {
+            flex: 1;
+
+            h2 {
+                font-size: 3.5rem;
+                line-height: 1.1;
+                margin-top: 20px;
+                max-width: 800px;
+                text-transform: uppercase;
+
+                .dark {
+                    color: #19222B;
+                }
+
+                .blue {
+                    color: #3A54FF;
+                }
+            }
+        }
+
+        .btn-blog-top {
+            padding: 15px 45px;
+            border-radius: 50px;
+            border: 1px solid #E5E5E5;
+            background: white;
+            color: #19222B;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: $transition-base;
+            white-space: nowrap;
+            margin-bottom: 5px; // Balance with h2 baseline
+
+            &:hover {
+                background: #F5F5F5;
+                border-color: #D5D5D5;
+                transform: translateY(-2px);
+            }
+        }
+    }
+
+    .blog-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .blog-section {
+        .blog-header h2 {
+            font-size: 2.8rem;
+        }
+    }
+}
+
+@media (max-width: 992px) {
+    .blog-section {
+        .blog-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
     }
 }
 
 @media (max-width: 768px) {
     .blog-section {
-        padding: 60px 20px;
+        padding: 60px 0;
 
-        h2 {
-            font-size: 2.22rem;
+        .blog-header {
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 40px;
+            gap: 20px;
+
+            h2 {
+                font-size: 2.2rem !important;
+            }
+
+            .btn-blog-top {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        .blog-grid {
+            grid-template-columns: 1fr;
+            gap: 25px;
         }
     }
 }
