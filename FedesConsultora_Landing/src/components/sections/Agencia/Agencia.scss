@@ -3,8 +3,6 @@
 .agencia-section {
     padding: 100px 0;
     background-color: white;
-    display: block; // Override global flex centering to allow top-to-bottom flow
-    min-height: auto; // Allow content to define height
 
     .agencia-header {
         display: flex;
@@ -39,18 +37,18 @@
 
 
             .btn-primary {
-                background-color: $primary-color;
+                background-color: #3A54FF;
                 color: white;
                 padding: 15px 35px;
                 border-radius: 50px;
-                text-decoration: none;
+                text-decoration: none !important;
                 font-weight: 700;
                 font-size: 1rem;
                 transition: $transition-base;
                 display: inline-block;
 
                 &:hover {
-                    background-color: #2b92ff;
+                    filter: brightness(1.1);
                 }
             }
         }

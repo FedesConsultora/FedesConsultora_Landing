@@ -1,5 +1,6 @@
 import React from 'react';
 import SectionPill from '../../ui/SectionPill';
+import ContactForm from './ContactForm';
 import './Contacto.scss';
 
 const Contacto = () => {
@@ -17,28 +18,12 @@ const Contacto = () => {
                                 <p><strong>Email:</strong> info@fedesconsultora.com</p>
                                 <p><strong>Dirección:</strong> Plaza Paso 159, Buenos Aires</p>
                             </div>
-                            <button className='btn-appointment'>Agendá una reunión</button>
+                            <a href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ19JF6L1eipDhqCCUQr1FpObl3R5w1WcsYH4wRPfnbOfUsCc2vz07la72glqvWmDA_Svg19CKBU?gv=true" target="_blank" rel="noopener noreferrer" className='btn-appointment'>Agendá una reunión</a>
                         </div>
                     </div>
 
                     {/* Formulario a la derecha */}
-                    <div className="contacto-form-container">
-                        <h3 className="form-title">ESCRIBINOS</h3>
-                        <form className="contacto-form" onSubmit={(e) => e.preventDefault()}>
-                            <div className="form-group">
-                                <input type="text" placeholder="Nombre" required />
-                            </div>
-                            <div className="form-group">
-                                <input type="email" placeholder="Email" required />
-                            </div>
-                            <div className="form-group">
-                                <textarea placeholder="Mensaje" rows="5"></textarea>
-                            </div>
-                            <button type="submit" className="btn-submit">
-                                Enviar
-                            </button>
-                        </form>
-                    </div>
+                    <ContactForm />
                 </div>
             </div>
         </section>

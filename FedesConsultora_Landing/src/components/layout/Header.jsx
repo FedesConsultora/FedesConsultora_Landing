@@ -98,9 +98,9 @@ const Header = () => {
       </header>
 
       <div className="header-actions">
-        <Link to="/contacto" className="btn-appointment">
+        <a href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ19JF6L1eipDhqCCUQr1FpObl3R5w1WcsYH4wRPfnbOfUsCc2vz07la72glqvWmDA_Svg19CKBU?gv=true" target="_blank" rel="noopener noreferrer" className="btn-appointment">
           Contactanos
-        </Link>
+        </a>
 
         <button
           className="hamburger-icon-btn"
@@ -126,13 +126,15 @@ const Header = () => {
               </li>
             ))}
             <li>
-              <Link
-                to="/contacto"
+              <a
+                href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ19JF6L1eipDhqCCUQr1FpObl3R5w1WcsYH4wRPfnbOfUsCc2vz07la72glqvWmDA_Svg19CKBU?gv=true"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="mobile-btn-contact"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Contactanos
-              </Link>
+              </a>
             </li>
           </ul>
         </nav>

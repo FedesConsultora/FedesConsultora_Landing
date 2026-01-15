@@ -47,6 +47,10 @@
             .blue {
                 color: #3A54FF;
             }
+
+            .mobile-br {
+                display: none;
+            }
         }
 
         p {
@@ -61,20 +65,18 @@
     .leaders-grid {
         display: flex;
         justify-content: center;
-        gap: 36px; // Reduced from 20px
+        gap: 36px;
         margin-bottom: 10px;
-        margin-top: 30px; // Increased to move parallax container further down
+        margin-top: 30px;
         flex-wrap: nowrap;
         width: 100%;
 
         .service-card {
             flex: 0 1 200px;
             height: 360px;
-            border: none; // Quitamos el borde
+            border: none;
 
-            &:hover {
-                transform: none; // Quitamos la animación de subir
-            }
+
         }
     }
 
@@ -99,7 +101,7 @@
                 display: flex;
                 align-items: center;
                 gap: 45px;
-                padding: 15px 0; // Space for shadows
+                padding: 15px 0;
                 white-space: nowrap;
                 will-change: transform;
             }
@@ -123,6 +125,10 @@
         .nosotros-header {
             h2 {
                 font-size: 2.22rem !important;
+
+                .mobile-br {
+                    display: block;
+                }
             }
 
             p {

@@ -32,7 +32,7 @@ const Agencia = () => {
                         <p>Transformamos esa estrategia en activos digitales que venden. <br /> Somos el brazo ejecutor que tu marca necesita.</p>
                     </div>
                     <div className="action-area">
-                        <a href="/contacto" className="btn-primary">Agendar una reunión</a>
+                        <a href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ19JF6L1eipDhqCCUQr1FpObl3R5w1WcsYH4wRPfnbOfUsCc2vz07la72glqvWmDA_Svg19CKBU?gv=true" target="_blank" rel="noopener noreferrer" className="btn-primary">Agendar una reunión</a>
                     </div>
                 </div>
 

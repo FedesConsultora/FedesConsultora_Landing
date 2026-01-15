@@ -10,7 +10,9 @@ const Footer = () => {
                     <div className="footer-logo">
                         <img src={FedesLogo} alt="Fedes Consultora Logo" />
                     </div>
-                    <p>&copy; {new Date().getFullYear()} FedesConsultora. Todos los derechos reservados.</p>
+                    <span> <p>Política de Privacidad | Términos y Condiciones</p></span>
+                    <p>&copy; {new Date().getFullYear()} {""}
+                        | FEDES Consultora - Todos los derechos reservados</p>
                 </div>
             </div>
         </footer>

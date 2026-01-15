@@ -24,7 +24,7 @@ const Consultora = () => {
                         </div>
                     ))}
                     <div className="btn-container">
-                        <a href="/contacto" className="btn-appointment">Agendá una reunión</a>
+                        <a href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ19JF6L1eipDhqCCUQr1FpObl3R5w1WcsYH4wRPfnbOfUsCc2vz07la72glqvWmDA_Svg19CKBU?gv=true" target="_blank" rel="noopener noreferrer" className="btn-appointment">Agendá una reunión</a>
                     </div>
                 </div>
             </div>

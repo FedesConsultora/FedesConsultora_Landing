@@ -61,7 +61,7 @@ const Nosotros = () => {
             <div className="container">
                 <div className="nosotros-header">
                     <SectionPill text="Nosotros" />
-                    <h2><span className="dark">DOS VISIONES,</span> <span className="blue">UN OBJETIVO.</span></h2>
+                    <h2><span className="dark">DOS VISIONES, </span> <br className="mobile-br" /> <span className="blue">UN OBJETIVO.</span></h2>
                     <p>Juntos lideramos un equipo multidisciplinario listo para ser tu departamento externo de crecimiento.</p>
                 </div>
 
