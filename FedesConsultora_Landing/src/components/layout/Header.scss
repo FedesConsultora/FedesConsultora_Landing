@@ -38,16 +38,16 @@
     }
 
     .site-header {
-        width: 60%;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 50px;
+        width: 70%;
+        background-color: transparent;
+        backdrop-filter: blur(5px);
+        border: none;
+        border-radius: 30px;
         padding: 10px 20px;
         display: flex;
-        justify-content: center;
+        justify-content: space-around;
         transition: $transition-base;
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        box-shadow: none;
 
         @media (max-width: 1200px) {
             width: 70%;
@@ -59,35 +59,36 @@
 
         .nav-links {
             display: flex;
-            gap: 25px;
+            align-items: space-around;
+            justify-content: space-around;
+            gap: 40px;
             list-style: none;
+            padding: 0;
+            margin: 0;
+
+            li {
+                display: flex;
+                align-items: center;
+            }
 
             a {
                 text-decoration: none;
-                color: #19222B;
+                color: #373737;
                 font-weight: 700;
                 font-size: 0.85rem;
-                transition: color 0.3s ease;
-                position: relative;
+                transition: all 0.3s ease;
+                padding: 8px 18px;
+                border-radius: 50px;
+                border: 1px solid transparent;
 
-                &::after {
-                    content: '';
-                    position: absolute;
-                    bottom: -5px;
-                    left: 0;
-                    width: 0;
-                    height: 2px;
-                    background-color: #19222B;
-                    transition: width 0.3s ease;
+                &:hover {
+                    color: #19222B;
                 }
 
-                &:hover,
                 &.active {
-                    color: #19222B;
-
-                    &::after {
-                        width: 100%;
-                    }
+                    color: #3A54FF;
+                    border-color: #3A54FF;
+                    background: transparent;
                 }
             }
         }

@@ -19,7 +19,6 @@ export default function AppRouter() {
           <Route path="/galeria" element={<Galeria />} />
           <Route path="/nosotros" element={<Nosotros />} />
           <Route path="/blog" element={<Blog />} />
-          <Route path="/contacto" element={<Contacto />} />
         </Route>
       </Routes>
     </BrowserRouter>

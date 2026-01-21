@@ -99,7 +99,7 @@ const Header = () => {
 
       <div className="header-actions">
         <a href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ19JF6L1eipDhqCCUQr1FpObl3R5w1WcsYH4wRPfnbOfUsCc2vz07la72glqvWmDA_Svg19CKBU?gv=true" target="_blank" rel="noopener noreferrer" className="btn-appointment">
-          Contactanos
+          Hablemos
         </a>
 
         <button
@@ -133,7 +133,7 @@ const Header = () => {
                 className="mobile-btn-contact"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Contactanos
+                Hablemos
               </a>
             </li>
           </ul>

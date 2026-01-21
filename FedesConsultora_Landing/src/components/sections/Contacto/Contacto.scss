@@ -1,160 +1,73 @@
 @import '../../../styles/_variables.scss';
 
 .contacto-section {
-    background-color: #F8F8F8; // Very light gray like the design
-    padding: 100px 0;
+    background-color: #3A54FF;
+    height: 250px !important;
+    min-height: auto !important; // Overriding global 100vh
     display: flex;
     align-items: center;
+    color: white;
+    overflow: hidden;
 
     .contacto-wrapper {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         justify-content: space-between;
-        gap: 100px;
+        gap: 40px;
         width: 100%;
     }
 
-    .contacto-info {
+    .contacto-title {
         flex: 1;
-        max-width: 500px;
 
-        .contacto-header {
-            h2 {
-                font-family: $font-title;
-                font-size: 3.5rem;
-                font-weight: 700;
-                color: #363636;
-                margin-top: 20px;
-                margin-bottom: 30px;
-                line-height: 1.1;
-            }
+        h2 {
+            font-family: $font-title;
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            line-height: 1.1;
+            letter-spacing: -1px;
+        }
+    }
 
-            .info-items {
-                display: flex;
-                flex-direction: column;
-                gap: 5px;
-                margin-bottom: 40px;
+    .contacto-info-items {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
 
-                p {
-                    font-size: 1rem;
-                    color: #8F8F8F;
-                    line-height: 1.5;
+        p {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin: 0;
+            line-height: 1.4;
 
-                    strong {
-                        color: #555;
-                        font-weight: 600;
-                    }
-                }
-            }
-
-            .btn-appointment {
-                background-color: #3A54FF;
+            strong {
                 color: white;
-                padding: 14px 35px;
-                border-radius: 50px;
-                border: none;
                 font-weight: 700;
-                font-size: 1rem;
-                cursor: pointer;
-                text-decoration: none !important;
-                transition: $transition-base;
-
-                &:hover {
-                    filter: brightness(1.1);
-
-                }
             }
         }
     }
 
-    .contacto-form-container {
-        flex: 1;
-        max-width: 550px;
+    .contacto-cta {
+        .btn-appointment-white {
+            background-color: white;
+            color: #3A54FF;
+            padding: 18px 45px;
+            border-radius: 100px;
+            border: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            text-decoration: none !important;
+            transition: $transition-base;
+            display: inline-block;
+            white-space: nowrap;
 
-        .form-title {
-            font-family: $font-title;
-            font-size: 2.2rem;
-            color: #E2E2E2; // Very light gray title
-            margin-bottom: 25px;
-            letter-spacing: 1px;
-        }
-
-        .contacto-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-
-            .form-group {
-
-                input,
-                textarea {
-                    width: 100%;
-                    padding: 18px 30px;
-                    border-radius: 100px; // Pill shape
-                    border: 1px solid transparent;
-                    background: white;
-                    color: #19222B;
-                    font-family: inherit; // Force same font as body/inputs
-                    font-size: 1rem;
-                    transition: $transition-base;
-                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
-
-                    &::placeholder {
-                        color: #CBCBCB;
-                    }
-
-                    &:focus {
-                        outline: none;
-                        border-color: #3A54FF;
-                    }
-                }
-
-                textarea {
-                    border-radius: 30px; // Slightly less rounded for textarea
-                    resize: none;
-                }
-            }
-
-            .btn-submit {
-                background-color: #3A54FF;
-                color: white;
-                padding: 18px;
-                border-radius: 100px;
-                border: none;
-                font-weight: 700;
-                font-size: 1rem;
-                cursor: pointer;
-                transition: $transition-base;
-                margin-top: 10px;
-
-                &:hover:not(:disabled) {
-                    filter: brightness(1.1);
-                }
-
-                &:disabled {
-                    opacity: 0.7;
-                    cursor: not-allowed;
-                    background-color: #a0a0a0;
-                }
-            }
-
-            .form-status {
-                padding: 10px 20px;
-                border-radius: 50px;
-                font-size: 0.9rem;
-                font-weight: 600;
-                text-align: center;
-                margin-top: 5px;
-
-                &.success {
-                    background-color: #d4edda;
-                    color: #155724;
-                }
-
-                &.error {
-                    background-color: #f8d7da;
-                    color: #721c24;
-                }
+            &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
             }
         }
     }
@@ -162,49 +75,47 @@
 
 @media (max-width: 1200px) {
     .contacto-section {
-        .contacto-wrapper {
-            gap: 50px;
+        .contacto-title h2 {
+            font-size: 2.8rem;
         }
 
-        .contacto-info .contacto-header h2 {
-            font-size: 2.8rem;
+        .contacto-wrapper {
+            gap: 30px;
         }
     }
 }
 
 @media (max-width: 992px) {
     .contacto-section {
-        padding: 80px 0;
+        padding: 60px 0;
+        height: auto !important;
+        max-height: none !important;
 
         .contacto-wrapper {
             flex-direction: column;
+            text-align: center;
+            gap: 40px;
+        }
+
+        .contacto-info-items {
             align-items: center;
-            gap: 60px;
-        }
-
-        .contacto-info,
-        .contacto-form-container {
-            max-width: 100%;
-            width: 100%;
-            text-align: left;
-        }
-
-        .contacto-info .contacto-header {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
         }
     }
 }
 
 @media (max-width: 768px) {
     .contacto-section {
-        .contacto-info .contacto-header h2 {
+        .contacto-title h2 {
             font-size: 2.2rem;
         }
 
-        .contacto-form-container .form-title {
-            font-size: 1.8rem;
+        .contacto-info-items p {
+            font-size: 1rem;
+        }
+
+        .contacto-cta .btn-appointment-white {
+            padding: 14px 35px;
+            font-size: 1rem;
         }
     }
 }

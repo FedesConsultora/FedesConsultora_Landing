@@ -1,27 +1,46 @@
 import React from 'react';
-import heroVideo from '../../../assets/renders/3d-render-2025-12-09-06-19-10-utc.mov';
+import Hero1 from './subsections/Hero1';
+import Hero2 from './subsections/Hero2';
 import './Hero.scss';
 
 const Hero = () => {
   return (
-    <section id="inicio" className="hero-section">
-      <video
-        className="hero-render"
-        autoPlay
-        loop
-        muted
-        playsInline
-      >
-        <source src={heroVideo} type="video/quicktime" />
-        <source src={heroVideo} type="video/mp4" />
-      </video>
+    <>
+      <section id="inicio" className="hero-section">
+        <div className="hero-background">
+          <div className="gradient-sphere blue-sphere"></div>
+          <div className="gradient-sphere green-sphere"></div>
+          <div className="grid-overlay"></div>
+        </div>
 
-      <div className="container">
-        <h1 className='hero-title'>DESBLOQUEA <br />EL POTENCIAL <br /> DE TU EMPRESA</h1>
-        <p className='hero-subtitle'>Impulsamos el éxito sostenible de tu negocio con publicidad innovadora, estrategias de posicionamiento <br />
-          y consultoría experta para aumentar tu facturación y consolidar tu posición como lider del mercado</p>
-      </div>
-    </section>
+        <div className="container">
+          <h1 className='hero-title'>¿Orden o <br />Clientes?</h1>
+          <p className='hero-subtitle'>En Fedes atacamos las dos <br />únicas razones por las que <br /> tu negocio no escala.</p>
+        </div>
+
+        <div className="hero-floating-icon">
+          <div className="circular-text">
+            <svg viewBox="0 0 100 100">
+              <path d="M 10,50 a 40,40 0 1,1 80,0 a 40,40 0 1,1 -80,0" id="circle" fill="transparent" />
+              <text fill="#19222B">
+                <textPath xlinkHref="#circle">
+                  FEDES LO HACE POSIBLE • FEDES LO HACE POSIBLE •
+                </textPath>
+              </text>
+            </svg>
+          </div>
+          <div className="inner-circle"></div>
+        </div>
+      </section>
+
+      <section>
+        <Hero1 />
+      </section>
+
+      {/* <section>
+        <Hero2 />
+      </section> */}
+    </>
   );
 };
 

@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import SectionPill from '../../ui/SectionPill';
 import ServiceCard from '../Agencia/ServiceCard';
 import TeamChip from '../../ui/TeamChip';
+import Nosotros1 from './subsections/Nosotros1';
 import './Nosotros.scss';
 
 // Import Leader Photos
@@ -57,53 +58,60 @@ const Nosotros = () => {
     ];
 
     return (
-        <section id="nosotros" className="nosotros-section" ref={containerRef}>
-            <div className="container">
-                <div className="nosotros-header">
-                    <SectionPill text="Nosotros" />
-                    <h2><span className="dark">DOS VISIONES, </span> <br className="mobile-br" /> <span className="blue">UN OBJETIVO.</span></h2>
-                    <p>Juntos lideramos un equipo multidisciplinario listo para ser tu departamento externo de crecimiento.</p>
-                </div>
+        <>
+            <section id="nosotros" className="nosotros-section" ref={containerRef}>
+                <div className="container">
+                    <div className="nosotros-header">
+                        <SectionPill text="Nosotros" />
+                        <h2><span className="dark">DOS VISIONES, </span> <br className="mobile-br" /> <span className="blue">UN OBJETIVO.</span></h2>
+                        <p>Juntos lideramos un equipo multidisciplinario listo para ser tu departamento externo de crecimiento.</p>
+                    </div>
 
-                <div className="leaders-grid">
-                    {leaders.map((leader, index) => (
-                        <ServiceCard
-                            key={index}
-                            title={leader.name}
-                            image={leader.image}
-                            variant="pill"
-                        />
-                    ))}
-                </div>
-            </div>
-
-            <div className="team-parallax-container">
-                <div className="parallax-row">
-                    <motion.div className="row-content" style={{ x: x1 }}>
-                        {teamRow1.map((member, index) => (
-                            <TeamChip
+                    <div className="leaders-grid">
+                        {leaders.map((leader, index) => (
+                            <ServiceCard
                                 key={index}
-                                name={member.name}
-                                role={member.role}
-                                photo={member.photo}
+                                title={leader.name}
+                                image={leader.image}
+                                variant="pill"
                             />
                         ))}
-                    </motion.div>
+                    </div>
                 </div>
-                <div className="parallax-row">
-                    <motion.div className="row-content" style={{ x: x2 }}>
-                        {teamRow2.map((member, index) => (
-                            <TeamChip
-                                key={index}
-                                name={member.name}
-                                role={member.role}
-                                photo={member.photo}
-                            />
-                        ))}
-                    </motion.div>
+
+                <div className="team-parallax-container">
+                    <div className="parallax-row">
+                        <motion.div className="row-content" style={{ x: x1 }}>
+                            {teamRow1.map((member, index) => (
+                                <TeamChip
+                                    key={index}
+                                    name={member.name}
+                                    role={member.role}
+                                    photo={member.photo}
+                                />
+                            ))}
+                        </motion.div>
+                    </div>
+                    <div className="parallax-row">
+                        <motion.div className="row-content" style={{ x: x2 }}>
+                            {teamRow2.map((member, index) => (
+                                <TeamChip
+                                    key={index}
+                                    name={member.name}
+                                    role={member.role}
+                                    photo={member.photo}
+                                />
+                            ))}
+                        </motion.div>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
+
+            <section>
+                <Nosotros1 />
+            </section>
+
+        </>
     );
 };
 

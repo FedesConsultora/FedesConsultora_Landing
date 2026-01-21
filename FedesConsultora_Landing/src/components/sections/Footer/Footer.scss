@@ -1,7 +1,7 @@
 @import '../../../styles/_variables.scss';
 
 .main-footer {
-    padding: 20px 0; // Reduced significantly
+    padding: 20px 0;
     background-color: #000000;
     color: #ffffff;
 
@@ -22,7 +22,7 @@
                 height: 30px;
                 width: auto;
                 display: block;
-                filter: brightness(0) invert(1); // Hace el logo blanco
+                filter: brightness(0) invert(1);
             }
         }
 
