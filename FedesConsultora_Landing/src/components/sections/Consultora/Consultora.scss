@@ -87,7 +87,10 @@
                 font-size: 7rem;
                 font-weight: 800;
                 line-height: 0.8;
-                color: #434343;
+                background: linear-gradient(123.75deg, #2F2F2F 40.0%, #707070 91.9%);
+                background-clip: text;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
                 margin-bottom: 2.5rem;
                 margin-top: 4rem;
 
@@ -166,7 +169,10 @@
         .familiar-title {
             font-size: 6rem;
             font-weight: 800;
-            color: #19222B;
+            background: linear-gradient(123.75deg, #2F2F2F 40.04%, #707070 91.9%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             margin-bottom: 50px;
             letter-spacing: -2px;
 
@@ -247,7 +253,10 @@
                 }
 
                 .dark {
-                    color: #19222B;
+                    background: linear-gradient(123.75deg, #2F2F2F 40.04%, #707070 91.9%);
+                    background-clip: text;
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
                 }
 
                 @media (max-width: 768px) {

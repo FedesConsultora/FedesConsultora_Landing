@@ -22,7 +22,10 @@
 
         h1 {
             font-size: 3.5rem;
-            color: #19222B;
+            background: linear-gradient(123.75deg, #2F2F2F 40.04%, #707070 91.9%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             font-weight: 800;
             letter-spacing: -2px;
 

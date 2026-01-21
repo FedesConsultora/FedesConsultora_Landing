@@ -1,19 +1,15 @@
 @import '../../../styles/_variables.scss';
 
 .service-card {
-    flex: 1;
-    min-width: 300px;
-    max-width: 400px;
-    height: 500px;
-    border-radius: 30px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background-size: cover;
-    background-position: center;
+    width: 100%;
+    aspect-ratio: 1 / 0.95;
+    border-radius: 24px;
+    background-color: #E5E5E5; // Light gray as seen in design
     position: relative;
     overflow: hidden;
     cursor: pointer;
-    transition: $transition-base;
-    flex-shrink: 0;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    border: 1px solid rgba(0, 0, 0, 0.03);
 
     &::after {
         content: '';
@@ -22,19 +18,16 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(180deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.8) 100%);
-        transition: $transition-base;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.05) 100%);
+        transition: opacity 0.3s ease;
     }
 
     &:hover {
-        transform: translateY(-10px);
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
 
-        &::after {
-            background: linear-gradient(180deg, rgba(0, 0, 0, 0) 20%, rgba(0, 0, 0, 0.9) 100%);
-        }
-
-        .card-content {
-            transform: translateY(-10px);
+        .card-overlay {
+            background-color: rgba(255, 255, 255, 0.1);
         }
     }
 
@@ -44,89 +37,43 @@
         left: 0;
         width: 100%;
         height: 100%;
-        z-index: 1;
+        z-index: 2;
         display: flex;
-        align-items: flex-end;
-        padding: 40px;
+        justify-content: center;
+        align-items: flex-start;
+        padding-top: 25px;
+        transition: background-color 0.3s ease;
     }
 
     .card-content {
-        transition: $transition-base;
+        background: #ffffff;
+        padding: 10px 30px;
+        border-radius: 50px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        display: inline-block;
+        max-width: 90%;
 
         .card-tag {
-            background: rgba(255, 255, 255, 0.678);
-            backdrop-filter: blur(5px);
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            margin-bottom: 15px;
-            display: inline-block;
+            display: none; // We'll focus on the title inside the pill
         }
 
         .card-title {
-            color: white;
-            font-family: $font-title;
-            font-size: 2rem;
+            color: #19222B;
+            font-family: $font-body;
+            font-size: 0.95rem;
+            font-weight: 700;
             margin: 0;
-            line-height: 1.1;
+            text-align: center;
+            white-space: nowrap;
         }
     }
 
+    // Adaptations for specialized usage if needed
     &.no-image {
-        &::after {
-            display: none;
-        }
-
-        .card-title {
-            color: #19222B;
-        }
-
-        .card-tag {
-            background: rgba(0, 0, 0, 0.05);
-            color: #19222B;
-        }
-    }
-
-    &.variant-pill {
-        .card-overlay {
-            justify-content: center;
-            align-items: flex-end;
-            padding-bottom: 25px; // Reduced from 40px
-        }
-
-        .card-content {
-            background: white;
-            padding: 8px 25px; // Reduced from 12px 40px
-            border-radius: 50px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            transform: none !important;
-
-            .card-title {
-                color: #19222B;
-                font-size: 0.85rem; // Reduced from 1rem
-                font-weight: 700;
-                font-family: $font-body;
-                text-align: center;
-            }
-
-            .card-tag {
-                display: none;
-            }
-        }
-
-        &:hover {
-            transform: translateY(-5px);
-        }
+        background-color: #E5E5E5;
     }
 
     @media (max-width: 768px) {
-        width: 100%;
-        max-width: 350px;
-        height: 450px;
-        margin: 0 auto;
-        flex: none;
+        aspect-ratio: 1 / 1.25;
     }
 }

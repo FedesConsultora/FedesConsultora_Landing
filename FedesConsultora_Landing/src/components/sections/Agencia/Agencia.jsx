@@ -7,58 +7,73 @@ import './Agencia.scss';
 const Agencia = () => {
     const services = [
         {
-            title: "Branding & Identidad",
-            tag: "Identidad",
-            image: ""
-        },
-        {
-            title: "Web Design & Dev",
-            tag: "Digital",
-            image: ""
-        },
-        {
-            title: "Ads & Performance",
+            title: "Paid Media [Ads]",
             tag: "Growth",
+            desc: "Ponemos tu mensaje frente a quien quiere comprar. Meta & Google Ads con foco en ROI.",
+            image: ""
+        },
+        {
+            title: "Branding & Diseño",
+            tag: "Identidad",
+            desc: "Identidades visuales que construyen autoridad inmediata.",
+            image: ""
+        },
+        {
+            title: "Social & Content",
+            tag: "Engage",
+            desc: "Estrategias de contenido vertical (Reels/TikTok) para retener audiencia.",
             image: ""
         }
     ];
 
     return (
-        <>
-            <section id="agencia" className="agencia-section">
-                <div className="container">
-                    <div className="agencia-header">
-                        <div className="title-area">
-                            <SectionPill text="Agencia" />
-                            <h2><span className="dark">DESPUÉS,</span> <span className="blue">LA ACCIÓN.</span></h2>
-                            <p>Transformamos esa estrategia en activos digitales que venden. <br /> Somos el brazo ejecutor que tu marca necesita.</p>
-                        </div>
-                        <div className="action-area">
-                            <a href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ19JF6L1eipDhqCCUQr1FpObl3R5w1WcsYH4wRPfnbOfUsCc2vz07la72glqvWmDA_Svg19CKBU?gv=true" target="_blank" rel="noopener noreferrer" className="btn-primary">Agendar una reunión</a>
-                        </div>
-                    </div>
+        <div id="agencia" className="agencia-wrapper">
+            {/* Bloque 1: Intro Creativa */}
+            <section className="agencia-intro-block">
+                <div className="agencia-background">
+                    <div className="gradient-sphere orange-sphere"></div>
+                    <div className="grid-overlay"></div>
+                </div>
 
-                    <div className="services-grid">
-                        {services.map((service, index) => (
-                            <ServiceCard
-                                key={index}
-                                title={service.title}
-                                tag={service.tag}
-                                image={service.image}
-                            />
-                        ))}
+                <div className="container">
+                    <div className="agencia-content">
+                        <h2 className="agencia-title">
+                            Creatividad <br />que se mide <br />en ventas.
+                        </h2>
+
+                        <p className="agencia-subtitle">
+                            Branding, Contenido y Paid Media para marcas que quieren liderar, no solo competir.
+                        </p>
+
+                        <div className="agencia-cta">
+                            <a href="#planes" className="btn-planes">
+                                Mira nuestros planes
+                            </a>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            <section>
-                <Agencia1 />
-            </section>
+            {/* Bloque 2: Tu departamento de marketing */}
+            <section className="agencia-services-block">
+                <div className="container">
+                    <h2 className="services-title">Tu departamento de <br /> marketing externo.</h2>
 
-            <section>
-                <Agencia2 />
+                    <div className="services-grid">
+                        {services.map((service, index) => (
+                            <div key={index} className="service-column">
+                                <ServiceCard
+                                    title={service.title}
+                                    tag={service.tag}
+                                    image={service.image}
+                                />
+                                <p className="service-desc">{service.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </section>
-        </>
+        </div>
     );
 };
 
