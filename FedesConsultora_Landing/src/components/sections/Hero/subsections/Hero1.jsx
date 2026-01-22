@@ -129,23 +129,6 @@ const Hero1 = () => {
                         <button className="solution-btn">Necesito ventas</button>
                     </div>
                 </div>
-
-                <div className="hero-1-bottom">
-                    <h2>Dinos qué te duele y te diremos la cura</h2>
-                    <p className="bottom-desc">Selecciona la frase que más repites en tu cabeza esta semana:</p>
-
-                    <div className="cure-options">
-                        <div className="cure-pill">
-                            Vendemos mucho pero a fin de mes no queda plata en la caja
-                        </div>
-                        <div className="cure-pill">
-                            Tengo un producto increíble pero nadie lo conoce
-                        </div>
-                        <div className="cure-pill">
-                            Estoy quemado hago de gerente, vendedor y creativo a la vez
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     )

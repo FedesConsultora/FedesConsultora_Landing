@@ -4,8 +4,110 @@
     min-height: 100vh;
     width: 100%;
     display: flex;
+    justify-content: center;
     align-items: center;
     position: relative;
     overflow: hidden;
     background-color: #ffffff;
+    padding: 80px 20px;
+
+    .hero-2-container {
+        max-width: 1000px;
+        width: 100%;
+        text-align: center;
+        z-index: 1;
+    }
+
+    .hero-2-content {
+        h2 {
+            font-size: 3.5rem;
+            color: #363636;
+            font-weight: 800;
+            margin-bottom: 20px;
+            letter-spacing: -1.5px;
+            line-height: 1;
+            font-family: $font-title;
+
+            @media (max-width: 768px) {
+                font-size: 2.2rem;
+            }
+        }
+
+        .bottom-desc {
+            font-size: 1.1rem;
+            color: #8F8F8F;
+            margin-bottom: 60px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cure-options {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+
+            .cure-pill {
+                background: white;
+                padding: 22px 50px;
+                border-radius: 100px;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+                color: #4A4A4A;
+                font-size: 1.1rem;
+                font-weight: 500;
+                max-width: 650px;
+                width: 100%;
+                cursor: pointer;
+                transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+                border: 1px solid rgba(0, 0, 0, 0.03);
+
+                &:hover {
+                    transform: translateY(-5px) scale(1.02);
+                    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
+                    color: #19222B;
+                    border-color: rgba(58, 84, 255, 0.1);
+                }
+            }
+        }
+    }
+
+    .hero-2-degr {
+        position: absolute;
+        pointer-events: none;
+        z-index: 0;
+        height: auto;
+        opacity: 1;
+        filter: blur(30px);
+        mix-blend-mode: multiply;
+
+        // Mask to avoid sharp edges from SVG viewport - more aggressive ellipse
+        -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 75%);
+        mask-image: radial-gradient(ellipse at center, black 0%, transparent 75%);
+
+        &.degr-left {
+            width: 25vw;
+            top: 50%;
+            left: 0%;
+            transform: translateY(-50%);
+
+            @media (max-width: 768px) {
+                width: 40vw;
+                left: 0%;
+                top: 40%;
+            }
+        }
+
+        &.degr-right {
+            width: 40vw;
+            bottom: -20%;
+            right: 0%;
+
+            @media (max-width: 768px) {
+                width: 40vw;
+                right: -15%;
+                bottom: -5%;
+            }
+        }
+    }
 }

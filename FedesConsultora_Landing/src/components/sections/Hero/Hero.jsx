@@ -39,9 +39,9 @@ const Hero = () => {
         <Hero1 />
       </section>
 
-      {/* <section>
+      <section>
         <Hero2 />
-      </section> */}
+      </section>
     </>
   );
 };

@@ -20,6 +20,12 @@
       position: absolute;
       pointer-events: none;
       z-index: 0;
+      filter: blur(30px);
+      mix-blend-mode: multiply;
+
+      // Mask to avoid sharp edges from SVG viewport - more aggressive ellipse
+      -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 75%);
+      mask-image: radial-gradient(ellipse at center, black 0%, transparent 75%);
 
       &.degr-1 {
         bottom: 5%;
@@ -27,7 +33,6 @@
         width: 85vw;
         height: auto;
         opacity: 0.95;
-        // filter: blur(50px); // Adding blur to make it soft like the previous ones
       }
 
       &.degr-2 {
@@ -127,7 +132,7 @@
         height: 100%;
 
         text {
-          font-weight: 800;
+          font-weight: 900;
           font-size: 10px;
           text-transform: uppercase;
           letter-spacing: 1px;
