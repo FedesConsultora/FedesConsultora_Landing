@@ -16,29 +16,25 @@
     height: 100%;
     z-index: 0;
 
-    .gradient-sphere {
+    .hero-degr {
       position: absolute;
-      filter: blur(80px);
       pointer-events: none;
       z-index: 0;
 
-      &.blue-sphere {
-        top: 20%;
-        left: 60%;
-        width: 15vw;
-        height: 35vw;
-        background: radial-gradient(ellipse at center, #2563EB 0%, rgba(37, 99, 235, 0.9) 70%, rgba(37, 99, 235, 0) 70%);
-        transform: rotate(-30deg);
-        opacity: 0.85;
+      &.degr-1 {
+        bottom: 5%;
+        left: 10%;
+        width: 85vw;
+        height: auto;
+        opacity: 0.95;
+        // filter: blur(50px); // Adding blur to make it soft like the previous ones
       }
 
-      &.green-sphere {
-        top: 40%;
-        left: 20%;
-        width: 50vw;
-        height: 25vw;
-        background: radial-gradient(ellipse at center, #059669 0%, rgba(5, 150, 105, 0.5) 50%, rgba(5, 150, 105, 0) 65%);
-        transform: rotate(5deg);
+      &.degr-2 {
+        top: -10%;
+        left: 0%;
+        width: 100vw;
+        height: auto;
         opacity: 0.9;
       }
     }
@@ -70,16 +66,16 @@
   }
 
   .hero-title {
-    font-size: 9rem;
+    font-size: 7rem;
     font-weight: 800;
-    line-height: 0.85;
+    line-height: 0.9;
     margin-bottom: 1rem;
     background: linear-gradient(123.75deg, #2F2F2F 40.04%, #707070 91.9%);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-family: $font-title;
-    letter-spacing: -3px;
+
 
     @media (max-width: 1200px) {
       font-size: 7rem;
@@ -87,7 +83,7 @@
 
     @media (max-width: 768px) {
       font-size: 4rem;
-      letter-spacing: -1px;
+
     }
   }
 

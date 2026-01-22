@@ -1,14 +1,7 @@
-import React, { useRef } from 'react';
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
-import SectionPill from '../../ui/SectionPill';
-import ServiceCard from '../Agencia/ServiceCard';
+import React, { useRef, useState, useEffect } from 'react';
+import { motion, AnimatePresence, useScroll, useTransform, useSpring, useInView } from 'framer-motion';
 import TeamChip from '../../ui/TeamChip';
-import Nosotros1 from './subsections/Nosotros1';
 import './Nosotros.scss';
-
-// Import Leader Photos
-import FJuanImg from '../../../assets/img/feders/fjuan.webp';
-import FChironiImg from '../../../assets/img/feders/fchironi.webp';
 
 // Import Team Photos
 import MartinImg from '../../../assets/img/feders/Martin.webp';
@@ -23,6 +16,18 @@ import GonzaloImg from '../../../assets/img/feders/gcanibano.webp';
 
 const Nosotros = () => {
     const containerRef = useRef(null);
+    const [phase, setPhase] = useState(1);
+    const isInView = useInView(containerRef, { amount: 0.3, once: true });
+
+    // Transition from Phase 1 to Phase 2 after a delay
+    useEffect(() => {
+        if (isInView && phase === 1) {
+            const timer = setTimeout(() => {
+                setPhase(2);
+            }, 3500);
+            return () => clearTimeout(timer);
+        }
+    }, [isInView, phase]);
 
     const { scrollYProgress } = useScroll({
         target: containerRef,
@@ -34,11 +39,6 @@ const Nosotros = () => {
 
     const x1 = useSpring(x1Raw, { stiffness: 40, damping: 40, restDelta: 0.001 });
     const x2 = useSpring(x2Raw, { stiffness: 40, damping: 40, restDelta: 0.001 });
-
-    const leaders = [
-        { name: "Fede Juan", image: FJuanImg },
-        { name: "Fede Chironi", image: FChironiImg }
-    ];
 
     const teamRow1 = [
         { name: "Martín Spinelli", role: "COO", photo: MartinImg },
@@ -58,60 +58,71 @@ const Nosotros = () => {
     ];
 
     return (
-        <>
-            <section id="nosotros" className="nosotros-section" ref={containerRef}>
-                <div className="container">
-                    <div className="nosotros-header">
-                        <SectionPill text="Nosotros" />
-                        <h2><span className="dark">DOS VISIONES, </span> <br className="mobile-br" /> <span className="blue">UN OBJETIVO.</span></h2>
-                        <p>Juntos lideramos un equipo multidisciplinario listo para ser tu departamento externo de crecimiento.</p>
-                    </div>
-
-                    <div className="leaders-grid">
-                        {leaders.map((leader, index) => (
-                            <ServiceCard
-                                key={index}
-                                title={leader.name}
-                                image={leader.image}
-                                variant="pill"
-                            />
-                        ))}
-                    </div>
-                </div>
-
-                <div className="team-parallax-container">
-                    <div className="parallax-row">
-                        <motion.div className="row-content" style={{ x: x1 }}>
-                            {teamRow1.map((member, index) => (
-                                <TeamChip
-                                    key={index}
-                                    name={member.name}
-                                    role={member.role}
-                                    photo={member.photo}
-                                />
-                            ))}
+        <section id="nosotros" className="nosotros-section" ref={containerRef}>
+            <div className="nosotros-content-wrapper">
+                <AnimatePresence mode="wait">
+                    {phase === 1 ? (
+                        <motion.div
+                            key="phase1"
+                            className="phase-container phase-1"
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -100 }}
+                            transition={{ duration: 0.8, ease: "easeInOut" }}
+                        >
+                            <h2 className="title-intro">
+                                Entendimos que para escalar, <br />
+                                <span className="blue-gradient">una empresa necesita cerebro y corazón</span>
+                            </h2>
+                            <p className="subtitle-intro">Eso somos.</p>
                         </motion.div>
-                    </div>
-                    <div className="parallax-row">
-                        <motion.div className="row-content" style={{ x: x2 }}>
-                            {teamRow2.map((member, index) => (
-                                <TeamChip
-                                    key={index}
-                                    name={member.name}
-                                    role={member.role}
-                                    photo={member.photo}
-                                />
-                            ))}
+                    ) : (
+                        <motion.div
+                            key="phase2"
+                            className="phase-container phase-2"
+                            initial={{ opacity: 0, y: 100 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                        >
+                            <div className="nosotros-header">
+                                <h2 className="title-main">Estrategas y <br /> Creativos.</h2>
+                                <p className="subtitle-main">
+                                    La historia de dos Fedes y un equipo <br />
+                                    obsesionado con la excelencia.
+                                </p>
+                            </div>
+
+                            <div className="team-parallax-container">
+                                <div className="parallax-row">
+                                    <motion.div className="row-content" style={{ x: x1 }}>
+                                        {teamRow1.map((member, index) => (
+                                            <TeamChip
+                                                key={index}
+                                                name={member.name}
+                                                role={member.role}
+                                                photo={member.photo}
+                                            />
+                                        ))}
+                                    </motion.div>
+                                </div>
+                                <div className="parallax-row">
+                                    <motion.div className="row-content" style={{ x: x2 }}>
+                                        {teamRow2.map((member, index) => (
+                                            <TeamChip
+                                                key={index}
+                                                name={member.name}
+                                                role={member.role}
+                                                photo={member.photo}
+                                            />
+                                        ))}
+                                    </motion.div>
+                                </div>
+                            </div>
                         </motion.div>
-                    </div>
-                </div>
-            </section>
-
-            <section>
-                <Nosotros1 />
-            </section>
-
-        </>
+                    )}
+                </AnimatePresence>
+            </div>
+        </section>
     );
 };
 

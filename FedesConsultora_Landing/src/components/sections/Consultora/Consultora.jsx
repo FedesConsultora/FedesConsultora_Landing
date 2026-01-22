@@ -1,6 +1,7 @@
 import React from 'react';
 import './Consultora.scss';
 import Consultora1 from './subsections/Consultora1';
+import EngineeringGraphic from '../../../assets/img/backgrounds/consultora-graph.svg';
 
 const Consultora = () => {
     return (
@@ -15,7 +16,7 @@ const Consultora = () => {
                 <div className="container">
                     <div className="consultora-content">
                         <h2 className="consultora-title">
-                            Facturar no es <br />lo mismo que <br />ganar dinero.
+                            <span style={{ fontWeight: '400' }}>Facturar no es <br />lo mismo que <br /></span> ganar dinero.
                         </h2>
 
                         <p className="consultora-subtitle">
@@ -48,23 +49,7 @@ const Consultora = () => {
             <div className="consultora-engineering-block">
                 <div className="container">
                     <div className="engineering-graphic">
-                        <svg viewBox="0 0 800 400" className="chart-svg">
-                            <path
-                                d="M 50,350 L 150,300 L 250,280 L 350,290 L 450,220 L 550,260 L 650,200 L 750,200 L 850,50"
-                                fill="none"
-                                stroke="url(#gradient-stroke)"
-                                strokeWidth="6"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            />
-                            <defs>
-                                <linearGradient id="gradient-stroke" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" stopColor="#3A54FF" stopOpacity="0.2" />
-                                    <stop offset="50%" stopColor="#3A54FF" stopOpacity="0.6" />
-                                    <stop offset="100%" stopColor="#3A54FF" stopOpacity="1" />
-                                </linearGradient>
-                            </defs>
-                        </svg>
+                        <img src={EngineeringGraphic} alt="Gráfico" />
                     </div>
                     <div className="engineering-content">
                         <h2 className="engineering-main-title">

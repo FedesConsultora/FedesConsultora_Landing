@@ -1,4 +1,4 @@
-// Colors
+@use './fonts/main';
 $primary-color: #007bff;
 $secondary-color: #6c757d;
 $dark-color: #343a40;
@@ -10,7 +10,7 @@ $text-color-light: #8F8F8F;
 
 // Typography
 $font-body: 'Inter', sans-serif;
-$font-title: 'Homenaje', sans-serif;
+$font-title: 'Söhne', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 
 // Transitions
 $transition-base: all 0.3s ease;

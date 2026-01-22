@@ -99,6 +99,12 @@
         align-items: center;
         gap: 15px;
         z-index: 1001;
+
+        .dropdown-anchor {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
     }
 
     .btn-appointment {
@@ -106,6 +112,8 @@
         color: white;
         padding: 10px 25px;
         border-radius: 50px;
+        border: none;
+        cursor: pointer;
         text-decoration: none;
         font-weight: 700;
         font-size: 0.9rem;
@@ -116,9 +124,15 @@
             display: none; // Hide in pure mobile header row, keep in mobile menu
         }
 
-        &:hover {
+        &:hover,
+        &.active {
             filter: brightness(1.1);
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(58, 84, 255, 0.2);
+        }
 
+        &:active {
+            transform: translateY(0);
         }
     }
 
@@ -199,6 +213,49 @@
                 padding: 15px 40px;
                 border-radius: 50px;
                 font-size: 1.2rem;
+                border: none;
+                cursor: pointer;
+                font-weight: 700;
+                transition: $transition-base;
+
+                &:active {
+                    transform: scale(0.98);
+                }
+            }
+
+            .mobile-dropdown-anchor {
+                position: relative;
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+
+                .mobile-form-container {
+                    width: 100%;
+                    display: flex;
+                    justify-content: center;
+                    margin-top: 20px;
+
+                    .header-contact-dropdown {
+                        position: relative;
+                        top: 0;
+                        right: 0;
+                        width: 90vw;
+                        height: auto;
+                        box-shadow: none;
+                        border: 1px solid #f0f0f0;
+                        margin-bottom: 40px;
+                        padding: 30px 20px;
+
+                        &::after {
+                            display: none;
+                        }
+
+                        .dropdown-header h3 {
+                            font-size: 1.5rem;
+                        }
+                    }
+                }
             }
         }
 

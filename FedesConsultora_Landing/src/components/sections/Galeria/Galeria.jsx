@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import './Galeria.scss';
 
 // Import images
@@ -11,131 +11,155 @@ import img5 from '../../../assets/img/galeria/img5.webp';
 import img6 from '../../../assets/img/galeria/img6.webp';
 import img7 from '../../../assets/img/galeria/img7.webp';
 
+const allImagesData = [
+    { src: img1, category: 'consultoria' },
+    { src: img2, category: 'agencia' },
+    { src: img3, category: 'producciones' },
+    { src: img4, category: 'consultoria' },
+    { src: img5, category: 'agencia' },
+    { src: img6, category: 'producciones' },
+    { src: img7, category: 'agencia' },
+];
+
+const categories = [
+    { id: 'todo', label: 'Todo' },
+    { id: 'consultoria', label: 'Consultoría' },
+    { id: 'agencia', label: 'Agencia' },
+    { id: 'producciones', label: 'Producciones' }
+];
+
 const Galeria = () => {
-    const sectionRef = useRef(null);
-    const [isMobile, setIsMobile] = useState(false);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [activeCategory, setActiveCategory] = useState('todo');
+    const [dragConstraints, setDragConstraints] = useState({ left: 0, right: 0 });
+    const carouselRef = useRef(null);
+    const carouselInnerRef = useRef(null);
 
-    // Row refs to calculate constraints
-    const row1Ref = useRef(null);
-    const row2Ref = useRef(null);
+    const filteredImages = activeCategory === 'todo'
+        ? allImagesData
+        : allImagesData.filter(img => img.category === activeCategory);
 
-    // Check for mobile
+    // Reset index when category changes
     useEffect(() => {
-        const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
-    }, []);
+        setCurrentIndex(0);
+    }, [activeCategory]);
 
-    const { scrollYProgress } = useScroll({
-        target: sectionRef,
-        offset: ["start end", "end start"]
-    });
+    // Auto-rotate main image every 5 seconds
+    useEffect(() => {
+        if (filteredImages.length === 0) return;
+        const timer = setInterval(() => {
+            setCurrentIndex((prev) => (prev + 1) % filteredImages.length);
+        }, 5000);
+        return () => clearInterval(timer);
+    }, [filteredImages.length]);
 
-    // Horizontal Parallax (Desktop) - Reduced intensity for better drag feel
-    const x1ScrollRaw = useTransform(scrollYProgress, [0, 1], [100, -100]);
-    const x2ScrollRaw = useTransform(scrollYProgress, [0, 1], [-100, 100]);
+    // Calculate drag constraints for the carousel
+    useEffect(() => {
+        if (carouselInnerRef.current && carouselRef.current) {
+            const innerWidth = carouselInnerRef.current.scrollWidth;
+            const outerWidth = carouselRef.current.offsetWidth;
+            setDragConstraints({ left: Math.min(0, -(innerWidth - outerWidth)), right: 0 });
+        }
+    }, [filteredImages]);
 
-    const x1Scroll = useSpring(x1ScrollRaw, { stiffness: 60, damping: 30 });
-    const x2Scroll = useSpring(x2ScrollRaw, { stiffness: 60, damping: 30 });
-
-    const yLeftRaw = useTransform(scrollYProgress, [0, 1], [0, -40]);
-    const yRightRaw = useTransform(scrollYProgress, [0, 1], [0, -120]);
-
-    const yLeft = useSpring(yLeftRaw, { stiffness: 40, damping: 30 });
-    const yRight = useSpring(yRightRaw, { stiffness: 40, damping: 30 });
-
-    // Separate rows for variation
-    const row1Images = [img1, img2, img3, img4, img1, img2, img3, img4];
-    const row2Images = [img5, img6, img7, img1, img5, img6, img7, img1];
-
-    const colLeft = [img1, img3, img5, img7];
-    const colRight = [img2, img4, img6, img1];
-
-    if (isMobile) {
-        return (
-            <section ref={sectionRef} className="galeria-section mobile" id="galeria">
-                <div className="galeria-mobile-grid">
-                    <motion.div className="galeria-column left" style={{ y: yLeft }}>
-                        {colLeft.map((img, i) => (
-                            <motion.div
-                                key={`colL-${i}`}
-                                className="galeria-item"
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: i * 0.1 }}
-                            >
-                                <img src={img} alt={`Gallery ${i}`} className="galeria-img" draggable="false" />
-                            </motion.div>
-                        ))}
-                    </motion.div>
-                    <motion.div className="galeria-column right" style={{ y: yRight }}>
-                        {colRight.map((img, i) => (
-                            <motion.div
-                                key={`colR-${i}`}
-                                className="galeria-item"
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: i * 0.12 }}
-                            >
-                                <img src={img} alt={`Gallery ${i}`} className="galeria-img" draggable="false" />
-                            </motion.div>
-                        ))}
-                    </motion.div>
-                </div>
-            </section>
-        );
-    }
+    const handleThumbnailClick = (index) => {
+        setCurrentIndex(index);
+    };
 
     return (
-        <section ref={sectionRef} className="galeria-section" id="galeria">
-            <div className="galeria-container">
-                {/* Row 1 */}
-                <div className="galeria-row">
-                    {/* Parallax Wrapper */}
-                    <motion.div style={{ x: x1Scroll }} className="parallax-row-wrapper">
-                        {/* Drag Wrapper */}
-                        <motion.div
-                            ref={row1Ref}
-                            className="row-inner"
-                            drag="x"
-                            dragConstraints={{ left: -1500, right: 1500 }}
-                            dragElastic={0.05}
-                            whileTap={{ cursor: "grabbing" }}
-                        >
-                            {row1Images.map((img, i) => (
-                                <div key={`row1-${i}`} className="galeria-item">
-                                    <img src={img} alt={`Gallery ${i}`} className="galeria-img" draggable="false" />
-                                </div>
-                            ))}
-                        </motion.div>
+        <section className="galeria-section" id="galeria">
+            <div className="galeria-grid">
+                {/* Left Side: Text and Filters */}
+                <div className="galeria-header">
+                    <motion.h2
+                        className="galeria-title"
+                        initial={{ opacity: 0, x: -50 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.8 }}
+                    >
+                        Nuestro <br /> trabajo habla <br />por nosotros.
+                    </motion.h2>
+
+                    <div className="galeria-filters">
+                        {categories.map((cat) => (
+                            <button
+                                key={cat.id}
+                                className={`filter-pill ${activeCategory === cat.id ? 'active' : ''}`}
+                                onClick={() => setActiveCategory(cat.id)}
+                            >
+                                {cat.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Right Side: Main Image (Hidden on Mobile) */}
+                <div className="galeria-main-display">
+                    <AnimatePresence mode="wait">
+                        {filteredImages.length > 0 && (
+                            <motion.div
+                                key={`${activeCategory}-${currentIndex}`}
+                                className="main-image-wrapper"
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 1.05 }}
+                                transition={{ duration: 0.6, ease: "easeOut" }}
+                            >
+                                <img
+                                    src={filteredImages[currentIndex].src}
+                                    alt="Fedes Gallery Main"
+                                    className="main-img"
+                                />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* Bottom: Draggable Carousel (Hidden on Mobile) */}
+                <div className="galeria-carousel" ref={carouselRef}>
+                    <motion.div
+                        ref={carouselInnerRef}
+                        className="carousel-inner"
+                        drag="x"
+                        dragConstraints={dragConstraints}
+                        whileTap={{ cursor: 'grabbing' }}
+                    >
+                        {filteredImages.map((img, index) => (
+                            <motion.div
+                                key={index}
+                                className={`thumbnail-item ${currentIndex === index ? 'active' : ''}`}
+                                onClick={() => handleThumbnailClick(index)}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                            >
+                                <img src={img.src} alt={`Thumbnail ${index}`} className="thumb-img" draggable="false" />
+                            </motion.div>
+                        ))}
                     </motion.div>
                 </div>
 
-                {/* Row 2 */}
-                <div className="galeria-row">
-                    <motion.div style={{ x: x2Scroll }} className="parallax-row-wrapper">
-                        <motion.div
-                            ref={row2Ref}
-                            className="row-inner"
-                            drag="x"
-                            dragConstraints={{ left: -1500, right: 1500 }}
-                            dragElastic={0.05}
-                            whileTap={{ cursor: "grabbing" }}
-                        >
-                            {row2Images.map((img, i) => (
-                                <div key={`row2-${i}`} className="galeria-item">
-                                    <img src={img} alt={`Gallery ${i}`} className="galeria-img" draggable="false" />
-                                </div>
-                            ))}
-                        </motion.div>
-                    </motion.div>
+                {/* Mobile Specific: Staggered Grid */}
+                <div className="galeria-mobile-grid">
+                    <AnimatePresence mode="popLayout">
+                        {filteredImages.map((img, index) => (
+                            <motion.div
+                                key={img.src}
+                                className="mobile-grid-item"
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                layout
+                                transition={{ duration: 0.4 }}
+                            >
+                                <img src={img.src} alt={`Work ${index}`} />
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
                 </div>
             </div>
         </section>
     );
 };
+
 
 export default Galeria;

@@ -1,6 +1,8 @@
 import React from 'react';
 import Hero1 from './subsections/Hero1';
 import Hero2 from './subsections/Hero2';
+import Degr4 from '../../../assets/img/backgrounds/inicio-degr (4).svg';
+import Degr3 from '../../../assets/img/backgrounds/inicio-degr (1).svg';
 import './Hero.scss';
 
 const Hero = () => {
@@ -8,8 +10,8 @@ const Hero = () => {
     <>
       <section id="inicio" className="hero-section">
         <div className="hero-background">
-          <div className="gradient-sphere blue-sphere"></div>
-          <div className="gradient-sphere green-sphere"></div>
+          <img src={Degr4} className="hero-degr degr-1" alt="" />
+          <img src={Degr3} className="hero-degr degr-2" alt="" />
           <div className="grid-overlay"></div>
         </div>
 

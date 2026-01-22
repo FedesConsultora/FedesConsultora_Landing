@@ -1,0 +1,99 @@
+@import '../../styles/_variables.scss';
+
+.header-contact-dropdown {
+    position: absolute;
+    top: calc(100% + 15px);
+    right: 0;
+    width: 400px;
+    background: white;
+    border-radius: 30px;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    z-index: 1002;
+    overflow: hidden;
+    padding: 35px;
+    display: flex;
+    flex-direction: column;
+    transform-origin: top right;
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: -8px;
+        right: 40px;
+        width: 16px;
+        height: 16px;
+        background: white;
+        transform: rotate(45deg);
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        border-left: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .dropdown-header {
+        margin-bottom: 25px;
+
+        h3 {
+            font-family: $font-title;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #19222B;
+            margin: 0 0 10px 0;
+            letter-spacing: -0.02em;
+        }
+
+        p {
+            color: #666;
+            font-size: 0.95rem;
+            margin: 0;
+            line-height: 1.4;
+        }
+    }
+
+    // Adjusting the shared component to fit the dropdown
+    .contacto-form-container {
+        padding: 0;
+
+        .contacto-form {
+            gap: 12px;
+
+            .form-group {
+
+                input,
+                textarea {
+                    padding: 12px 20px;
+                    border-radius: 12px;
+                    font-size: 0.95rem;
+                }
+
+                textarea {
+                    min-height: 90px;
+                }
+            }
+
+            .btn-submit {
+                padding: 14px;
+                font-size: 1rem;
+            }
+        }
+    }
+}
+
+// Mobile adjustment
+@media (max-width: 500px) {
+    .header-contact-dropdown {
+        width: calc(100vw - 40px);
+        max-width: 380px;
+        right: -20px;
+        padding: 30px 20px;
+
+        &::after {
+            right: 60px;
+        }
+
+        .dropdown-header {
+            h3 {
+                font-size: 1.8rem;
+            }
+        }
+    }
+}

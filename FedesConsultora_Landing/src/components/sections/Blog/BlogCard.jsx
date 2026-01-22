@@ -20,3 +20,4 @@ const BlogCard = ({ category, date, title, excerpt, image }) => {
 };
 
 export default BlogCard;
+

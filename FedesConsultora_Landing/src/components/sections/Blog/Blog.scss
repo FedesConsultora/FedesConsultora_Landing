@@ -2,54 +2,110 @@
 
 .blog-section {
     padding: 100px 0;
-    background-color: #FAFAFA; // Slightly off-white for contrast
+    background-color: #ffffff; // Clean white background
     position: relative;
     overflow: hidden;
+    margin-top: 30px;
 
-    .blog-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        margin-bottom: 60px;
-        gap: 30px;
+    .blog-header-main {
+        text-align: center;
+        margin-bottom: 80px;
 
-        .header-info {
-            flex: 1;
+        h2.main-title {
+            font-family: $font-title;
+            font-size: 4.2rem;
+            line-height: 1.05;
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: #19222B;
 
-            h2 {
-                font-size: 3.5rem;
-                line-height: 1.1;
-                margin-top: 20px;
-                max-width: 800px;
-                text-transform: uppercase;
-
-                .dark {
-                    color: #19222B;
-                }
-
-                .blue {
-                    color: #3A54FF;
-                }
+            .gradient-text {
+                background: linear-gradient(90deg, #3A54FF 0%, #00C2FF 100%);
+                background-clip: text;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                display: block; // Force it to a new line if desired, though <br /> is there
             }
         }
+    }
 
-        .btn-blog-top {
-            padding: 15px 45px;
-            border-radius: 50px;
-            border: 1px solid #E5E5E5;
+    .blog-featured {
+        margin-bottom: 80px;
+
+        .featured-card {
             background: white;
-            color: #19222B;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1rem;
-            transition: $transition-base;
-            white-space: nowrap;
-            margin-bottom: 5px; // Balance with h2 baseline
+            border-radius: 40px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.03);
 
-            &:hover {
-                background: #F5F5F5;
-                border-color: #D5D5D5;
-                transform: translateY(-2px);
+            .featured-image {
+                flex: 1.2;
+                height: 480px;
+                padding: 15px; // Small padding to create the inset look if desired, but image is flush in design
+
+                img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    border-radius: 30px;
+                }
+            }
+
+            .featured-content {
+                flex: 1;
+                padding: 40px 60px 40px 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                height: 400px;
+
+                .featured-title {
+                    font-family: $font-title !important;
+                    font-size: 3rem;
+                    line-height: 1.1;
+                    background: linear-gradient(123.75deg, #2F2F2F 40.0%, #707070 91.9%);
+                    background-clip: text;
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    margin-bottom: 25px;
+
+                }
+
+                .featured-excerpt {
+                    font-size: 1.1rem;
+                    color: #666;
+                    line-height: 1.6;
+                    margin: 0;
+                }
+
+                .featured-meta {
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-end;
+                    gap: 12px;
+                    margin-top: 30px;
+
+                    .badge-category {
+                        background: #3A54FF;
+                        color: white;
+                        padding: 8px 18px;
+                        border-radius: 50px;
+                        font-size: 0.85rem;
+                        font-weight: 600;
+                    }
+
+                    .badge-date {
+                        color: #8F8F8F;
+                        font-size: 0.85rem;
+                        font-weight: 500;
+                    }
+                }
             }
         }
     }
@@ -57,20 +113,50 @@
     .blog-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 30px;
+        gap: 40px;
+        row-gap: 60px;
     }
 }
 
 @media (max-width: 1200px) {
     .blog-section {
-        .blog-header h2 {
-            font-size: 2.8rem;
+        .blog-header-main h2.main-title {
+            font-size: 3.2rem;
+        }
+
+        .blog-featured .featured-card {
+            .featured-title {
+                font-size: 2.22rem;
+            }
+
+            .featured-content {
+                padding-right: 40px;
+            }
         }
     }
 }
 
 @media (max-width: 992px) {
     .blog-section {
+        .blog-featured .featured-card {
+            flex-direction: column;
+            align-items: stretch;
+
+            .featured-image {
+                height: 350px;
+                padding: 15px;
+            }
+
+            .featured-content {
+                padding: 30px;
+                height: auto;
+
+                .featured-meta {
+                    justify-content: flex-start;
+                }
+            }
+        }
+
         .blog-grid {
             grid-template-columns: repeat(2, 1fr);
         }
@@ -81,25 +167,17 @@
     .blog-section {
         padding: 60px 0;
 
-        .blog-header {
-            flex-direction: column;
-            align-items: flex-start;
+        .blog-header-main {
             margin-bottom: 40px;
-            gap: 20px;
 
-            h2 {
-                font-size: 2.2rem !important;
-            }
-
-            .btn-blog-top {
-                width: 100%;
-                text-align: center;
+            h2.main-title {
+                font-size: 2.2rem;
             }
         }
 
         .blog-grid {
             grid-template-columns: 1fr;
-            gap: 25px;
+            gap: 30px;
         }
     }
 }

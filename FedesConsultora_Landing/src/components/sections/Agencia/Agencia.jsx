@@ -56,7 +56,7 @@ const Agencia = () => {
 
             {/* Bloque 2: Tu departamento de marketing */}
             <section className="agencia-services-block">
-                <div className="container">
+                <div className="container" style={{ paddingLeft: '60px', paddingRight: '60px' }}>
                     <h2 className="services-title">Tu departamento de <br /> marketing externo.</h2>
 
                     <div className="services-grid">

@@ -1,7 +1,7 @@
 @import '../../../styles/_variables.scss';
 
 .contacto-section {
-    background-color: #3A54FF;
+    background-color: #43718B;
     height: 250px !important;
     min-height: auto !important; // Overriding global 100vh
     display: flex;
@@ -23,7 +23,7 @@
         h2 {
             font-family: $font-title;
             font-size: 3.5rem;
-            font-weight: 700;
+            font-weight: 400;
             color: white;
             margin: 0;
             line-height: 1.1;
@@ -37,15 +37,32 @@
         flex-direction: column;
         gap: 8px;
 
+
+
         p {
+            text-decoration: none;
             font-size: 1.1rem;
             color: rgba(255, 255, 255, 0.9);
             margin: 0;
             line-height: 1.4;
+            cursor: pointer;
 
             strong {
                 color: white;
                 font-weight: 700;
+            }
+
+            &:hover {
+
+                text-decoration: underline;
+
+            }
+
+            .contact-item {
+                color: white;
+                text-decoration: none;
+                text-decoration-color: none;
+                background-color: transparent;
             }
         }
     }
@@ -53,7 +70,7 @@
     .contacto-cta {
         .btn-appointment-white {
             background-color: white;
-            color: #3A54FF;
+            color: #757575;
             padding: 18px 45px;
             border-radius: 100px;
             border: none;
@@ -99,6 +116,15 @@
 
         .contacto-info-items {
             align-items: center;
+
+            p {
+                .contact-item {
+                    color: white;
+                    text-decoration: none;
+                    text-decoration-color: none;
+                    background-color: transparent;
+                }
+            }
         }
     }
 }
@@ -111,6 +137,13 @@
 
         .contacto-info-items p {
             font-size: 1rem;
+
+            .contact-item {
+                color: white;
+                text-decoration: none;
+                text-decoration-color: none;
+                background-color: transparent;
+            }
         }
 
         .contacto-cta .btn-appointment-white {

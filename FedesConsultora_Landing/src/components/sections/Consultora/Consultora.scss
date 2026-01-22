@@ -17,6 +17,11 @@
         align-items: center;
         position: relative;
 
+        @media (max-width: 768px) {
+            min-height: auto;
+            padding: 100px 0;
+        }
+
         .consultora-background {
             position: absolute;
             top: 0;
@@ -65,6 +70,7 @@
             z-index: 2;
             display: flex;
             justify-content: flex-end;
+            max-width: 1400px; // Increased globally for this section to fit 7rem+ text better
 
             @media (max-width: 768px) {
                 justify-content: center;
@@ -72,30 +78,40 @@
         }
 
         .consultora-content {
-            max-width: 700px;
+            max-width: 900px; // Increased from 700px to allow 7rem font
             text-align: right;
             padding-right: 2rem;
 
+            @media (max-width: 1400px) {
+                max-width: 800px;
+            }
+
             @media (max-width: 768px) {
+                max-width: 100%;
                 text-align: center;
                 padding: 0 20px;
             }
 
             .consultora-title {
                 font-family: $font-title;
-                letter-spacing: 4px;
-                font-size: 7rem;
+                font-size: 7.5rem; // Slightly larger for impact on extra large screens
                 font-weight: 800;
-                line-height: 0.8;
+                line-height: 0.85;
                 background: linear-gradient(123.75deg, #2F2F2F 40.0%, #707070 91.9%);
                 background-clip: text;
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 margin-bottom: 2.5rem;
                 margin-top: 4rem;
+                width: 100%;
+
+                @media (max-width: 1600px) {
+                    font-size: 7rem;
+                }
 
                 @media (max-width: 1400px) {
-                    font-size: 7rem;
+                    font-size: 6rem;
+                    line-height: .9;
                 }
 
                 @media (max-width: 1200px) {
@@ -103,9 +119,10 @@
                 }
 
                 @media (max-width: 768px) {
-                    font-size: 4rem;
+                    font-size: 3.5rem;
                     letter-spacing: -1.5px;
                     padding-right: 0;
+                    line-height: 1;
                 }
             }
 
@@ -162,12 +179,18 @@
         padding: 0;
         margin-top: 6rem;
 
+        @media (max-width: 768px) {
+            min-height: auto;
+            padding: 80px 0;
+            margin-top: 0;
+        }
+
         .container {
             width: 100%;
         }
 
         .familiar-title {
-            font-size: 6rem;
+            font-size: 4rem;
             font-weight: 800;
             background: linear-gradient(123.75deg, #2F2F2F 40.04%, #707070 91.9%);
             background-clip: text;
@@ -201,6 +224,13 @@
                 transition: all 0.3s ease;
                 cursor: pointer;
 
+                @media (max-width: 768px) {
+                    padding: 15px 25px;
+                    font-size: 1rem;
+                    border-radius: 20px;
+                    max-width: 90%;
+                }
+
                 &:hover {
                     transform: translateY(-2px);
                     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
@@ -211,42 +241,60 @@
     }
 
     .consultora-engineering-block {
-        min-height: 100vh;
+        min-height: auto;
+        padding: 100px 0;
         width: 100%;
-        flex-shrink: 0;
         display: flex;
         align-items: center;
         background-color: #ffffff;
-        padding: 0;
 
         .container {
             display: flex;
             flex-direction: row;
             align-items: center;
-            justify-content: center;
-            width: 100%;
+            justify-content: space-between;
+            gap: 4rem;
+
+            @media (max-width: 992px) {
+                flex-direction: column;
+                text-align: center;
+                gap: 2rem;
+            }
         }
 
         .engineering-graphic {
             width: 100%;
-            max-width: 500px;
-            margin-bottom: 40px;
+            max-width: 600px;
+            flex: 1;
 
-            .chart-svg {
+            img {
                 width: 100%;
                 height: auto;
-                filter: drop-shadow(0 0 20px rgba(58, 84, 255, 0.15));
+                display: block;
+                filter: drop-shadow(0 20px 40px rgba(58, 84, 255, 0.1));
+            }
+
+            @media (max-width: 992px) {
+                max-width: 100%;
+                order: 2;
             }
         }
 
         .engineering-content {
-            text-align: center;
+            flex: 1;
+            text-align: left;
+
+            @media (max-width: 992px) {
+                text-align: center;
+                order: 1;
+            }
 
             .engineering-main-title {
-                font-size: 5rem;
+                font-size: 3rem;
                 font-weight: 800;
                 line-height: 1.1;
                 letter-spacing: -2px;
+                margin: 0;
 
                 .blue {
                     color: #3A54FF;
@@ -259,8 +307,13 @@
                     -webkit-text-fill-color: transparent;
                 }
 
+                @media (max-width: 1200px) {
+                    font-size: 2.6rem;
+                }
+
                 @media (max-width: 768px) {
-                    font-size: 3rem;
+                    font-size: 2rem;
+                    letter-spacing: -1px;
                 }
             }
         }

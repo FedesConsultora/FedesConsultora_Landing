@@ -5,11 +5,15 @@ import { RxHamburgerMenu, RxCross1 } from 'react-icons/rx';
 import FedesLogo from '../../assets/img/FedesLogo.webp'
 import './Header.scss';
 
+import HeaderContactDropdown from './HeaderContactDropdown';
+
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const location = useLocation();
   const { scrollY } = useScroll();
+  const formRef = useRef(null);
 
   // Ref to track cumulative scroll up
   const scrollUpAmount = useRef(0);
@@ -25,7 +29,24 @@ const Header = () => {
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+    if (isFormOpen) setIsFormOpen(false);
   };
+
+  const toggleForm = (e) => {
+    e.preventDefault();
+    setIsFormOpen(!isFormOpen);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isFormOpen && formRef.current && !formRef.current.contains(event.target) && !event.target.closest('.btn-appointment')) {
+        setIsFormOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isFormOpen]);
 
   // Logic to hide header on scroll down and show on scroll up with a threshold
   useMotionValueEvent(scrollY, "change", (latest) => {
@@ -37,6 +58,7 @@ const Header = () => {
       scrollUpAmount.current = 0; // Reset up-scroll tracking
       if (latest > 150) {
         setIsHidden(true);
+        setIsFormOpen(false); // Close form on scroll
       }
     } else {
       // Scrolling up
@@ -52,6 +74,7 @@ const Header = () => {
   // Close menu when route changes
   useEffect(() => {
     setIsMenuOpen(false);
+    setIsFormOpen(false);
     setIsHidden(false);
     scrollUpAmount.current = 0;
   }, [location]);
@@ -98,9 +121,19 @@ const Header = () => {
       </header>
 
       <div className="header-actions">
-        <a href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ19JF6L1eipDhqCCUQr1FpObl3R5w1WcsYH4wRPfnbOfUsCc2vz07la72glqvWmDA_Svg19CKBU?gv=true" target="_blank" rel="noopener noreferrer" className="btn-appointment">
-          Hablemos
-        </a>
+        <div className="dropdown-anchor" ref={formRef}>
+          <button
+            className={`btn-appointment ${isFormOpen ? 'active' : ''}`}
+            onClick={toggleForm}
+          >
+            Hablemos
+          </button>
+
+          <HeaderContactDropdown
+            isOpen={isFormOpen}
+            onClose={() => setIsFormOpen(false)}
+          />
+        </div>
 
         <button
           className="hamburger-icon-btn"
@@ -110,6 +143,7 @@ const Header = () => {
           {isMenuOpen ? <RxCross1 size={30} /> : <RxHamburgerMenu size={30} />}
         </button>
       </div>
+
 
       <div className={`mobile-menu ${isMenuOpen ? 'active' : ''}`}>
         <nav>
@@ -126,15 +160,25 @@ const Header = () => {
               </li>
             ))}
             <li>
-              <a
-                href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ19JF6L1eipDhqCCUQr1FpObl3R5w1WcsYH4wRPfnbOfUsCc2vz07la72glqvWmDA_Svg19CKBU?gv=true"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mobile-btn-contact"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Hablemos
-              </a>
+              <div className="mobile-dropdown-anchor">
+                <button
+                  className="mobile-btn-contact"
+                  onClick={() => setIsFormOpen(!isFormOpen)}
+                >
+                  Hablemos
+                </button>
+                {isFormOpen && (
+                  <div className="mobile-form-container">
+                    <HeaderContactDropdown
+                      isOpen={isFormOpen}
+                      onClose={() => {
+                        setIsFormOpen(false);
+                        setIsMenuOpen(false);
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             </li>
           </ul>
         </nav>

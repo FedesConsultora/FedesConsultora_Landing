@@ -1,158 +1,127 @@
 @import '../../../styles/_variables.scss';
 
 .nosotros-section {
-    padding: 0;
-    text-align: center;
-    background-image: url('../../../assets/img/backgrounds/fedes-background.webp');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    position: relative;
+    padding: 80px 4vw;
+    background-color: #ffffff;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 70vmax;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
 
-    width: 100%;
-
-    &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
+    .nosotros-content-wrapper {
         width: 100%;
-        height: 100%;
-        background: linear-gradient(0deg, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)),
-            linear-gradient(180deg, rgba(134, 150, 255, 0) 66.06%, rgba(134, 150, 255, 0.2) 100%);
-        z-index: 0;
-    }
-
-    .container {
+        max-width: 1200px;
         position: relative;
         z-index: 1;
     }
 
-    .nosotros-header {
-        margin-bottom: 40px;
-
-        h2 {
-            font-size: 2.8rem; // Reduced from 3.5rem
-            margin-bottom: 6px;
-            line-height: 1.1;
-
-            .dark {
-                color: white;
-            }
-
-            .blue {
-                color: #3A54FF;
-            }
-
-            .mobile-br {
-                display: none;
-            }
-        }
-
-        p {
-            margin: 0 auto;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem; // Reduced from 1rem
-            line-height: 1.1;
-
-        }
-    }
-
-    .leaders-grid {
-        display: flex;
-        justify-content: center;
-        gap: 36px;
-        margin-bottom: 10px;
-        margin-top: 30px;
-        flex-wrap: nowrap;
-        width: 100%;
-
-        .service-card {
-            flex: 0 1 200px;
-            height: 360px;
-            border: none;
-
-
-        }
-    }
-
-    // Parallax Scroll Styles
-    .team-parallax-container {
-        width: 100%;
+    .phase-container {
         display: flex;
         flex-direction: column;
-        gap: 16px;
-        position: relative;
-        z-index: 1;
-        padding: 24px 0;
-        overflow: hidden;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+    }
 
-        .parallax-row {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-            overflow: visible;
+    // Phase 1: Intro Title
+    .phase-1 {
+        .title-intro {
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            color: #19222b;
+            margin-bottom: 24px;
+            max-width: 900px;
 
-            .row-content {
-                display: flex;
-                align-items: center;
-                gap: 45px;
-                padding: 15px 0;
-                white-space: nowrap;
-                will-change: transform;
+            .blue-gradient {
+                background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+                background-clip: text;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
             }
+        }
 
-
-            mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+        .subtitle-intro {
+            font-size: 1.2rem;
+            color: #666;
+            font-weight: 500;
         }
     }
-}
 
-@media (max-width: 1200px) {
-    .nosotros-section {
-        padding: 40px 20px;
+    // Phase 2: Main Content
+    .phase-2 {
+        .nosotros-header {
+            margin-bottom: 40px;
+            text-align: left;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+
+            @media (max-width: 768px) {
+                text-align: center;
+                align-items: center;
+            }
+
+            .title-main {
+                font-size: clamp(3rem, 7vw, 6rem);
+                font-weight: 800;
+                line-height: 1;
+                color: #19222b;
+                margin: 0;
+            }
+
+            .subtitle-main {
+                font-size: 1.1rem;
+                color: #666;
+                line-height: 1.4;
+                margin: 0;
+                max-width: 500px;
+            }
+        }
+
+        .team-parallax-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 40px 0;
+            overflow: hidden;
+
+            .parallax-row {
+                display: flex;
+                width: 100%;
+                overflow: visible;
+
+                .row-content {
+                    display: flex;
+                    align-items: center;
+                    gap: 30px;
+                    padding: 10px 0;
+                    white-space: nowrap;
+                    will-change: transform;
+                }
+
+                mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+            }
+        }
     }
 }
 
 @media (max-width: 768px) {
     .nosotros-section {
-        padding: 30px 15px;
+        padding: 60px 20px;
 
-        .nosotros-header {
-            h2 {
-                font-size: 2.22rem !important;
-
-                .mobile-br {
-                    display: block;
-                }
-            }
-
-            p {
-                font-size: 0.9rem;
-            }
+        .phase-1 .title-intro {
+            font-size: 2.2rem;
         }
 
-        .leaders-grid {
-            flex-wrap: wrap;
-            justify-content: center;
-
-            .service-card {
-                flex: 1 1 100%;
-                max-width: 280px;
-                height: 300px;
-            }
-        }
-
-        .team-parallax-container {
-            gap: 10px;
-
-            .row-content {
-                gap: 10px;
-            }
+        .phase-2 .title-main {
+            font-size: 2.8rem;
         }
     }
 }
