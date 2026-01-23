@@ -3,6 +3,10 @@ import { motion, AnimatePresence, useScroll, useTransform, useSpring, useInView 
 import TeamChip from '../../ui/TeamChip';
 import './Nosotros.scss';
 
+// Import background assets
+import DegrNosotros1 from '../../../assets/img/backgrounds/nosotros-degr (1).svg';
+import DegrNosotros2 from '../../../assets/img/backgrounds/nosotros-degr (2).svg';
+
 // Import Team Photos
 import MartinImg from '../../../assets/img/feders/Martin.webp';
 import EnzoImg from '../../../assets/img/feders/pinotti-enzo_3.webp';
@@ -70,6 +74,10 @@ const Nosotros = () => {
                             exit={{ opacity: 0, y: -100 }}
                             transition={{ duration: 0.8, ease: "easeInOut" }}
                         >
+                            <div className="nosotros-phase1-background">
+                                <img src={DegrNosotros1} className="bg-degr degr-1" alt="" />
+                                <img src={DegrNosotros2} className="bg-degr degr-2" alt="" />
+                            </div>
                             <h2 className="title-intro">
                                 Entendimos que para escalar, <br />
                                 <span className="blue-gradient">una empresa necesita cerebro y corazón</span>

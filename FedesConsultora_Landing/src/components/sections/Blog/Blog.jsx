@@ -3,6 +3,10 @@ import { Link } from 'react-router-dom';
 import BlogCard from './BlogCard';
 import './Blog.scss';
 
+// Import background assets
+import BlogDegr1 from '../../../assets/img/backgrounds/blog-degr (1).svg';
+import BlogDegr2 from '../../../assets/img/backgrounds/blog-degr (2).svg';
+
 // Use a consistent placeholder image for now to match design
 const blogImg = "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800";
 
@@ -62,6 +66,11 @@ const Blog = () => {
 
     return (
         <section id="blog" className="blog-section">
+            <div className="blog-background-top">
+                <img src={BlogDegr1} className="bg-degr degr-top-right" alt="" />
+                <img src={BlogDegr2} className="bg-degr degr-top-left" alt="" />
+            </div>
+
             <div className="container">
                 <div className="blog-header-main">
                     <h2 className="main-title">
@@ -100,6 +109,10 @@ const Blog = () => {
                         />
                     ))}
                 </div>
+            </div>
+
+            <div className="blog-background-bottom">
+                <img src={BlogDegr2} className="bg-degr degr-bottom-center" alt="" />
             </div>
         </section>
     );

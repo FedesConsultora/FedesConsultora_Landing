@@ -2,6 +2,11 @@ import React, { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Galeria.scss';
 
+// Import background assets
+import DegrNosotros1 from '../../../assets/img/backgrounds/galeria-degr (3).svg';
+import DegrNosotros2 from '../../../assets/img/backgrounds/galeria-degr (2).svg';
+import GaleriaGrilla from '../../../assets/img/backgrounds/galeria-grilla.svg';
+
 // Import images
 import img1 from '../../../assets/img/galeria/img.webp';
 import img2 from '../../../assets/img/galeria/img2.webp';
@@ -68,6 +73,12 @@ const Galeria = () => {
 
     return (
         <section className="galeria-section" id="galeria">
+            <div className="galeria-background">
+                <img src={DegrNosotros1} className="bg-degr degr-1" alt="" />
+                <img src={DegrNosotros2} className="bg-degr degr-2" alt="" />
+                <img src={GaleriaGrilla} className="bg-grid" alt="" />
+            </div>
+
             <div className="galeria-grid">
                 {/* Left Side: Text and Filters */}
                 <div className="galeria-header">
