@@ -2,21 +2,26 @@ import React from 'react';
 import './Consultora.scss';
 import Consultora1 from './subsections/Consultora1';
 import EngineeringGraphic from '../../../assets/img/backgrounds/consultora-graph.svg';
+import ConsultoraDegr1 from '../../../assets/img/backgrounds/consultora-degr (1).svg';
+import ConsultoraDegr2 from '../../../assets/img/backgrounds/consultora-degr (2).svg';
+import ConsultoraGrid from '../../../assets/img/backgrounds/consultora-grilla (3).svg';
 
 const Consultora = () => {
     return (
         <section id="consultora" className="consultora-section">
+            <div className="consultora-background">
+                <img src={ConsultoraDegr1} className="bg-degr degr-1" alt="" />
+                <img src={ConsultoraDegr2} className="bg-degr degr-2" alt="" />
+                <img src={ConsultoraGrid} className="bg-grid" alt="" />
+            </div>
+
             {/* Parte 1: El problema de la facturación */}
             <div className="consultora-intro-block">
-                <div className="consultora-background">
-                    <div className="gradient-brush purple-brush"></div>
-                    <div className="grid-overlay"></div>
-                </div>
 
                 <div className="container">
                     <div className="consultora-content">
                         <h2 className="consultora-title">
-                            <span style={{ fontWeight: '400' }}>Facturar no es <br />lo mismo que <br /></span> ganar dinero.
+                            Facturar no es <br />lo mismo que <br /> <span className="highlight">ganar dinero.</span>
                         </h2>
 
                         <p className="consultora-subtitle">

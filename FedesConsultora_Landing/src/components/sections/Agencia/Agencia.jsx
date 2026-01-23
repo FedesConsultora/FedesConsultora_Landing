@@ -3,6 +3,9 @@ import Agencia2 from './subsections/Agencia2';
 import SectionPill from '../../ui/SectionPill';
 import ServiceCard from './ServiceCard';
 import './Agencia.scss';
+import AgenciaDegr1 from '../../../assets/img/backgrounds/agencia-degr (2).svg';
+
+import ConsultoraGrid from '../../../assets/img/backgrounds/consultora-grilla (3).svg';
 
 const Agencia = () => {
     const services = [
@@ -28,12 +31,14 @@ const Agencia = () => {
 
     return (
         <div id="agencia" className="agencia-wrapper">
+            <div className="agencia-background">
+                <img src={AgenciaDegr1} className="bg-degr degr-1" alt="" />
+
+                <img src={ConsultoraGrid} className="bg-grid" alt="" />
+            </div>
+
             {/* Bloque 1: Intro Creativa */}
             <section className="agencia-intro-block">
-                <div className="agencia-background">
-                    <div className="gradient-sphere orange-sphere"></div>
-                    <div className="grid-overlay"></div>
-                </div>
 
                 <div className="container">
                     <div className="agencia-content">
@@ -73,6 +78,9 @@ const Agencia = () => {
                     </div>
                 </div>
             </section>
+
+            {/* Bloque 3: Casos de éxito (Agencia) */}
+            <Agencia1 />
         </div>
     );
 };

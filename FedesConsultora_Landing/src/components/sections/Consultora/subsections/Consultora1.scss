@@ -2,7 +2,7 @@
 
 .consultora-cases-block {
     padding: 120px 0;
-    background-color: #ffffff;
+    background-color: transparent; // Changed from #ffffff to see the grid
     min-height: 100vh;
     display: flex;
     align-items: center;

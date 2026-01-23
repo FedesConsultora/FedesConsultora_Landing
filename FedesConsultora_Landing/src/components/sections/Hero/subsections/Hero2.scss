@@ -75,15 +75,11 @@
     .hero-2-degr {
         position: absolute;
         pointer-events: none;
-        z-index: 0;
-        height: auto;
+        height: 100%;
+        width: 100%;
         opacity: 1;
-        filter: blur(30px);
-        mix-blend-mode: multiply;
 
-        // Mask to avoid sharp edges from SVG viewport - more aggressive ellipse
-        -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 75%);
-        mask-image: radial-gradient(ellipse at center, black 0%, transparent 75%);
+        background-color: transparent;
 
         &.degr-left {
             width: 25vw;
