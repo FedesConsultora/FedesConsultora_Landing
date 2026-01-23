@@ -5,8 +5,31 @@ import EngineeringGraphic from '../../../assets/img/backgrounds/consultora-graph
 import ConsultoraDegr1 from '../../../assets/img/backgrounds/consultora-degr (1).svg';
 import ConsultoraDegr2 from '../../../assets/img/backgrounds/consultora-degr (2).svg';
 import ConsultoraGrid from '../../../assets/img/backgrounds/consultora-grilla (3).svg';
+import { useEffect, useRef, useState } from "react";
+
+
 
 const Consultora = () => {
+
+    const graphRef = useRef(null);
+    const [visible, setVisible] = useState(false);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setVisible(entry.isIntersecting);
+            },
+            {
+                threshold: 0.3, // cuando se ve ~30%
+            }
+        );
+
+        if (graphRef.current) {
+            observer.observe(graphRef.current);
+        }
+
+        return () => observer.disconnect();
+    }, []);
     return (
         <section id="consultora" className="consultora-section">
             <div className="consultora-background">
@@ -53,8 +76,99 @@ const Consultora = () => {
             {/* Bloque 3: No improvisamos / Ingeniería */}
             <div className="consultora-engineering-block">
                 <div className="container">
-                    <div className="engineering-graphic">
-                        <img src={EngineeringGraphic} alt="Gráfico" />
+                    <div className={`engineering-graphic ${visible ? "is-visible" : ""}`} ref={graphRef}>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="746"
+                            height="476"
+                            viewBox="0 0 746 476"
+                            fill="none"
+                            className="chart"
+                        >
+                            <defs>
+                                <radialGradient
+                                    id="paint0_radial_364_797"
+                                    cx="0"
+                                    cy="0"
+                                    r="1"
+                                    gradientUnits="userSpaceOnUse"
+                                    gradientTransform="translate(363.678 81.8939) rotate(89.7632) scale(417.245 355.177)"
+                                >
+                                    <stop stopColor="#3B82F6" />
+                                    <stop offset="1" stopColor="#3AB3FF" stopOpacity="0" />
+                                </radialGradient>
+
+                                <radialGradient
+                                    id="paint1_radial_364_797"
+                                    cx="0"
+                                    cy="0"
+                                    r="1"
+                                    gradientUnits="userSpaceOnUse"
+                                    gradientTransform="translate(346.437 169.825) rotate(-20.7231) scale(423.906 114.677)"
+                                >
+                                    <stop stopColor="#3A54FF" />
+                                    <stop offset="0.725952" stopColor="#3A54FF" />
+                                    <stop offset="1" stopColor="#3A54FF" stopOpacity="0" />
+                                </radialGradient>
+                            </defs>
+
+
+                            <path
+                                className="chart-fill"
+                                d="
+      M3 352.584
+      L192.692 247.411
+      L304.761 259.48
+      L389.244 157.072
+      L463.382 207.756
+      L528.899 138.79
+      L640.968 119.825
+      L742.916 7.7561
+      V472.998
+      H3
+      Z
+    "
+                                fill="url(#paint0_radial_364_797)"
+                            />
+
+
+                            <path
+                                className="chart-line"
+                                d="
+      M3 352.584
+      L192.692 247.411
+      L304.761 259.48
+      L389.244 157.072
+      L463.382 207.756
+      L528.899 138.79
+      L640.968 119.825
+      L742.916 7.7561
+    "
+                                stroke="url(#paint1_radial_364_797)"
+                                strokeWidth="6"
+                                strokeLinecap="round"
+                                fill="none"
+                            />
+
+                            <circle
+                                className="chart-dot"
+                                cx="742.916"
+                                cy="7.7561"
+                                r="8"
+                                fill="url(#paint1_radial_364_797)"
+                            />
+
+
+                            <path
+                                className="chart-edge"
+                                d="M742.916 7.7561 V472.998"
+                                stroke="url(#paint1_radial_364_797)"
+                                strokeWidth="6"
+                                strokeLinecap="round"
+                                fill="none"
+                            />
+                        </svg>
+
                     </div>
                     <div className="engineering-content">
                         <h2 className="engineering-main-title">
@@ -72,3 +186,6 @@ const Consultora = () => {
 };
 
 export default Consultora;
+
+
+

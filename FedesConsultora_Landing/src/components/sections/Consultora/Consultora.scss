@@ -259,17 +259,43 @@
             max-width: 600px;
             flex: 1;
 
-            img {
-                width: 100%;
-                height: auto;
-                display: block;
-                filter: drop-shadow(0 20px 40px rgba(58, 84, 255, 0.1));
+            .chart-line {
+                stroke-dasharray: 1200;
+                stroke-dashoffset: 1200;
             }
 
-            @media (max-width: 992px) {
-                max-width: 100%;
-                order: 2;
+            .chart-fill {
+                clip-path: inset(100% 0 0 0);
             }
+
+            .chart-dot {
+                opacity: 1;
+                filter: drop-shadow(0 0 5px rgba(58, 84, 255, 0.4));
+            }
+
+            &.is-visible {
+                .chart-line {
+                    animation: draw-line 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+                }
+
+                .chart-fill {
+                    animation: reveal-fill 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+                    animation-delay: 0.1s;
+                }
+            }
+
+            @keyframes draw-line {
+                to {
+                    stroke-dashoffset: 0;
+                }
+            }
+
+            @keyframes reveal-fill {
+                to {
+                    clip-path: inset(0 0 0 0);
+                }
+            }
+
         }
 
         .engineering-content {

@@ -1,5 +1,11 @@
 @import '../../../styles/_variables.scss';
 
+.blog-card-link {
+    text-decoration: none;
+    display: block;
+    color: inherit;
+}
+
 .blog-card {
     background: transparent;
     border-radius: 0;

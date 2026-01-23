@@ -88,6 +88,12 @@
     .blog-featured {
         margin-bottom: 80px;
 
+        .featured-card-link {
+            text-decoration: none;
+            display: block;
+            color: inherit;
+        }
+
         .featured-card {
             background: white;
             border-radius: 40px;
