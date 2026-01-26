@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue } from 'framer-motion';
 import './Galeria.scss';
 
 // Import background assets
@@ -42,6 +42,9 @@ const Galeria = () => {
     const [virtualIndex, setVirtualIndex] = useState(0);
     const [containerWidth, setContainerWidth] = useState(0);
     const [imageAspects, setImageAspects] = useState({});
+    const [lastX, setLastX] = useState(0); // For snap detection
+    const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+    const carouselX = useMotionValue(0);
 
     // Detect image aspect ratios
     useEffect(() => {
@@ -95,12 +98,12 @@ const Galeria = () => {
 
     // Auto-rotate main image every 5 seconds
     useEffect(() => {
-        if (filteredImages.length === 0) return;
+        if (filteredImages.length === 0 || !isAutoPlaying) return;
         const timer = setInterval(() => {
             setVirtualIndex(prev => prev + 1);
         }, 5000);
         return () => clearInterval(timer);
-    }, [filteredImages.length]);
+    }, [filteredImages.length, isAutoPlaying]);
 
     // Synchronize currentIndex
     useEffect(() => {
@@ -109,10 +112,8 @@ const Galeria = () => {
     }, [virtualIndex, filteredImages.length]);
 
     // Handle virtual index loop reset silently
-    // We do this by checking if we are too far from the center 5-block range
     const handleTransitionEnd = () => {
         const len = filteredImages.length;
-        // If we wander into the first 2 blocks or last 2 blocks, snap back to center
         if (virtualIndex >= len * 7 || virtualIndex < len * 3) {
             const offset = virtualIndex % len;
             setVirtualIndex(len * 5 + offset);
@@ -124,16 +125,42 @@ const Galeria = () => {
         if (carouselInnerRef.current && carouselRef.current) {
             const innerWidth = carouselInnerRef.current.scrollWidth;
             const outerWidth = carouselRef.current.offsetWidth;
-            // Allow dragging but keep it constrained naturally
             setDragConstraints({ left: -(innerWidth - outerWidth), right: 0 });
         }
     }, [reversedFilteredImages]);
 
     const handleThumbnailClick = (originalIndex) => {
         const len = filteredImages.length;
-        // Find the index of the clicked item that is closest to current virtualIndex
         const currentBase = Math.floor(virtualIndex / len) * len;
         setVirtualIndex(currentBase + originalIndex);
+        setIsAutoPlaying(true);
+    };
+
+    const targetX = useMemo(() => {
+        if (containerWidth === 0) return 0;
+        return containerWidth - 520 - 200 - ((reversedFilteredImages.length - 1 - virtualIndex) * 536);
+    }, [containerWidth, reversedFilteredImages.length, virtualIndex]);
+
+    const isSnap = Math.abs(targetX - lastX) > 1000;
+
+    useEffect(() => {
+        setLastX(targetX);
+    }, [targetX]);
+
+    const handleDragStart = () => {
+        setIsAutoPlaying(false);
+    };
+
+    const handleDragEnd = () => {
+        const currentX = carouselX.get();
+        // Formula to find virtualIndex from X:
+        // x = containerWidth - 720 - ((reversedFilteredImages.length - 1 - virtualIndex) * 536)
+        // (containerWidth - 720 - x) / 536 = reversedFilteredImages.length - 1 - virtualIndex
+        // virtualIndex = reversedFilteredImages.length - 1 - ((containerWidth - 720 - x) / 536)
+
+        const deltaItems = (containerWidth - 720 - currentX) / 536;
+        const newVirtualIndex = Math.round(reversedFilteredImages.length - 1 - deltaItems);
+        setVirtualIndex(newVirtualIndex);
     };
 
     return (
@@ -198,14 +225,13 @@ const Galeria = () => {
                         className="carousel-inner"
                         drag="x"
                         dragConstraints={dragConstraints}
+                        style={{ x: carouselX }}
                         whileTap={{ cursor: 'grabbing' }}
-                        animate={{
-                            x: containerWidth > 0
-                                ? containerWidth - 520 - ((reversedFilteredImages.length - 1 - virtualIndex) * 536)
-                                : -((reversedFilteredImages.length - 1 - virtualIndex) * 536)
-                        }}
-                        transition={{ type: "spring", stiffness: 100, damping: 20, restDelta: 0.01 }}
+                        animate={{ x: targetX }}
+                        transition={isSnap ? { duration: 0 } : { type: "spring", stiffness: 100, damping: 20, restDelta: 0.01 }}
                         onAnimationComplete={handleTransitionEnd}
+                        onDragStart={handleDragStart}
+                        onDragEnd={handleDragEnd}
                     >
                         {reversedFilteredImages.map((img, index) => {
                             const originalIndex = filteredImages.findIndex(fi => fi.src === img.src);
@@ -217,7 +243,7 @@ const Galeria = () => {
                                     className={`thumbnail-item ${isActive ? 'active' : ''} ${isVertical ? 'is-portrait' : 'is-landscape'}`}
                                     onClick={() => handleThumbnailClick(originalIndex)}
                                     animate={{
-                                        height: (isActive && isVertical) ? '80vh' : '320px',
+                                        height: (isActive && isVertical) ? '84vh' : '320px',
                                     }}
                                     transition={{ type: "spring", stiffness: 100, damping: 20 }}
                                     style={{ transformOrigin: 'bottom' }}
