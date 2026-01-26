@@ -11,6 +11,11 @@
     background-color: #ffffff;
     padding: 80px 20px;
 
+    @media (max-width: 768px) {
+        padding: 0px 20px;
+
+    }
+
     .hero-1-container {
         max-width: 1000px;
         width: 100%;

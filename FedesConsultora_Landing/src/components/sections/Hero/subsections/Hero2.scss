@@ -11,11 +11,22 @@
     background-color: #ffffff;
     padding: 80px 20px;
 
+
+    @media (max-width: 768px) {
+        padding: 0px 20px !important;
+
+    }
+
     .hero-2-container {
         max-width: 1000px;
         width: 100%;
         text-align: center;
         z-index: 1;
+
+        @media (max-width: 768px) {
+            padding: 0px 20px;
+
+        }
     }
 
     .hero-2-content {
@@ -67,6 +78,11 @@
                     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
                     color: #19222B;
                     border-color: rgba(58, 84, 255, 0.1);
+                }
+
+                @media (max-width: 768px) {
+                    padding: 10px 26px;
+
                 }
             }
         }

@@ -187,6 +187,10 @@
         height: 100%; // Fill to top so children can grow anywhere inside grid
         pointer-events: none; // Only thumbnails should be interactive
 
+        @media (max-width: 992px) {
+            display: none !important;
+        }
+
         .carousel-inner {
             pointer-events: auto;
             display: flex;
@@ -307,7 +311,7 @@
             margin-left: 0;
 
             .galeria-title {
-                font-size: 2.8rem;
+                font-size: 3.5rem;
                 line-height: 1;
             }
         }

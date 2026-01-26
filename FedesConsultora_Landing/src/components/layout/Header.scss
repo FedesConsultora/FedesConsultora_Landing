@@ -17,8 +17,18 @@
     }
 
     @media (max-width: 992px) {
-        padding: 0 20px;
-        top: 10px;
+        padding: 12px 20px;
+        top: 0;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+
+
+        border-bottom-left-radius: 5px;
+        border-bottom-right-radius: 5px;
+
+        // Subtle top highlight for the "bubble" look
+        border-top: 1px solid rgba(255, 255, 255, 0.3);
     }
 
     .logo {

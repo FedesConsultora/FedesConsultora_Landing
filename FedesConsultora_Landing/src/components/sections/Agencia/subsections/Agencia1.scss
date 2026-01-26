@@ -32,6 +32,10 @@
                 opacity: 1;
                 filter: blur(30px);
             }
+
+            @media (max-width: 768px) {
+                display: none !important;
+            }
         }
     }
 
