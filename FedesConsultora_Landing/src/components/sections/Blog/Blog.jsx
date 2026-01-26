@@ -59,7 +59,7 @@ const Blog = () => {
             <div className="container">
                 <div className="blog-header-main">
                     <h2 className="main-title">
-                        Lo que aprendemos en la trinchera, <br />
+                        Lo que aprendimos haciendo, <br />
                         <span className="gradient-text">lo compartimos acá.</span>
                     </h2>
                 </div>

@@ -6,10 +6,10 @@ const Agencia1 = () => {
     const successCases = [
         {
             id: 1,
-            tag: "Ganador del premio mercurio 2024",
-            client: "KronenVet",
+            tag: "Ganadores del premio mercurio 2024",
+            client: "KrönenVet",
             stat: "+40%",
-            result: "Rentabilidad neta en 6 meses.",
+            result: "de rentabilidad neta en 6 meses.",
             imageUrl: "" // Temporary placeholder
         }
     ];

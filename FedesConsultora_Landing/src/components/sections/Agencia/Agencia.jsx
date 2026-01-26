@@ -10,21 +10,21 @@ import ConsultoraGrid from '../../../assets/img/backgrounds/consultora-grilla (3
 const Agencia = () => {
     const services = [
         {
-            title: "Paid Media [Ads]",
+            title: "Paid media (ads)",
             tag: "Growth",
-            desc: "Ponemos tu mensaje frente a quien quiere comprar. Meta & Google Ads con foco en ROI.",
+            desc: "Ponemos tu mensaje frente a quienes ya están listos para comprar. Meta y Google Ads con foco en ROI",
             image: ""
         },
         {
-            title: "Branding & Diseño",
+            title: "Branding y diseño",
             tag: "Identidad",
-            desc: "Identidades visuales que construyen autoridad inmediata.",
+            desc: "Identidades visuales que ordenan, diferencian y construyen autoridad inmediata.",
             image: ""
         },
         {
-            title: "Social & Content",
+            title: "Social y content",
             tag: "Engage",
-            desc: "Estrategias de contenido vertical (Reels/TikTok) para retener audiencia.",
+            desc: "Estrategias de contenido vertical (reels de Instagram y videos de TikTok) para captar y retener la audiencia.",
             image: ""
         }
     ];
@@ -47,12 +47,11 @@ const Agencia = () => {
                         </h2>
 
                         <p className="agencia-subtitle">
-                            Branding, Contenido y Paid Media para marcas que quieren liderar, no solo competir.
-                        </p>
+                            Branding, contenido y paid media pensados para que tu marca deje de competir y empiece a liderar.                        </p>
 
                         <div className="agencia-cta">
                             <a href="#planes" className="btn-planes">
-                                Mira nuestros planes
+                                Ver nuestros planes
                             </a>
                         </div>
                     </div>

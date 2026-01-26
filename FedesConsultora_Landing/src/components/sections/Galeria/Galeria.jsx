@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Galeria.scss';
 
@@ -17,19 +17,19 @@ import img6 from '../../../assets/img/galeria/img6.webp';
 import img7 from '../../../assets/img/galeria/img7.webp';
 
 const allImagesData = [
-    { src: img1, category: 'consultoria' },
-    { src: img2, category: 'agencia' },
+    { src: img1, category: 'exitos' },
+    { src: img2, category: 'testimonios' },
     { src: img3, category: 'producciones' },
-    { src: img4, category: 'consultoria' },
-    { src: img5, category: 'agencia' },
+    { src: img4, category: 'exitos' },
+    { src: img5, category: 'testimonios' },
     { src: img6, category: 'producciones' },
-    { src: img7, category: 'agencia' },
+    { src: img7, category: 'testimonios' },
 ];
 
 const categories = [
     { id: 'todo', label: 'Todo' },
-    { id: 'consultoria', label: 'Consultoría' },
-    { id: 'agencia', label: 'Agencia' },
+    { id: 'testimonios', label: 'Testimonios' },
+    { id: 'exitos', label: 'Casos de éxito' },
     { id: 'producciones', label: 'Producciones' }
 ];
 
@@ -40,9 +40,11 @@ const Galeria = () => {
     const carouselRef = useRef(null);
     const carouselInnerRef = useRef(null);
 
-    const filteredImages = activeCategory === 'todo'
-        ? allImagesData
-        : allImagesData.filter(img => img.category === activeCategory);
+    const filteredImages = useMemo(() => {
+        return activeCategory === 'todo'
+            ? allImagesData
+            : allImagesData.filter(img => img.category === activeCategory);
+    }, [activeCategory]);
 
     // Reset index when category changes
     useEffect(() => {

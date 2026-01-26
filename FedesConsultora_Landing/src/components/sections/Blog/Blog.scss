@@ -76,7 +76,7 @@
             color: #19222B;
 
             .gradient-text {
-                background: linear-gradient(90deg, #3A54FF 0%, #00C2FF 100%);
+                background: linear-gradient(90deg, $primary-color 0%, #00C2FF 100%);
                 background-clip: text;
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
@@ -153,7 +153,7 @@
                     margin-top: 30px;
 
                     .badge-category {
-                        background: #3A54FF;
+                        background: $primary-color;
                         color: white;
                         padding: 8px 18px;
                         border-radius: 50px;

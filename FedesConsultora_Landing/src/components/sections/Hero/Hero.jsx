@@ -16,8 +16,8 @@ const Hero = () => {
         </div>
 
         <div className="container">
-          <h1 className='hero-title'>¿Orden o <br />Clientes?</h1>
-          <p className='hero-subtitle'>En Fedes atacamos las dos <br />únicas razones por las que <br /> tu negocio no escala.</p>
+          <h1 className='hero-title'>¿Orden o <br />clientes?</h1>
+          <p className='hero-subtitle'>Trabajamos sobre las dos razones reales <br /> por las que un negocio no escala.</p>
         </div>
 
         <div className="hero-floating-icon">

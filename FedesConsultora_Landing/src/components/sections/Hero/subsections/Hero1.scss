@@ -47,10 +47,11 @@
 
             .text-part-en,
             .text-part-rest {
-                background: linear-gradient(123.75deg, #2F2F2F 40.04%, #707070 91.9%);
-                background-clip: text;
+                background: linear-gradient(123.75deg, #2F2F2F 0%, #707070 100%);
                 -webkit-background-clip: text;
+                background-clip: text;
                 -webkit-text-fill-color: transparent;
+                display: inline-block;
                 position: relative;
                 z-index: 1;
             }
@@ -138,8 +139,9 @@
             }
 
             .solution-btn {
+                text-decoration: none;
                 align-self: flex-start;
-                background-color: #3A54FF;
+                background-color: $primary-color;
                 color: white;
                 padding: 14px 32px;
                 border-radius: 100px;

@@ -79,10 +79,11 @@ const Nosotros = () => {
                                 <img src={DegrNosotros2} className="bg-degr degr-2" alt="" />
                             </div>
                             <h2 className="title-intro">
-                                Entendimos que para escalar, <br />
+                                Entendimos que, para escalar, <br />
                                 <span className="blue-gradient">una empresa necesita cerebro y corazón</span>
                             </h2>
-                            <p className="subtitle-intro">Eso somos.</p>
+                            <p className="subtitle-intro">Desde ahí trabajamos.
+                            </p>
                         </motion.div>
                     ) : (
                         <motion.div
@@ -93,10 +94,9 @@ const Nosotros = () => {
                             transition={{ duration: 0.8, ease: "easeOut" }}
                         >
                             <div className="nosotros-header">
-                                <h2 className="title-main">Estrategas y <br /> Creativos.</h2>
+                                <h2 className="title-main">Estrategas y <br /> creativos.</h2>
                                 <p className="subtitle-main">
-                                    La historia de dos Fedes y un equipo <br />
-                                    obsesionado con la excelencia.
+                                    Dos Fedes y un equipo multidisciplinario obsesionado con la excelencia.
                                 </p>
                             </div>
 

@@ -98,6 +98,7 @@
                 -webkit-background-clip: text;
                 background-clip: text;
                 -webkit-text-fill-color: transparent;
+                display: inline-block;
                 margin-bottom: 2rem;
                 margin-top: 6rem;
                 letter-spacing: -2px;
@@ -183,10 +184,11 @@
         .familiar-title {
             font-size: 4rem;
             font-weight: 800;
-            background: linear-gradient(123.75deg, #2F2F2F 40.04%, #707070 91.9%);
-            background-clip: text;
+            background: linear-gradient(123.75deg, #2F2F2F 0%, #707070 100%);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
+            display: inline-block;
             margin-bottom: 50px;
             letter-spacing: -2px;
 
@@ -316,7 +318,7 @@
                 margin: 0;
 
                 .blue {
-                    color: #3A54FF;
+                    color: $primary-color;
                 }
 
                 .dark {

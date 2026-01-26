@@ -17,7 +17,7 @@
 
     &.blue {
         height: 230px;
-        background: linear-gradient(90deg, #8696FF 0%, #3A54FF 100%);
+        background: linear-gradient(90deg, #8696FF 0%, $primary-color 100%);
 
         .stats-container {
             display: flex;

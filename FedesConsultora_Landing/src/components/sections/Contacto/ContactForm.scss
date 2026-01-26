@@ -8,7 +8,7 @@
         font-size: 1rem;
         font-weight: 700;
         letter-spacing: 2px;
-        color: #3A54FF;
+        color: $primary-color;
         margin-bottom: 25px;
         text-transform: uppercase;
     }
@@ -33,7 +33,7 @@
                 outline: none;
 
                 &:focus {
-                    border-color: #3A54FF;
+                    border-color: $primary-color;
                     background: white;
                     box-shadow: 0 0 0 4px rgba(58, 84, 255, 0.05);
                 }
@@ -78,7 +78,7 @@
 
         .btn-submit {
             margin-top: 5px;
-            background: #3A54FF;
+            background: $primary-color;
             color: white;
             border: none;
             padding: 15px;

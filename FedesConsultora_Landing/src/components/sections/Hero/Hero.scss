@@ -70,10 +70,11 @@
     font-weight: 800;
     line-height: 0.9;
     margin-bottom: 1rem;
-    background: linear-gradient(123.75deg, #2F2F2F 40.04%, #707070 91.9%);
-    background-clip: text;
+    background: linear-gradient(123.75deg, #2F2F2F 0%, #707070 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
+    display: inline-block;
     font-family: $font-title;
 
 
@@ -94,6 +95,7 @@
     max-width: 450px;
     margin-left: 1rem;
     margin-bottom: 0;
+    font-weight: 300 !important;
 
     @media (max-width: 768px) {
       font-size: 1rem;
@@ -142,7 +144,7 @@
       transform: translate(-50%, -50%);
       width: 60px;
       height: 60px;
-      background-color: #3A54FF;
+      background-color: $primary-color;
       border-radius: 50%;
       padding: 12px;
 

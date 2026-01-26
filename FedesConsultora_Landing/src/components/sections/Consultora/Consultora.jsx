@@ -48,12 +48,13 @@ const Consultora = () => {
                         </h2>
 
                         <p className="consultora-subtitle">
-                            Si tu empresa crece pero tu tranquilidad baja, tenés un problema de estructura, no de ventas. Te ayudamos a dejar de apagar incendios y empezar a dirigir.
+                            Si tu empresa crece pero tu tranquilidad baja, el problema no es la venta: es la estructura.
+                            Te ayudamos a dejar de apagar incendios y empezar a dirigir.
                         </p>
 
                         <div className="consultora-cta">
                             <a href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ19JF6L1eipDhqCCUQr1FpObl3R5w1WcsYH4wRPfnbOfUsCc2vz07la72glqvWmDA_Svg19CKBU?gv=true" target="_blank" rel="noopener noreferrer" className="btn-diagnostic">
-                                Agenda tu sesión de diagnóstico
+                                Agendar sesión de diagnóstico
                             </a>
                         </div>
                     </div>
@@ -95,7 +96,7 @@ const Consultora = () => {
                                     gradientTransform="translate(363.678 81.8939) rotate(89.7632) scale(417.245 355.177)"
                                 >
                                     <stop stopColor="#3B82F6" />
-                                    <stop offset="1" stopColor="#3AB3FF" stopOpacity="0" />
+                                    <stop offset="1" stopColor="#1B5EBF" stopOpacity="0" />
                                 </radialGradient>
 
                                 <radialGradient
@@ -106,9 +107,9 @@ const Consultora = () => {
                                     gradientUnits="userSpaceOnUse"
                                     gradientTransform="translate(346.437 169.825) rotate(-20.7231) scale(423.906 114.677)"
                                 >
-                                    <stop stopColor="#3A54FF" />
-                                    <stop offset="0.725952" stopColor="#3A54FF" />
-                                    <stop offset="1" stopColor="#3A54FF" stopOpacity="0" />
+                                    <stop stopColor="#1B5EBF" />
+                                    <stop offset="0.725952" stopColor="#1B5EBF" />
+                                    <stop offset="1" stopColor="#1B5EBF" stopOpacity="0" />
                                 </radialGradient>
                             </defs>
 

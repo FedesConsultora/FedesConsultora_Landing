@@ -129,7 +129,7 @@
                 top: 50%;
                 left: 55%;
                 transform: translate(-50%, -50%);
-                border-left: 15px solid #3A54FF;
+                border-left: 15px solid $primary-color;
                 border-top: 10px solid transparent;
                 border-bottom: 10px solid transparent;
             }
@@ -183,14 +183,14 @@
 
         .case-result {
             font-size: 1.25rem;
-            color: #3A54FF;
+            color: $primary-color;
             font-weight: 600;
             margin-bottom: 40px;
             letter-spacing: -0.5px;
         }
 
         .btn-view-gallery {
-            background-color: #3A54FF;
+            background-color: $primary-color;
             color: white;
             padding: 15px 35px;
             border-radius: 100px;

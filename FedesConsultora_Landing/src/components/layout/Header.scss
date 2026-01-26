@@ -74,7 +74,7 @@
             a {
                 text-decoration: none;
                 color: #373737;
-                font-weight: 700;
+                font-weight: 500;
                 font-size: 0.85rem;
                 transition: all 0.3s ease;
                 padding: 8px 18px;
@@ -86,8 +86,8 @@
                 }
 
                 &.active {
-                    color: #3A54FF;
-                    border-color: #3A54FF;
+                    border: 3px solid;
+                    border-color: $primary-color;
                     background: transparent;
                 }
             }
@@ -108,7 +108,7 @@
     }
 
     .btn-appointment {
-        background-color: #3A54FF;
+        background-color: $primary-color;
         color: white;
         padding: 10px 25px;
         border-radius: 50px;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import FedesLogoDegr from '../../../../assets/img/logo-degr.svg'
 import './Hero1.scss'
 
@@ -117,16 +118,17 @@ const Hero1 = () => {
                 <div className="hero-1-cards">
                     <div className="solution-card">
                         <div className="card-image-placeholder"></div>
-                        <h3>¿Sientes que tu negocio te atrapa?</h3>
-                        <p>Ventas desordenadas, rentabilidad baja, dependes de estar presente 24/7.</p>
-                        <button className="solution-btn">Necesito orden</button>
+                        <h3>¿Sentís que tu negocio te atrapa?
+                        </h3>
+                        <p>Ventas desordenadas, rentabilidad baja, dependencia de estar presente 24/7.</p>
+                        <Link to="/consultora" className="solution-btn">Necesito orden</Link>
                     </div>
 
                     <div className="solution-card">
                         <div className="card-image-placeholder"></div>
-                        <h3>¿Sientes que el mercado te ignora?</h3>
-                        <p>Marca anticuada, anuncios que no convierten, competencia ganando terreno.</p>
-                        <button className="solution-btn">Necesito ventas</button>
+                        <h3>¿Sentís que el mercado te ignora?</h3>
+                        <p>Marca desactualizada, anuncios que no convierten, competencia que avanza.</p>
+                        <Link to="/agencia" className="solution-btn">Necesito clientes</Link>
                     </div>
                 </div>
             </div>
