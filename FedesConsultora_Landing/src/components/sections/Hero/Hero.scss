@@ -20,14 +20,14 @@
       position: absolute;
       pointer-events: none;
       z-index: 0;
-
+      // Mask to fade out the SVG edges smoothly
+      mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
 
       &.degr-1 {
         bottom: 5%;
         left: 10%;
         width: 85vw;
         height: auto;
-
       }
 
       &.degr-2 {
@@ -35,7 +35,6 @@
         left: 0%;
         width: 100vw;
         height: auto;
-
       }
     }
 
@@ -46,12 +45,16 @@
       width: 200%;
       height: 100%;
       background-image:
-        linear-gradient(to right, rgb(255, 255, 255) 0.5px, transparent 0.5px),
-        linear-gradient(to bottom, rgb(255, 255, 255) 0.5px, transparent 0.5px);
-      background-size: 16px 16px; // Smaller cells as requested
+        linear-gradient(to right, rgba(255, 255, 255, 0.5) 0.5px, transparent 0.5px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.5) 0.5px, transparent 0.5px);
+      background-size: 16px 16px;
       transform-origin: center center;
       transform: perspective(300px) rotateX(60deg) scale(3);
-      mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 70%);
+      // Smooth fade for the grid edges
+      mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 10%, rgba(0, 0, 0, 0) 70%),
+        linear-gradient(to right, transparent, black 20%, black 80%, transparent);
+      -webkit-mask-composite: source-in;
+      mask-composite: intersect;
       pointer-events: none;
       z-index: 1;
     }

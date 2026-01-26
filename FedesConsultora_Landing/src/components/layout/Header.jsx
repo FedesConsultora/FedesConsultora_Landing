@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { RxHamburgerMenu, RxCross1 } from 'react-icons/rx';
-import FedesLogo from '../../assets/img/FedesLogo.webp'
+import FedesLogo from '../../assets/img/Logo.svg'
 import './Header.scss';
 
 import HeaderContactDropdown from './HeaderContactDropdown';

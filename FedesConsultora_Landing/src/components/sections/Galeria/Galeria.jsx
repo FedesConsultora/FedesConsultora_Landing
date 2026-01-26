@@ -39,6 +39,43 @@ const Galeria = () => {
     const [dragConstraints, setDragConstraints] = useState({ left: 0, right: 0 });
     const carouselRef = useRef(null);
     const carouselInnerRef = useRef(null);
+    const [virtualIndex, setVirtualIndex] = useState(0);
+    const [containerWidth, setContainerWidth] = useState(0);
+    const [imageAspects, setImageAspects] = useState({});
+
+    // Detect image aspect ratios
+    useEffect(() => {
+        allImagesData.forEach((img) => {
+            const i = new Image();
+            i.onload = () => {
+                setImageAspects(prev => ({
+                    ...prev,
+                    [img.src]: i.height > i.width
+                }));
+            };
+            i.src = img.src;
+        });
+    }, []);
+
+    // Update container width for alignment
+    useEffect(() => {
+        const updateWidth = () => {
+            if (carouselRef.current) setContainerWidth(carouselRef.current.offsetWidth);
+        };
+        updateWidth();
+        window.addEventListener('resize', updateWidth);
+        return () => window.removeEventListener('resize', updateWidth);
+    }, []);
+
+    // Higher repetition buffer for safer seamless looping
+    const reversedFilteredImages = useMemo(() => {
+        const filtered = activeCategory === 'todo'
+            ? allImagesData
+            : allImagesData.filter(img => img.category === activeCategory);
+        const reversed = [...filtered].reverse();
+        // 10x repetition ensures we are almost never near the real edges during normal use
+        return Array(10).fill(reversed).flat();
+    }, [activeCategory]);
 
     const filteredImages = useMemo(() => {
         return activeCategory === 'todo'
@@ -48,29 +85,55 @@ const Galeria = () => {
 
     // Reset index when category changes
     useEffect(() => {
-        setCurrentIndex(0);
-    }, [activeCategory]);
+        const len = filteredImages.length;
+        if (len > 0) {
+            setCurrentIndex(0);
+            // Start roughly in the middle of the 10x buffer
+            setVirtualIndex(len * 5);
+        }
+    }, [activeCategory, filteredImages.length]);
 
     // Auto-rotate main image every 5 seconds
     useEffect(() => {
         if (filteredImages.length === 0) return;
         const timer = setInterval(() => {
-            setCurrentIndex((prev) => (prev + 1) % filteredImages.length);
+            setVirtualIndex(prev => prev + 1);
         }, 5000);
         return () => clearInterval(timer);
     }, [filteredImages.length]);
+
+    // Synchronize currentIndex
+    useEffect(() => {
+        if (filteredImages.length === 0) return;
+        setCurrentIndex(virtualIndex % filteredImages.length);
+    }, [virtualIndex, filteredImages.length]);
+
+    // Handle virtual index loop reset silently
+    // We do this by checking if we are too far from the center 5-block range
+    const handleTransitionEnd = () => {
+        const len = filteredImages.length;
+        // If we wander into the first 2 blocks or last 2 blocks, snap back to center
+        if (virtualIndex >= len * 7 || virtualIndex < len * 3) {
+            const offset = virtualIndex % len;
+            setVirtualIndex(len * 5 + offset);
+        }
+    };
 
     // Calculate drag constraints for the carousel
     useEffect(() => {
         if (carouselInnerRef.current && carouselRef.current) {
             const innerWidth = carouselInnerRef.current.scrollWidth;
             const outerWidth = carouselRef.current.offsetWidth;
-            setDragConstraints({ left: Math.min(0, -(innerWidth - outerWidth)), right: 0 });
+            // Allow dragging but keep it constrained naturally
+            setDragConstraints({ left: -(innerWidth - outerWidth), right: 0 });
         }
-    }, [filteredImages]);
+    }, [reversedFilteredImages]);
 
-    const handleThumbnailClick = (index) => {
-        setCurrentIndex(index);
+    const handleThumbnailClick = (originalIndex) => {
+        const len = filteredImages.length;
+        // Find the index of the clicked item that is closest to current virtualIndex
+        const currentBase = Math.floor(virtualIndex / len) * len;
+        setVirtualIndex(currentBase + originalIndex);
     };
 
     return (
@@ -106,10 +169,10 @@ const Galeria = () => {
                     </div>
                 </div>
 
-                {/* Right Side: Main Image (Hidden on Mobile) */}
-                <div className="galeria-main-display">
+                {/* Right Side: Main Display (Hidden on Mobile) */}
+                <div className={`galeria-main-display v-hidden`}>
                     <AnimatePresence mode="wait">
-                        {filteredImages.length > 0 && (
+                        {false && (
                             <motion.div
                                 key={`${activeCategory}-${currentIndex}`}
                                 className="main-image-wrapper"
@@ -136,18 +199,33 @@ const Galeria = () => {
                         drag="x"
                         dragConstraints={dragConstraints}
                         whileTap={{ cursor: 'grabbing' }}
+                        animate={{
+                            x: containerWidth > 0
+                                ? containerWidth - 520 - ((reversedFilteredImages.length - 1 - virtualIndex) * 536)
+                                : -((reversedFilteredImages.length - 1 - virtualIndex) * 536)
+                        }}
+                        transition={{ type: "spring", stiffness: 100, damping: 20, restDelta: 0.01 }}
+                        onAnimationComplete={handleTransitionEnd}
                     >
-                        {filteredImages.map((img, index) => (
-                            <motion.div
-                                key={index}
-                                className={`thumbnail-item ${currentIndex === index ? 'active' : ''}`}
-                                onClick={() => handleThumbnailClick(index)}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                            >
-                                <img src={img.src} alt={`Thumbnail ${index}`} className="thumb-img" draggable="false" />
-                            </motion.div>
-                        ))}
+                        {reversedFilteredImages.map((img, index) => {
+                            const originalIndex = filteredImages.findIndex(fi => fi.src === img.src);
+                            const isActive = (reversedFilteredImages.length - 1 - index) === virtualIndex;
+                            const isVertical = true; // Forced to true for testing
+                            return (
+                                <motion.div
+                                    key={`${img.src}-${index}`}
+                                    className={`thumbnail-item ${isActive ? 'active' : ''} ${isVertical ? 'is-portrait' : 'is-landscape'}`}
+                                    onClick={() => handleThumbnailClick(originalIndex)}
+                                    animate={{
+                                        height: (isActive && isVertical) ? '80vh' : '320px',
+                                    }}
+                                    transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                                    style={{ transformOrigin: 'bottom' }}
+                                >
+                                    <img src={img.src} alt={`Thumbnail ${index}`} className="thumb-img" draggable="false" />
+                                </motion.div>
+                            );
+                        })}
                     </motion.div>
                 </div>
 
@@ -173,6 +251,5 @@ const Galeria = () => {
         </section>
     );
 };
-
 
 export default Galeria;
