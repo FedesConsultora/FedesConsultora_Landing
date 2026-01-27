@@ -264,6 +264,12 @@
         position: relative;
         z-index: 1;
 
+
+        @media (max-width: 992px) {
+            padding-top: 200px;
+
+        }
+
         .container {
             display: flex;
             flex-direction: row;
@@ -272,10 +278,14 @@
             gap: 4rem;
 
             @media (max-width: 992px) {
-                flex-direction: column;
+                flex-direction: column-reverse;
                 text-align: center;
-                gap: 2rem;
+                gap: 0rem;
+
             }
+
+
+
         }
 
         .engineering-graphic {
@@ -295,6 +305,15 @@
             .chart-dot {
                 opacity: 1;
                 filter: drop-shadow(0 0 5px rgba(58, 84, 255, 0.4));
+            }
+
+            @media (max-width: 998px) {
+                display: flex;
+                transform: scale(1.1);
+                margin-right: 3rem;
+
+
+
             }
 
             @media (max-width: 778px) {

@@ -220,6 +220,7 @@ const Consultora = () => {
                         </svg>
 
                     </div>
+
                     <div className="engineering-content">
                         <h2 className="engineering-main-title">
                             <motion.span
