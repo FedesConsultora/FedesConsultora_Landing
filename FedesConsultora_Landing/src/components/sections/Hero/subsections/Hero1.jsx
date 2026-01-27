@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import React, { useState, useEffect, useRef } from 'react'
+import { motion, useInView } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import FedesLogoDegr from '../../../../assets/img/logo-degr.svg'
 import './Hero1.scss'
 
 const Hero1 = () => {
     const [isMobile, setIsMobile] = useState(false);
+    const containerRef = useRef(null);
+    const isInView = useInView(containerRef, { once: true, amount: 0.2 });
 
     useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -80,7 +82,7 @@ const Hero1 = () => {
     };
 
     return (
-        <div className='hero-1-subsection'>
+        <div className='hero-1-subsection' ref={containerRef}>
             <div className="hero-1-container">
                 <div className="hero-1-top">
                     <h1 className="hero-1-title-animated">
@@ -88,7 +90,7 @@ const Hero1 = () => {
                             className="text-part-en"
                             variants={textPartVariants}
                             initial="hiddenEn"
-                            animate="revealEn"
+                            animate={isInView ? "revealEn" : "hiddenEn"}
                         >
                             En&nbsp;
                         </motion.span>
@@ -98,7 +100,7 @@ const Hero1 = () => {
                                 className="fedes-logo-animated"
                                 variants={logoVariants}
                                 initial="initial"
-                                animate="animate"
+                                animate={isInView ? "animate" : "initial"}
                             >
                                 <img src={FedesLogoDegr} style={{ pointerEvents: 'none', width: '100%' }} alt="FEDES" /> {''}
                             </motion.div>
@@ -108,7 +110,7 @@ const Hero1 = () => {
                             className="text-part-rest"
                             variants={textPartVariants}
                             initial="hiddenRest"
-                            animate="revealRest"
+                            animate={isInView ? "revealRest" : "hiddenRest"}
                         >
                             tenemos la solución.
                         </motion.span>

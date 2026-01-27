@@ -138,7 +138,12 @@ const Galeria = () => {
 
     const targetX = useMemo(() => {
         if (containerWidth === 0) return 0;
-        return containerWidth - 520 - 200 - ((reversedFilteredImages.length - 1 - virtualIndex) * 536);
+
+        // Use a larger offset on large screens to keep items away from the left header
+        const extraOffset = containerWidth <= 1400 ? 100 : 280;
+
+        // 520 (item width) + 16 (gap) = 536
+        return containerWidth - 520 - extraOffset - ((reversedFilteredImages.length - 1 - virtualIndex) * 536);
     }, [containerWidth, reversedFilteredImages.length, virtualIndex]);
 
     const isSnap = Math.abs(targetX - lastX) > 1000;
@@ -152,13 +157,8 @@ const Galeria = () => {
     };
 
     const handleDragEnd = () => {
-        const currentX = carouselX.get();
-        // Formula to find virtualIndex from X:
-        // x = containerWidth - 720 - ((reversedFilteredImages.length - 1 - virtualIndex) * 536)
-        // (containerWidth - 720 - x) / 536 = reversedFilteredImages.length - 1 - virtualIndex
-        // virtualIndex = reversedFilteredImages.length - 1 - ((containerWidth - 720 - x) / 536)
-
-        const deltaItems = (containerWidth - 720 - currentX) / 536;
+        const extraOffset = containerWidth <= 1400 ? 100 : 280;
+        const deltaItems = (containerWidth - 520 - extraOffset - currentX) / 536;
         const newVirtualIndex = Math.round(reversedFilteredImages.length - 1 - deltaItems);
         setVirtualIndex(newVirtualIndex);
     };
@@ -243,7 +243,7 @@ const Galeria = () => {
                                     className={`thumbnail-item ${isActive ? 'active' : ''} ${isVertical ? 'is-portrait' : 'is-landscape'}`}
                                     onClick={() => handleThumbnailClick(originalIndex)}
                                     animate={{
-                                        height: (isActive && isVertical) ? '84vh' : '320px',
+                                        height: (isActive && isVertical) ? '84vh' : '300px',
                                     }}
                                     transition={{ type: "spring", stiffness: 100, damping: 20 }}
                                     style={{ transformOrigin: 'bottom' }}

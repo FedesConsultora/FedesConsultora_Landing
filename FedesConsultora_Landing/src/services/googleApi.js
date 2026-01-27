@@ -37,7 +37,18 @@ export const getBlogPosts = async () => {
             authorImg: item["Author Image"] || "",
             link: item["Enlace Interno/Externo"],
         }));
-        return mappedData;
+        const sortedData = mappedData.sort((a, b) => {
+            const dateA = new Date(a["Fecha de Publicación"]).getTime();
+            const dateB = new Date(b["Fecha de Publicación"]).getTime();
+
+            // Handle cases where date might be invalid or missing
+            const timeA = isNaN(dateA) ? 0 : dateA;
+            const timeB = isNaN(dateB) ? 0 : dateB;
+
+            return timeB - timeA;
+        });
+
+        return sortedData;
     } catch (error) {
         console.error("Error fetching blog posts:", error);
         return [];
