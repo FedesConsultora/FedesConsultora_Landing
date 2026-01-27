@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import BlogCard from './BlogCard';
 import './Blog.scss';
 import { getBlogPosts } from '../../../services/googleApi';
+import { motion } from 'framer-motion';
 
 // Import background assets
 import BlogDegr1 from '../../../assets/img/backgrounds/blog-degr (1).svg';
@@ -11,6 +12,24 @@ import BlogDegr2 from '../../../assets/img/backgrounds/blog-degr (2).svg';
 const Blog = () => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const postsPerPage = 9;
+
+    const dropVariants = {
+        hidden: {
+            opacity: 0,
+            y: -30
+        },
+        visible: (i = 0) => ({
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.8,
+                ease: [0.25, 1, 0.5, 1],
+                delay: i * 0.15
+            }
+        })
+    };
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -47,7 +66,30 @@ const Blog = () => {
     }
 
     const featuredPost = posts[0];
-    const blogPosts = posts.slice(1);
+    const allOtherPosts = posts.slice(1);
+
+    // Pagination logic
+    const indexOfLastPost = currentPage * postsPerPage;
+    const indexOfFirstPost = indexOfLastPost - postsPerPage;
+    const currentPosts = allOtherPosts.slice(indexOfFirstPost, indexOfLastPost);
+    const totalPages = Math.ceil(allOtherPosts.length / postsPerPage);
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+        const gridElement = document.querySelector('.blog-grid');
+        if (gridElement) {
+            const offset = 120; // Margin to avoid being too close to the header
+            const bodyRect = document.body.getBoundingClientRect().top;
+            const elementRect = gridElement.getBoundingClientRect().top;
+            const elementPosition = elementRect - bodyRect;
+            const offsetPosition = elementPosition - offset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+        }
+    };
 
     return (
         <section id="blog" className="blog-section">
@@ -59,8 +101,27 @@ const Blog = () => {
             <div className="container">
                 <div className="blog-header-main">
                     <h2 className="main-title">
-                        Lo que aprendimos haciendo, <br />
-                        <span className="gradient-text">lo compartimos acá.</span>
+                        <motion.span
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true, amount: 0 }}
+                            custom={0}
+                            variants={dropVariants}
+                            style={{ display: 'block' }}
+                        >
+                            Lo que aprendimos haciendo,
+                        </motion.span>
+                        <motion.span
+                            className="gradient-text"
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true, amount: 0 }}
+                            custom={1}
+                            variants={dropVariants}
+                            style={{ display: 'block' }}
+                        >
+                            lo compartimos acá.
+                        </motion.span>
                     </h2>
                 </div>
 
@@ -90,9 +151,9 @@ const Blog = () => {
                 </div>
 
                 <div className="blog-grid">
-                    {blogPosts.map((post, index) => (
+                    {currentPosts.map((post, index) => (
                         <BlogCard
-                            key={index}
+                            key={`${post.id}-${index}`}
                             id={post.id}
                             category="Fedes consultora"
                             date={post.date}
@@ -102,6 +163,38 @@ const Blog = () => {
                         />
                     ))}
                 </div>
+
+                {totalPages > 1 && (
+                    <div className="blog-pagination">
+                        <button
+                            className={`pagination-btn prev ${currentPage === 1 ? 'disabled' : ''}`}
+                            onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                        >
+                            Anterior
+                        </button>
+
+                        <div className="pagination-numbers">
+                            {[...Array(totalPages)].map((_, i) => (
+                                <button
+                                    key={i + 1}
+                                    className={`page-number ${currentPage === i + 1 ? 'active' : ''}`}
+                                    onClick={() => handlePageChange(i + 1)}
+                                >
+                                    {i + 1}
+                                </button>
+                            ))}
+                        </div>
+
+                        <button
+                            className={`pagination-btn next ${currentPage === totalPages ? 'disabled' : ''}`}
+                            onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                        >
+                            Siguiente
+                        </button>
+                    </div>
+                )}
             </div>
 
             <div className="blog-background-bottom">

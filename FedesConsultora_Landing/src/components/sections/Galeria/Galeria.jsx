@@ -176,9 +176,10 @@ const Galeria = () => {
                 <div className="galeria-header">
                     <motion.h2
                         className="galeria-title"
-                        initial={{ opacity: 0, x: -50 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.8 }}
+                        initial={{ opacity: 0, y: -30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+                        viewport={{ once: true }}
                     >
                         Nuestro <br /> trabajo habla <br />por nosotros.
                     </motion.h2>

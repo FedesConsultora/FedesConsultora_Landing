@@ -64,7 +64,7 @@
 
     .blog-header-main {
         text-align: center;
-        margin-bottom: 80px;
+        margin-bottom: 40px;
 
         h2.main-title {
             font-family: $font-title;
@@ -116,8 +116,8 @@
             border: 1px solid rgba(0, 0, 0, 0.03);
 
             .featured-image {
-                flex: 1.2;
-                height: 480px;
+                flex: 1.7;
+                height: 460px;
                 padding: 15px; // Small padding to create the inset look if desired, but image is flush in design
 
                 img {
@@ -125,6 +125,7 @@
                     height: 100%;
                     object-fit: cover;
                     border-radius: 30px;
+                    object-position: 10%;
                 }
             }
 
@@ -186,6 +187,91 @@
         grid-template-columns: repeat(3, 1fr);
         gap: 40px;
         row-gap: 60px;
+        margin-bottom: 60px;
+    }
+
+    .blog-pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 32px;
+        margin-top: 60px;
+        padding-top: 40px;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+
+        .pagination-btn {
+            font-family: $font-title;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            color: #19222B;
+            padding: 12px 28px;
+            border-radius: 100px;
+            font-weight: 300;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+
+            &:hover:not(:disabled) {
+                background: $primary-color;
+                color: white;
+                border-color: $primary-color;
+                transform: translateY(-3px);
+            }
+
+            &:active:not(:disabled) {
+                transform: translateY(-1px);
+            }
+
+            &:disabled {
+                opacity: 0.3;
+                cursor: not-allowed;
+                background: #f5f5f5;
+            }
+        }
+
+        .pagination-numbers {
+            display: flex;
+            gap: 12px;
+            background: #f8f9fa;
+            padding: 6px;
+            border-radius: 100px;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+
+            .page-number {
+                width: 44px;
+                height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                border: none;
+                background: transparent;
+                color: #6B7280;
+                font-weight: 700;
+                font-size: 0.95rem;
+                cursor: pointer;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+                &:hover:not(.active) {
+                    color: $primary-color;
+                    background: white;
+                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+                }
+
+                &.active {
+                    background: white;
+                    color: $primary-color;
+                    box-shadow: 0 8px 20px rgba(58, 84, 255, 0.12);
+                    transform: scale(1.05);
+                }
+            }
+        }
     }
 }
 

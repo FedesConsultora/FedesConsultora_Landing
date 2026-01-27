@@ -1,13 +1,30 @@
+import React from 'react';
 import Agencia1 from './subsections/Agencia1';
 import Agencia2 from './subsections/Agencia2';
 import SectionPill from '../../ui/SectionPill';
 import ServiceCard from './ServiceCard';
 import './Agencia.scss';
 import AgenciaDegr1 from '../../../assets/img/backgrounds/agencia-degr (2).svg';
-
 import ConsultoraGrid from '../../../assets/img/backgrounds/consultora-grilla (3).svg';
+import { motion } from 'framer-motion';
 
 const Agencia = () => {
+    const dropVariants = {
+        hidden: {
+            opacity: 0,
+            y: -30
+        },
+        visible: (i = 0) => ({
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.8,
+                ease: [0.25, 1, 0.5, 1],
+                delay: i * 0.15
+            }
+        })
+    };
+
     const services = [
         {
             title: "Paid media (ads)",
@@ -29,6 +46,33 @@ const Agencia = () => {
         }
     ];
 
+    const titleContainer = {
+        hidden: {},
+        visible: {
+            transition: {
+                staggerChildren: 0.8,
+                delayChildren: 0.7,
+            },
+        },
+    };
+
+    const titleItem = {
+        hidden: {
+            y: -18,
+            opacity: 0,
+        },
+        visible: {
+            y: 0,
+            opacity: 1,
+            transition: {
+
+                duration: 1,
+                ease: [0.26, 1, 0.36, 1],
+            },
+        },
+    };
+
+
     return (
         <div id="agencia" className="agencia-wrapper">
             <div className="agencia-background">
@@ -43,8 +87,28 @@ const Agencia = () => {
                 <div className="container">
                     <div className="agencia-content">
                         <h2 className="agencia-title">
-                            Creatividad <br />que se mide <br />en ventas.
+                            <motion.div
+                                variants={titleContainer}
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: true, amount: 0.6 }}
+                            >
+                                <motion.span
+                                    className="agencia-title-inner"
+                                    variants={titleItem}
+                                >
+                                    Creatividad
+                                </motion.span>
+
+                                <motion.span
+                                    className="agencia-title-inner"
+                                    variants={titleItem}
+                                >
+                                    que se mide <br />en ventas.
+                                </motion.span>
+                            </motion.div>
                         </h2>
+
 
                         <p className="agencia-subtitle">
                             Branding, contenido y paid media pensados para que tu marca deje de competir y empiece a liderar.                        </p>
@@ -61,7 +125,15 @@ const Agencia = () => {
             {/* Bloque 2: Tu departamento de marketing */}
             <section className="agencia-services-block">
                 <div className="container" style={{ paddingLeft: '60px', paddingRight: '60px' }}>
-                    <h2 className="services-title">Tu departamento de <br /> marketing externo.</h2>
+                    <motion.h2
+                        className="services-title"
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, amount: 0 }}
+                        variants={dropVariants}
+                    >
+                        Tu departamento de <br /> marketing externo.
+                    </motion.h2>
 
                     <div className="services-grid">
                         {services.map((service, index) => (

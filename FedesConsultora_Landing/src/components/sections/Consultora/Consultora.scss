@@ -104,9 +104,19 @@
                 margin-top: 6rem;
                 letter-spacing: -2px;
 
+
                 .highlight {
                     font-weight: 800;
                     display: block;
+                }
+
+                .consultora-title-inner {
+                    background: linear-gradient(123.75deg, #0F0F0F 0%, #7D7D7D 100%);
+                    -webkit-background-clip: text;
+                    background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    display: inline-block;
+                    will-change: transform, opacity;
                 }
 
                 @media (max-width: 1400px) {

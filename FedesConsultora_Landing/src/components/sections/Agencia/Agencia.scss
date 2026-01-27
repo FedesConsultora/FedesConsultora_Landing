@@ -114,6 +114,14 @@
                 -webkit-text-fill-color: transparent;
                 margin-bottom: 2.5rem;
 
+                .agencia-title-inner {
+                    background: linear-gradient(123.75deg, #0F0F0F 0%, #7D7D7D 100%);
+                    -webkit-background-clip: text;
+                    background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    display: inline-block;
+                    will-change: transform, opacity;
+                }
 
                 @media (max-width: 1600px) {
                     font-size: 6.5rem;

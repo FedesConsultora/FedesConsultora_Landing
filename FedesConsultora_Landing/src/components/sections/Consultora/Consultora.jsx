@@ -6,13 +6,28 @@ import ConsultoraDegr1 from '../../../assets/img/backgrounds/consultora-degr (1)
 import ConsultoraDegr2 from '../../../assets/img/backgrounds/consultora-degr (2).svg';
 import ConsultoraGrid from '../../../assets/img/backgrounds/consultora-grilla (3).svg';
 import { useEffect, useRef, useState } from "react";
-
-
+import { motion } from 'framer-motion';
 
 const Consultora = () => {
-
     const graphRef = useRef(null);
     const [visible, setVisible] = useState(false);
+
+    const dropVariants = {
+        hidden: {
+            opacity: 0,
+            y: -24,
+        },
+        visible: (i = 0) => ({
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.8,
+                delay: i * 0.18,
+                ease: [0.25, 1, 0.5, 1], // smooth agency easing
+            },
+        }),
+    };
+
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -30,6 +45,7 @@ const Consultora = () => {
 
         return () => observer.disconnect();
     }, []);
+
     return (
         <section id="consultora" className="consultora-section">
             <div className="consultora-background">
@@ -40,12 +56,37 @@ const Consultora = () => {
 
             {/* Parte 1: El problema de la facturación */}
             <div className="consultora-intro-block">
-
                 <div className="container">
                     <div className="consultora-content">
                         <h2 className="consultora-title">
-                            Facturar no es <br />lo mismo que <br /> <span className="highlight">ganar dinero.</span>
+                            <motion.div
+                                className="consultora-title-inner"
+                                initial={{ opacity: 0, y: 40 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true, margin: '-80px' }}
+                                transition={{
+                                    duration: 2,
+                                    ease: [0.30, 1, 0.36, 1],
+                                }}
+                            >
+                                Facturar no es <br />lo mismo que
+                            </motion.div>
+
+                            <motion.div
+                                className="consultora-title-inner highlight"
+                                initial={{ opacity: 0, y: 40 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true, margin: '-80px' }}
+                                transition={{
+                                    duration: 1,
+                                    delay: 1.2,
+                                    ease: [0.30, 1, 0.36, 1],
+                                }}
+                            >
+                                ganar dinero.
+                            </motion.div>
                         </h2>
+
 
                         <p className="consultora-subtitle">
                             Si tu empresa crece pero tu tranquilidad baja, el problema no es la venta: es la estructura.
@@ -64,7 +105,15 @@ const Consultora = () => {
             {/* Bloque 2: ¿Te suena familiar? + Pills */}
             <div className="consultora-familiar-block">
                 <div className="container">
-                    <h2 className="familiar-title">¿Te suena familiar?</h2>
+                    <motion.h2
+                        className="familiar-title"
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, amount: 0 }}
+                        variants={dropVariants}
+                    >
+                        ¿Te suena familiar?
+                    </motion.h2>
 
                     <div className="familiar-pills">
                         <div className="familiar-pill">Facturación alta, rentabilidad baja.</div>
@@ -173,8 +222,28 @@ const Consultora = () => {
                     </div>
                     <div className="engineering-content">
                         <h2 className="engineering-main-title">
-                            <span className="blue">No improvisamos.</span><br />
-                            <span className="dark">Hacemos ingeniería de negocios.</span>
+                            <motion.span
+                                className="blue"
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: true }}
+                                custom={0.2}
+                                variants={dropVariants}
+                                style={{ display: 'block' }}
+                            >
+                                No improvisamos.
+                            </motion.span>
+                            <motion.span
+                                className="dark"
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: true }}
+                                custom={0.5}
+                                variants={dropVariants}
+                                style={{ display: 'block' }}
+                            >
+                                Hacemos ingeniería de negocios.
+                            </motion.span>
                         </h2>
                     </div>
                 </div>

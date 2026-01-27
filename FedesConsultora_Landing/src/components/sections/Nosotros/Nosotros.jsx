@@ -69,10 +69,10 @@ const Nosotros = () => {
                         <motion.div
                             key="phase1"
                             className="phase-container phase-1"
-                            initial={{ opacity: 0, y: 50 }}
+                            initial={{ opacity: 0, y: -30 }}
                             animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -100 }}
-                            transition={{ duration: 0.8, ease: "easeInOut" }}
+                            exit={{ opacity: 0, y: -80 }}
+                            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
                         >
                             <div className="nosotros-phase1-background">
                                 <img src={DegrNosotros1} className="bg-degr degr-1" alt="" />
@@ -89,9 +89,9 @@ const Nosotros = () => {
                         <motion.div
                             key="phase2"
                             className="phase-container phase-2"
-                            initial={{ opacity: 0, y: 100 }}
+                            initial={{ opacity: 0, y: -30 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8, ease: "easeOut" }}
+                            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
                         >
                             <div className="nosotros-header">
                                 <h2 className="title-main">Estrategas y <br /> creativos.</h2>
