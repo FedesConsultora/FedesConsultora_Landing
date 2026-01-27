@@ -7,9 +7,13 @@
     padding-bottom: 80px;
 
     .container {
-        max-width: 1000px;
+        max-width: none;
         margin: 0 auto;
-        padding: 0 4vw;
+        padding: 0 40px;
+
+        @media (max-width: 992px) {
+            padding: 0 20px;
+        }
     }
 
     .detail-header {
@@ -102,14 +106,9 @@
 
     .detail-content {
         display: grid;
-        grid-template-columns: 1fr 300px;
+        grid-template-columns: 1fr;
         gap: 80px;
         align-items: start;
-
-        @media (max-width: 992px) {
-            grid-template-columns: 1fr;
-            gap: 40px;
-        }
 
         .content-body {
             .full-content {

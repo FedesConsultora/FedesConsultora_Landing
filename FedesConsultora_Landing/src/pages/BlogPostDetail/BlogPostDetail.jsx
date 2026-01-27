@@ -5,10 +5,36 @@ import { getBlogPosts } from '../../services/googleApi';
 import { HiArrowLeft } from 'react-icons/hi';
 import './BlogPostDetail.scss';
 
+import ManualMarca from '../BlogPages/ManualMarca';
+import ServiciosFedes from '../BlogPages/ServiciosFedes';
+import ViajeroEternidad from '../BlogPages/ViajeroEternidad';
+import KickOff2025 from '../BlogPages/KickOff2025';
+import TresC from '../BlogPages/TresC';
+import CreatividadEInnovacion from '../BlogPages/CreatividadEInnovacion';
+import PosicionamientoEstrategico from '../BlogPages/PosicionamientoEstrategico';
+import CRMIntegradoECommerce from '../BlogPages/CRMIntegradoECommerce';
+import SEOECommerce from '../BlogPages/SEOECommerce';
+import GrowthMarketing from '../BlogPages/GrowthMarketing';
+
+const BLOG_COMPONENTS = {
+    "1": ManualMarca,
+    "16": ServiciosFedes,
+    "17": ViajeroEternidad,
+    "18": KickOff2025,
+    "19": TresC,
+    "20": CreatividadEInnovacion,
+    "21": PosicionamientoEstrategico,
+    "22": CRMIntegradoECommerce,
+    "23": SEOECommerce,
+    "24": GrowthMarketing
+};
+
 const BlogPostDetail = () => {
     const { id } = useParams();
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    const CustomContent = BLOG_COMPONENTS[id];
 
     useEffect(() => {
         const fetchPost = async () => {
@@ -77,20 +103,24 @@ const BlogPostDetail = () => {
                 </div>
             </div>
 
-            <div className="detail-image-container container">
-                <motion.div
-                    className="image-wrapper"
-                    initial={{ scale: 0.95, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.3, duration: 0.6 }}
-                >
-                    <img src={post.image} alt={post.title} className="main-image" />
-                </motion.div>
-            </div>
+            {!CustomContent && (
+                <div className="detail-image-container container">
+                    <motion.div
+                        className="image-wrapper"
+                        initial={{ scale: 0.95, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.3, duration: 0.6 }}
+                    >
+                        <img src={post.image} alt={post.title} className="main-image" />
+                    </motion.div>
+                </div>
+            )}
 
             <div className="detail-content container">
                 <div className="content-body">
-                    {post.content ? (
+                    {CustomContent ? (
+                        <CustomContent />
+                    ) : post.content ? (
                         <div
                             className="full-content"
                             dangerouslySetInnerHTML={{ __html: post.content.replace(/\n/g, '<br />') }}
@@ -100,17 +130,19 @@ const BlogPostDetail = () => {
                     )}
                 </div>
 
-                <aside className="post-sidebar">
-                    <div className="author-card">
-                        {post.authorImg && (
-                            <img src={post.authorImg} alt={post.author} className="author-avatar" />
-                        )}
-                        <div className="author-info">
-                            <span className="written-by">Escrito por</span>
-                            <h3 className="author-name">{post.author}</h3>
+                {!CustomContent && (
+                    <aside className="post-sidebar">
+                        <div className="author-card">
+                            {post.authorImg && (
+                                <img src={post.authorImg} alt={post.author} className="author-avatar" />
+                            )}
+                            <div className="author-info">
+                                <span className="written-by">Escrito por</span>
+                                <h3 className="author-name">{post.author}</h3>
+                            </div>
                         </div>
-                    </div>
-                </aside>
+                    </aside>
+                )}
             </div>
         </motion.main>
     );
