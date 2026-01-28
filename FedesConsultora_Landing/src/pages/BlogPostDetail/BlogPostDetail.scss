@@ -1,4 +1,4 @@
-@import '../../styles/_variables.scss';
+@use '../../styles/_variables.scss' as *;
 
 .blog-post-detail {
     padding-top: 120px; // Space for header

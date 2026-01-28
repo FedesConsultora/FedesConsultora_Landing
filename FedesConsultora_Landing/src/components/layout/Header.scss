@@ -1,4 +1,4 @@
-@import '../../styles/_variables.scss';
+@use '../../styles/_variables.scss' as *;
 
 .header-container {
     position: fixed;
@@ -22,7 +22,7 @@
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-
+        padding-top: 1.5rem;
 
         border-bottom-left-radius: 5px;
         border-bottom-right-radius: 5px;
@@ -42,7 +42,7 @@
 
         @media (max-width: 1000px) {
             img {
-                height: 16px;
+                height: 26px;
             }
         }
     }
@@ -285,5 +285,11 @@
                 }
             }
         }
+    }
+}
+//mediaquerie para mobile
+@media (max-width: 992px) {
+    .hero-floating-icon{
+        scale: 1.2;
     }
 }

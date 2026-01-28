@@ -1,5 +1,5 @@
 @use './fonts/main';
-@import 'variables';
+@use 'variables' as *;
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

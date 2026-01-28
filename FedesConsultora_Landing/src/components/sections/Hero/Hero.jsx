@@ -24,58 +24,22 @@ const Hero = () => {
       >
         <div className="hero-background">
           {/* Layer 1: Independent Float (Organic) */}
-          <motion.div
-            className="hero-degr degr-1"
-            animate={{
-              // Patrón asimétrico para evitar sensación de repetición circular
-              x: [0, 70, -40, 90, -20, 50, 0],
-              y: [0, -50, 30, -70, 40, -20, 0],
-              rotate: [0, 5, -3, 6, -4, 2, 0],
-            }}
-            transition={{
-              duration: 23, // Número primo para desincronizar capas
-              ease: "easeInOut",
-              repeat: Infinity,
-              times: [0, 0.2, 0.4, 0.6, 0.8, 0.9, 1] // Distribución de tiempos irregular
-            }}
-            style={{ willChange: 'transform', z: 0 }}
-          >
-            <motion.img
+          <div className="hero-degr degr-1">
+            <img
               src={Degr4}
               alt=""
-              style={{
-                scale: 1.1,
-                filter: 'blur(2px)',
-              }}
+              style={{ filter: 'blur(3px)' }}
             />
-          </motion.div>
+          </div>
 
           {/* Layer 2: Independent Float (Organic) */}
-          <motion.div
-            className="hero-degr degr-2"
-            animate={{
-              // Patrón opuesto y con diferentes amplitudes
-              x: [0, -100, 60, -80, 40, -30, 0],
-              y: [0, 40, -60, 20, -50, 30, 0],
-              rotate: [0, -6, 4, -5, 3, -2, 0],
-            }}
-            transition={{
-              duration: 31, // Otro número primo para romper simetría
-              ease: "easeInOut",
-              repeat: Infinity,
-              times: [0, 0.15, 0.35, 0.55, 0.75, 0.9, 1]
-            }}
-            style={{ willChange: 'transform', z: 0 }}
-          >
-            <motion.img
+          <div className="hero-degr degr-2">
+            <img
               src={Degr3}
               alt=""
-              style={{
-                scale: 1.25,
-                filter: 'blur(1px)',
-              }}
+              style={{ filter: 'blur(2px)' }}
             />
-          </motion.div>
+          </div>
 
           <div className="grid-overlay"></div>
         </div>
@@ -103,16 +67,52 @@ const Hero = () => {
 
         <div className="hero-floating-icon">
           <div className="circular-text">
-            <svg viewBox="0 0 100 100">
+            <svg viewBox="0 0 100 100" style={{ overflow: 'visible' }}>
               <path d="M 10,50 a 40,40 0 1,1 80,0 a 40,40 0 1,1 -80,0" id="circle" fill="transparent" />
-              <text fill="#19222B">
-                <textPath xlinkHref="#circle">
-                  FEDES LO HACE POSIBLE • FEDES LO HACE POSIBLE •
+              <text fill="#19222B" fontSize="11" fontWeight="900">
+                <textPath xlinkHref="#circle" startOffset="0%">
+                  FEDES LO HACE POSIBLE
                 </textPath>
               </text>
+
+              {/* Rocket 1 */}
+              <g className="rocket-icon rocket-1" fill="#19222B">
+                <path d="M0-100c10 20 30 60 30 120 0 15-5 30-10 40H-20c-5-10-10-25-10-40 0-60 20-100 30-120z" />
+                <path d="M-30 20l-30 40h30V20zM30 20l30 40h-30V20z" />
+                <circle cx="0" cy="-20" r="8" fill="white" opacity="0.8" />
+              </g>
+
+              {/* Rocket 2 */}
+              <g className="rocket-icon rocket-2" fill="#19222B">
+                <path d="M0-100c10 20 30 60 30 120 0 15-5 30-10 40H-20c-5-10-10-25-10-40 0-60 20-100 30-120z" />
+                <path d="M-30 20l-30 40h30V20zM30 20l30 40h-30V20z" />
+                <circle cx="0" cy="-20" r="8" fill="white" opacity="0.8" />
+              </g>
+
+              {/* Rocket 3 */}
+              <g className="rocket-icon rocket-3" fill="#19222B">
+                <path d="M0-100c10 20 30 60 30 120 0 15-5 30-10 40H-20c-5-10-10-25-10-40 0-60 20-100 30-120z" />
+                <path d="M-30 20l-30 40h30V20zM30 20l30 40h-30V20z" />
+                <circle cx="0" cy="-20" r="8" fill="white" opacity="0.8" />
+              </g>
             </svg>
           </div>
-          <div className="inner-circle"></div>
+          <div className="bot-trigger">
+            <svg viewBox="0 0 100 100" className="cohere-icon">
+              <path
+                d="M50 15c-19.3 0-35 15.7-35 35s15.7 35 35 35 35-15.7 35-35-15.7-35-35-35zm0 64c-16 0-29-13-29-29s13-29 29-29 29 13 29 29-13 29-29 29z"
+                fill="currentColor"
+              />
+              <path
+                d="M50 30c-11 0-20 9-20 20s9 20 20 20 20-9 20-20-9-20-20-20zm0 34c-7.7 0-14-6.3-14-14s6.3-14 14-14 14 6.3 14 14-6.3 14-14 14z"
+                fill="currentColor"
+              />
+              <path
+                d="M50 40c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zm0 14c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"
+                fill="currentColor"
+              />
+            </svg>
+          </div>
         </div>
       </section>
 

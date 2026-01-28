@@ -1,4 +1,4 @@
-@import '../../../styles/_variables.scss';
+@use '../../../styles/_variables.scss' as *;
 
 .consultora-section {
     background-color: #ffffff;
@@ -18,372 +18,429 @@
         height: 100%;
         z-index: 0;
         pointer-events: none;
+        overflow: hidden; // Prevenir scroll lateral por el movimiento agresivo
+    }
 
-        .bg-degr {
-            position: absolute;
-            pointer-events: none;
+    .bg-degr {
+        position: absolute;
+        pointer-events: none;
+        will-change: transform;
 
-            &.degr-1 {
-                top: 1%;
-                right: 0%;
-                width: 100%;
-                opacity: 1.3;
-            }
-
-            &.degr-2 {
-                top: 0%;
-                left: 0%;
-                width: 100%;
-                opacity: 1;
-            }
+        &.degr-1 {
+            top: -10%;
+            right: -25%;
+            width: 150vw;
+            opacity: 0.5;
+            animation: consultora-fluid-1 20s ease-in-out infinite;
+            filter: blur(30px);
         }
 
-        .bg-grid {
-            position: absolute;
-            top: 8%;
-            left: -20%;
-            width: 100%;
-            height: 50%; // Spans the whole section now
-            object-fit: cover;
+        &.degr-1-deep {
+            top: -5%;
+            right: -5%;
+            width: 80vw;
+            opacity: 0.8;
+            animation: consultora-fluid-1 20s ease-in-out infinite;
+            filter: blur(20px) saturate(2);
+            z-index: 1;
+        }
+
+        &.degr-2 {
+            top: -5%;
+            left: -30%;
+            width: 160vw;
+            opacity: 0.9;
+            animation: consultora-fluid-2 25s ease-in-out infinite;
+            filter: blur(50px);
+        }
+
+        &.degr-2-deep {
+            top: 5%;
+            left: -10%;
+            width: 70vw;
             opacity: 1;
-            pointer-events: none;
-            filter: none;
-            // Restored white
+            animation: consultora-fluid-2 25s ease-in-out infinite;
+            filter: blur(25px) saturate(2.5) brightness(0.9);
+            z-index: 1;
         }
     }
 
-    .consultora-intro-block {
-        min-height: 100vh;
+    .bg-grid {
+        position: absolute;
+        top: 8%;
+        left: -20%;
         width: 100%;
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
+        height: 50%; // Spans the whole section now
+        object-fit: cover;
+        opacity: 1;
+        pointer-events: none;
+        filter: none;
+        // Restored white
+    }
+}
+
+.consultora-intro-block {
+    min-height: 100vh;
+    width: 100%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    position: relative;
+
+    @media (max-width: 768px) {
+        min-height: auto;
+        padding: 80px 0;
+    }
+
+    .container {
         position: relative;
+        z-index: 10; // Ensure text is way above background gems and grid
+        display: flex;
+        justify-content: flex-end;
+        max-width: 1200px;
+        margin: 0 auto;
 
         @media (max-width: 768px) {
-            min-height: auto;
-            padding: 80px 0;
+            justify-content: center;
+        }
+    }
+
+    .consultora-content {
+        max-width: 800px;
+        text-align: right;
+        padding-right: 2rem;
+
+        @media (max-width: 768px) {
+            max-width: 100%;
+            text-align: center;
+            padding: 0 20px;
+
         }
 
-        .container {
+        .consultora-title {
+            font-family: $font-title;
+            font-size: 7rem;
+            font-weight: 500;
+            line-height: 1.1; // Increased to prevent descender clipping (like the "g")
+            display: inline-block;
+            margin-bottom: 2rem;
+            margin-top: 6rem;
+            letter-spacing: -2px;
             position: relative;
-            z-index: 2;
-            display: flex;
-            justify-content: flex-end;
-            max-width: 1200px;
-            margin: 0 auto;
+            z-index: 5;
 
-            @media (max-width: 768px) {
-                justify-content: center;
-            }
-        }
-
-        .consultora-content {
-            max-width: 800px;
-            text-align: right;
-            padding-right: 2rem;
-
-            @media (max-width: 768px) {
-                max-width: 100%;
-                text-align: center;
-                padding: 0 20px;
-
+            .highlight {
+                font-weight: 800;
+                display: block;
+                padding-bottom: 5px; // Extra space for descenders
             }
 
-            .consultora-title {
-                font-family: $font-title;
-                font-size: 7rem;
-                font-weight: 500;
-                line-height: 0.9;
+            .consultora-title-inner {
                 background: linear-gradient(123.75deg, #0F0F0F 0%, #7D7D7D 100%);
                 -webkit-background-clip: text;
                 background-clip: text;
                 -webkit-text-fill-color: transparent;
                 display: inline-block;
-                margin-bottom: 2rem;
-                margin-top: 6rem;
-                letter-spacing: -2px;
-
-
-                .highlight {
-                    font-weight: 800;
-                    display: block;
-                }
-
-                .consultora-title-inner {
-                    background: linear-gradient(123.75deg, #0F0F0F 0%, #7D7D7D 100%);
-                    -webkit-background-clip: text;
-                    background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    display: inline-block;
-                    will-change: transform, opacity;
-                }
-
-                @media (max-width: 1400px) {
-                    font-size: 6rem;
-                }
-
-                @media (max-width: 1200px) {
-                    font-size: 5rem;
-                }
-
-                @media (max-width: 768px) {
-                    font-size: 3rem !important;
-                    line-height: 1;
-                    margin-top: 0;
-                    margin-bottom: 1rem;
-                }
+                will-change: transform, opacity;
+                padding: 5px 0; // Prevent clipping at edges
             }
 
-            .consultora-subtitle {
-                font-size: 1.15rem;
-                line-height: 1.3;
-                color: #5E5E5E;
-                max-width: 400px;
-                margin-left: auto;
-
-                margin-bottom: 2.5rem;
-                font-weight: 400;
-
-                @media (max-width: 768px) {
-                    font-size: 1.1rem;
-                    margin: 0 auto 2.5rem;
-                }
+            @media (max-width: 1400px) {
+                font-size: 6rem;
             }
 
-            .consultora-cta {
-                .btn-diagnostic {
-                    background-color: #1a56db;
-                    color: white;
-                    padding: 16px 36px;
-                    border-radius: 50px;
-                    text-decoration: none;
-                    font-weight: 600;
-                    font-size: 1.1rem;
-                    display: inline-block;
-                    transition: all 0.3s ease;
-
-                    &:hover {
-                        transform: scale(1.02);
-                        box-shadow: 0 10px 20px rgba(26, 86, 219, 0.2);
-                    }
-
-                    @media (max-width: 768px) {
-                        font-size: 1rem;
-                        margin: 10rem auto 2.5rem;
-                    }
-                }
-
-
+            @media (max-width: 1200px) {
+                font-size: 5rem;
             }
-        }
-    }
-
-    .consultora-familiar-block {
-        min-height: 100vh;
-        width: 100%;
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        text-align: center;
-        background-color: transparent; // Changed from #ffffff to see the grid
-        padding: 0;
-        margin-top: 6rem;
-        position: relative;
-        z-index: 1;
-
-        @media (max-width: 768px) {
-            min-height: auto;
-            padding: 80px 0;
-            margin-top: 0;
-        }
-
-        .container {
-            width: 100%;
-        }
-
-        .familiar-title {
-            font-size: 4rem;
-            font-weight: 800;
-            background: linear-gradient(123.75deg, #2F2F2F 0%, #707070 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: inline-block;
-            margin-bottom: 50px;
-            letter-spacing: -2px;
 
             @media (max-width: 768px) {
-                font-size: 4.2rem;
+                font-size: 3rem !important;
+                line-height: 1;
+                margin-top: 0;
+                margin-bottom: 1rem;
             }
         }
 
-        .familiar-pills {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            align-items: center;
+        .consultora-subtitle {
+            font-size: 1.15rem;
+            line-height: 1.3;
+            color: #5E5E5E;
+            max-width: 400px;
+            margin-left: auto;
 
-            .familiar-pill {
-                background: white;
-                padding: 18px 45px;
-                border-radius: 60px;
-                box-shadow: 0 5px 25px rgba(0, 0, 0, 0.04);
-                color: #5E5E5E;
+            margin-bottom: 2.5rem;
+            font-weight: 400;
+
+            @media (max-width: 768px) {
                 font-size: 1.1rem;
-                font-weight: 500;
-                width: 100%;
-                max-width: 650px;
-                border: 1px solid rgba(0, 0, 0, 0.02);
-                transition: all 0.3s ease;
-                cursor: pointer;
+                margin: 0 auto 2.5rem;
+            }
+        }
 
-                @media (max-width: 768px) {
-                    padding: 15px 25px;
-                    font-size: 1rem;
-                    border-radius: 20px;
-                    max-width: 90%;
-                }
+        .consultora-cta {
+            .btn-diagnostic {
+                background-color: #1a56db;
+                color: white;
+                padding: 16px 36px;
+                border-radius: 50px;
+                text-decoration: none;
+                font-weight: 600;
+                font-size: 1.1rem;
+                display: inline-block;
+                transition: all 0.3s ease;
 
                 &:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-                    color: #19222B;
+                    transform: scale(1.02);
+                    box-shadow: 0 10px 20px rgba(26, 86, 219, 0.2);
+                }
+
+                @media (max-width: 768px) {
+                    font-size: 1rem;
+                    margin: 10rem auto 2.5rem;
                 }
             }
+
+
+        }
+    }
+}
+
+.consultora-familiar-block {
+    min-height: 100vh;
+    width: 100%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    background-color: transparent; // Changed from #ffffff to see the grid
+    padding: 0;
+    margin-top: 6rem;
+    position: relative;
+    z-index: 1;
+
+    @media (max-width: 768px) {
+        min-height: auto;
+        padding: 80px 0;
+        margin-top: 0;
+    }
+
+    .container {
+        width: 100%;
+    }
+
+    .familiar-title {
+        font-size: 4rem;
+        font-weight: 800;
+        background: linear-gradient(123.75deg, #2F2F2F 0%, #707070 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+        margin-bottom: 50px;
+        letter-spacing: -2px;
+
+        @media (max-width: 768px) {
+            font-size: 4.2rem;
         }
     }
 
-    .consultora-engineering-block {
-        min-height: auto;
-        padding: 100px 0;
-        width: 100%;
+    .familiar-pills {
         display: flex;
+        flex-direction: column;
+        gap: 20px;
         align-items: center;
-        background-color: transparent; // Changed from #ffffff to see the grid
-        position: relative;
-        z-index: 1;
 
+        .familiar-pill {
+            background: white;
+            padding: 18px 45px;
+            border-radius: 60px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.04);
+            color: #5E5E5E;
+            font-size: 1.1rem;
+            font-weight: 500;
+            width: 100%;
+            max-width: 650px;
+            border: 1px solid rgba(0, 0, 0, 0.02);
+            transition: all 0.3s ease;
+            cursor: pointer;
 
-        @media (max-width: 992px) {
-            padding-top: 200px;
-
-        }
-
-        .container {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-            gap: 4rem;
-
-            @media (max-width: 992px) {
-                flex-direction: column-reverse;
-                text-align: center;
-                gap: 0rem;
-
+            @media (max-width: 768px) {
+                padding: 15px 25px;
+                font-size: 1rem;
+                border-radius: 20px;
+                max-width: 90%;
             }
 
+            &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+                color: #19222B;
+            }
+        }
+    }
+}
+
+.consultora-engineering-block {
+    min-height: auto;
+    padding: 100px 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    background-color: transparent; // Changed from #ffffff to see the grid
+    position: relative;
+    z-index: 1;
+
+
+    @media (max-width: 992px) {
+        padding-top: 200px;
+
+    }
+
+    .container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 4rem;
+
+        @media (max-width: 992px) {
+            flex-direction: column-reverse;
+            text-align: center;
+            gap: 0rem;
+
+        }
+
+
+
+    }
+
+    .engineering-graphic {
+        width: 100%;
+        max-width: 600px;
+        flex: 1;
+
+        .chart-line {
+            stroke-dasharray: 1200;
+            stroke-dashoffset: 1200;
+        }
+
+        .chart-fill {
+            clip-path: inset(100% 0 0 0);
+        }
+
+        .chart-dot {
+            opacity: 1;
+            filter: drop-shadow(0 0 5px rgba(58, 84, 255, 0.4));
+        }
+
+        @media (max-width: 998px) {
+            display: flex;
+            transform: scale(1.1);
+            margin-right: 3rem;
+
 
 
         }
 
-        .engineering-graphic {
-            width: 100%;
-            max-width: 600px;
-            flex: 1;
+        @media (max-width: 778px) {
+            display: flex;
+            transform: scale(1.1);
 
+
+        }
+
+        &.is-visible {
             .chart-line {
-                stroke-dasharray: 1200;
-                stroke-dashoffset: 1200;
+                animation: draw-line 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
             }
 
             .chart-fill {
-                clip-path: inset(100% 0 0 0);
-            }
-
-            .chart-dot {
-                opacity: 1;
-                filter: drop-shadow(0 0 5px rgba(58, 84, 255, 0.4));
-            }
-
-            @media (max-width: 998px) {
-                display: flex;
-                transform: scale(1.1);
-                margin-right: 3rem;
-
-
-
-            }
-
-            @media (max-width: 778px) {
-                display: flex;
-                transform: scale(1.1);
-
-
-            }
-
-            &.is-visible {
-                .chart-line {
-                    animation: draw-line 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-                }
-
-                .chart-fill {
-                    animation: reveal-fill 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-                    animation-delay: 0.1s;
-                }
-            }
-
-            @keyframes draw-line {
-                to {
-                    stroke-dashoffset: 0;
-                }
-            }
-
-            @keyframes reveal-fill {
-                to {
-                    clip-path: inset(0 0 0 0);
-                }
-            }
-
-        }
-
-        .engineering-content {
-            flex: 1;
-            text-align: left;
-
-            @media (max-width: 992px) {
-                text-align: center;
-                order: 1;
-            }
-
-            .engineering-main-title {
-                font-size: 3rem;
-                font-weight: 800;
-                line-height: 1.1;
-                letter-spacing: -2px;
-                margin: 0;
-
-                .blue {
-                    color: $primary-color;
-                }
-
-                .dark {
-                    background: linear-gradient(123.75deg, #2F2F2F 40.04%, #707070 91.9%);
-                    background-clip: text;
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                }
-
-                @media (max-width: 1200px) {
-                    font-size: 2.6rem;
-                }
-
-                @media (max-width: 768px) {
-                    font-size: 2.8rem;
-                    letter-spacing: -1px;
-                }
+                animation: reveal-fill 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+                animation-delay: 0.1s;
             }
         }
+
+        @keyframes draw-line {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes reveal-fill {
+            to {
+                clip-path: inset(0 0 0 0);
+            }
+        }
+
+    }
+
+    .engineering-content {
+        flex: 1;
+        text-align: left;
+
+        @media (max-width: 992px) {
+            text-align: center;
+            order: 1;
+        }
+
+        .engineering-main-title {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -2px;
+            margin: 0;
+
+            .blue {
+                color: $primary-color;
+            }
+
+            .dark {
+                background: linear-gradient(123.75deg, #2F2F2F 40.04%, #707070 91.9%);
+                background-clip: text;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+
+            @media (max-width: 1200px) {
+                font-size: 2.6rem;
+            }
+
+            @media (max-width: 768px) {
+                font-size: 2.8rem;
+                letter-spacing: -1px;
+            }
+        }
+    }
+}
+
+@keyframes consultora-fluid-1 {
+
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0) scale(1, 1) rotate(0deg);
+    }
+
+    33% {
+        transform: translate3d(-20%, 5%, 0) scale(1.7, 1.2) rotate(4deg);
+    }
+
+    66% {
+        transform: translate3d(15%, -8%, 0) scale(1.1, 1.9) rotate(-4deg);
+    }
+}
+
+@keyframes consultora-fluid-2 {
+
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0) scale(1.6, 1.5) rotate(0deg);
+    }
+
+    33% {
+        transform: translate3d(25%, -6%, 0) scale(1.9, 1.1) rotate(-6deg);
+    }
+
+    66% {
+        transform: translate3d(-15%, 12%, 0) scale(1.1, 1.7) rotate(6deg);
     }
 }

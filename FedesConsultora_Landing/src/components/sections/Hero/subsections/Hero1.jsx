@@ -36,9 +36,9 @@ const Hero1 = () => {
             left: "0%",
             position: "relative",
             transition: {
-                duration: isMobile ? 1.8 : 2.5,
+                duration: isMobile ? 1.2 : 1.8,
                 ease: [0.16, 1, 0.3, 1],
-                delay: 0.2
+                delay: 0.1
             }
         }
     };
@@ -63,8 +63,8 @@ const Hero1 = () => {
             opacity: 1,
             filter: "blur(0px)",
             transition: {
-                delay: isMobile ? 1.9 : 2.8,
-                duration: 0.8,
+                delay: isMobile ? 1.0 : 1.4,
+                duration: 0.6,
                 ease: [0.16, 1, 0.3, 1]
             }
         },
@@ -74,8 +74,8 @@ const Hero1 = () => {
             opacity: 1,
             filter: "blur(0px)",
             transition: {
-                delay: isMobile ? 2.1 : 3.1,
-                duration: 0.8,
+                delay: isMobile ? 1.1 : 1.6,
+                duration: 0.6,
                 ease: [0.16, 1, 0.3, 1]
             }
         }

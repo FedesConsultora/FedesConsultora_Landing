@@ -50,7 +50,9 @@ const Consultora = () => {
         <section id="consultora" className="consultora-section">
             <div className="consultora-background">
                 <img src={ConsultoraDegr1} className="bg-degr degr-1" alt="" />
+                <img src={ConsultoraDegr1} className="bg-degr degr-1-deep" alt="" />
                 <img src={ConsultoraDegr2} className="bg-degr degr-2" alt="" />
+                <img src={ConsultoraDegr2} className="bg-degr degr-2-deep" alt="" />
                 <img src={ConsultoraGrid} className="bg-grid" alt="" />
             </div>
 
