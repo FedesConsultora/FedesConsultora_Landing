@@ -5,10 +5,20 @@ import SectionPill from '../../ui/SectionPill';
 import ServiceCard from './ServiceCard';
 import './Agencia.scss';
 import AgenciaDegr1 from '../../../assets/img/backgrounds/agencia-degr (2).svg';
+import AgenciaDegr2 from '../../../assets/img/backgrounds/agencia-degr (1).svg';
 import ConsultoraGrid from '../../../assets/img/backgrounds/consultora-grilla (3).svg';
 import { motion } from 'framer-motion';
 
+// 1. Guardar tus imágenes en: src/assets/img/services/
+// 2. Nombres: paid-media.webp, branding.webp, social.webp
+// 3. Descomentar las siguientes líneas cuando las tengas:
+// import PaidMediaImg from '../../../assets/img/services/paid-media.webp';
+import BrandingImg from '../../../assets/img/services/branding.webp';
+import SocialImg from '../../../assets/img/services/social.webp';
+
 const Agencia = () => {
+    // Definimos como null las que aún no existen para que no den error
+    const PaidMediaImg = null;
     const dropVariants = {
         hidden: {
             opacity: 0,
@@ -18,9 +28,9 @@ const Agencia = () => {
             opacity: 1,
             y: 0,
             transition: {
-                duration: 0.8,
-                ease: [0.25, 1, 0.5, 1],
-                delay: i * 0.15
+                duration: 1.8,
+                ease: [0.26, 1, 0.36, 1],
+                delay: i * 0.1
             }
         })
     };
@@ -30,19 +40,19 @@ const Agencia = () => {
             title: "Paid media (ads)",
             tag: "Growth",
             desc: "Ponemos tu mensaje frente a quienes ya están listos para comprar. Meta y Google Ads con foco en ROI",
-            image: ""
+            image: PaidMediaImg
         },
         {
             title: "Branding y diseño",
             tag: "Identidad",
             desc: "Identidades visuales que ordenan, diferencian y construyen autoridad inmediata.",
-            image: ""
+            image: BrandingImg
         },
         {
             title: "Social y content",
             tag: "Engage",
             desc: "Estrategias de contenido vertical (reels de Instagram y videos de TikTok) para captar y retener la audiencia.",
-            image: ""
+            image: SocialImg
         }
     ];
 
@@ -50,8 +60,8 @@ const Agencia = () => {
         hidden: {},
         visible: {
             transition: {
-                staggerChildren: 0.8,
-                delayChildren: 0.7,
+                staggerChildren: 0.4,
+                delayChildren: 0.2,
             },
         },
     };
@@ -65,8 +75,7 @@ const Agencia = () => {
             y: 0,
             opacity: 1,
             transition: {
-
-                duration: 1,
+                duration: 1.65,
                 ease: [0.26, 1, 0.36, 1],
             },
         },
@@ -77,6 +86,7 @@ const Agencia = () => {
         <div id="agencia" className="agencia-wrapper">
             <div className="agencia-background">
                 <img src={AgenciaDegr1} className="bg-degr degr-1" alt="" />
+                <img src={AgenciaDegr2} className="bg-degr degr-2" alt="" />
 
                 <img src={ConsultoraGrid} className="bg-grid" alt="" />
             </div>
@@ -88,24 +98,30 @@ const Agencia = () => {
                     <div className="agencia-content">
                         <h2 className="agencia-title">
                             <motion.div
-                                variants={titleContainer}
-                                initial="hidden"
-                                whileInView="visible"
-                                viewport={{ once: true, amount: 0.6 }}
+                                className="agencia-title-inner highlight"
+                                initial={{ opacity: 0, y: 40 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true, margin: '-80px' }}
+                                transition={{
+                                    duration: 1.8,
+                                    ease: [0.30, 1, 0.36, 1],
+                                }}
                             >
-                                <motion.span
-                                    className="agencia-title-inner"
-                                    variants={titleItem}
-                                >
-                                    Creatividad
-                                </motion.span>
+                                Creatividad
+                            </motion.div>
 
-                                <motion.span
-                                    className="agencia-title-inner"
-                                    variants={titleItem}
-                                >
-                                    que se mide <br />en ventas.
-                                </motion.span>
+                            <motion.div
+                                className="agencia-title-inner"
+                                initial={{ opacity: 0, y: 40 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true, margin: '-100px' }}
+                                transition={{
+                                    duration: 1.2,
+                                    delay: 0.6,
+                                    ease: [0.30, 1, 0.36, 1],
+                                }}
+                            >
+                                que se mide <br />en ventas.
                             </motion.div>
                         </h2>
 
@@ -150,8 +166,8 @@ const Agencia = () => {
                 </div>
             </section>
 
-            {/* Bloque 3: Casos de éxito (Agencia) */}
-            <Agencia1 />
+            {/* Bloque 3: Casos de éxito (Agencia) (Hidden as requested) */}
+            {/* <Agencia1 /> */}
         </div>
     );
 };

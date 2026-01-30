@@ -4,17 +4,32 @@
     position: absolute;
     top: calc(100% + 15px);
     right: 0;
-    width: 400px;
+    width: 520px;
     background: white;
     border-radius: 30px;
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
     border: 1px solid rgba(0, 0, 0, 0.05);
     z-index: 1002;
-    overflow: hidden;
-    padding: 35px;
+    overflow-y: auto;
+    max-height: calc(100vh - 120px);
+    padding: 30px;
     display: flex;
     flex-direction: column;
     transform-origin: top right;
+
+    // Custom scrollbar for a pro look
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+    }
 
     &::after {
         content: '';
@@ -27,53 +42,79 @@
         transform: rotate(45deg);
         border-top: 1px solid rgba(0, 0, 0, 0.05);
         border-left: 1px solid rgba(0, 0, 0, 0.05);
+        pointer-events: none;
     }
 
     .dropdown-header {
-        margin-bottom: 25px;
+        margin-bottom: 20px;
 
         h3 {
             font-family: $font-title;
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 800;
             color: #19222B;
-            margin: 0 0 10px 0;
+            margin: 0 0 5px 0;
             letter-spacing: -0.02em;
         }
 
         p {
             color: #666;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             margin: 0;
             line-height: 1.4;
         }
     }
 
-    // Adjusting the shared component to fit the dropdown
+    // Making the form more compact inside the dropdown
     .contacto-form-container {
-        padding: 0;
-
         .contacto-form {
-            gap: 12px;
+            gap: 20px !important; // Overriding the 36px gap from the main section
+
+            .form-row {
+                gap: 15px !important;
+            }
 
             .form-group {
+                .input-wrapper {
+                    label {
+                        font-size: 0.9rem;
+                    }
 
-                input,
-                textarea {
-                    padding: 12px 20px;
-                    border-radius: 12px;
-                    font-size: 0.95rem;
-                }
-
-                textarea {
-                    min-height: 90px;
+                    input,
+                    textarea {
+                        padding: 12px 0;
+                        font-size: 0.95rem;
+                    }
                 }
             }
 
-            .btn-submit {
-                padding: 14px;
-                font-size: 1rem;
+            .custom-select-container {
+                .static-label {
+                    margin-bottom: 4px;
+                }
+
+                .select-trigger {
+                    padding: 8px 0;
+                }
             }
+
+            .buttons-group {
+                margin-top: 5px;
+            }
+        }
+    }
+
+    // Success state adjustment for the dropdown
+    .success-state {
+        min-height: 300px;
+        padding: 0;
+
+        .success-main-title {
+            font-size: 1.5rem; // Slightly smaller for dropdown
+        }
+
+        .lottie-wrapper {
+            transform: scale(0.85);
         }
     }
 }

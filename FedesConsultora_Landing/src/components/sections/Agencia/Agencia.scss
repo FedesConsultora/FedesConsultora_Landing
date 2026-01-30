@@ -4,7 +4,7 @@
     background-color: #ffffff;
     width: 100%;
     position: relative;
-    overflow-x: hidden;
+    overflow: hidden; // Prevent any expansion from animated elements
 
     .agencia-background {
         position: absolute;
@@ -14,25 +14,31 @@
         height: 100%;
         z-index: 0;
         pointer-events: none;
+        overflow: hidden; // Contain the blur and movements here too
 
         .bg-degr {
             position: absolute;
             pointer-events: none;
+            will-change: transform;
 
             &.degr-1 {
-                top: -15%;
-                right: -1%;
-                height: 70%;
-                width: 50%;
-                opacity: 0.9;
-                filter: blur(30px);
+                top: 5%;
+                right: -5%;
+                height: 40%;
+                width: 70%;
+                opacity: 0.75;
+                filter: blur(80px) saturate(1.5) brightness(1.1);
+                animation: agencia-fluid-1 8s ease-in-out infinite; // Faster: 10s -> 8s
             }
 
             &.degr-2 {
-                top: -10%;
-                right: -5%;
-                width: 70%;
-                opacity: 0.7;
+                bottom: -5%;
+                left: -10%;
+                height: 45%;
+                width: 75%;
+                opacity: 0.65;
+                filter: blur(90px) saturate(1.4) brightness(1.1);
+                animation: agencia-fluid-2 10s ease-in-out infinite alternate; // Faster: 12s -> 10s
             }
         }
 
@@ -87,11 +93,11 @@
         }
 
         .agencia-content {
-            max-width: 650px;
+            max-width: 800px; // Increased width
             text-align: left;
 
             @media (max-width: 1400px) {
-                max-width: 550px;
+                max-width: 700px;
             }
 
             @media (max-width: 768px) {
@@ -104,22 +110,23 @@
             .agencia-title {
                 font-family: $font-title;
                 font-size: 7rem;
-                font-weight: 800;
+                font-weight: 500; // Normal weight like Consultora
                 line-height: .95;
                 display: inline-block;
                 width: fit-content;
-                background: linear-gradient(123.75deg, #0F0F0F 0%, #7D7D7D 100%);
-                -webkit-background-clip: text;
-                background-clip: text;
-                -webkit-text-fill-color: transparent;
                 margin-bottom: 2.5rem;
+
+                .highlight {
+                    font-weight: 800; // Only specific word gets bold
+                    display: block;
+                }
 
                 .agencia-title-inner {
                     background: linear-gradient(123.75deg, #0F0F0F 0%, #7D7D7D 100%);
                     -webkit-background-clip: text;
                     background-clip: text;
                     -webkit-text-fill-color: transparent;
-                    display: inline-block;
+                    display: block; // Changed to block for better structure
                     will-change: transform, opacity;
                 }
 
@@ -268,5 +275,35 @@
                 }
             }
         }
+    }
+}
+
+@keyframes agencia-fluid-1 {
+
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0) scale(1, 1) rotate(0deg);
+    }
+
+    33% {
+        transform: translate3d(25%, -15%, 0) scale(1.15, 0.85) rotate(5deg);
+    }
+
+    66% {
+        transform: translate3d(-20%, 15%, 0) scale(0.85, 1.15) rotate(-5deg);
+    }
+}
+
+@keyframes agencia-fluid-2 {
+    0% {
+        transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+    }
+
+    50% {
+        transform: translate3d(-25%, 20%, 0) scale(1.2) rotate(-6deg);
+    }
+
+    100% {
+        transform: translate3d(15%, -15%, 0) scale(0.9) rotate(4deg);
     }
 }

@@ -4,32 +4,76 @@
     display: flex;
     align-items: center;
     background: white;
-    padding: 6px 16px; // Increased padding
+    padding: 8px 24px 8px 8px;
     border-radius: 100px;
-    gap: 10px; // Increased gap
+    gap: 14px;
     min-width: fit-content;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: $transition-base;
-    flex-shrink: 0; // Crucial for marquee
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    flex-shrink: 0;
     border: 1px solid rgba(0, 0, 0, 0.05);
+    text-decoration: none;
+    cursor: default;
+
+    &.is-link {
+        cursor: pointer;
+
+        &:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+            border-color: rgba(26, 86, 219, 0.2);
+
+            .avatar-container {
+                .linkedin-badge {
+                    transform: scale(1.2) rotate(5deg);
+                }
+            }
+        }
+    }
 
     .avatar-container {
-        width: 38px; // Increased from 32px
-        height: 38px; // Increased from 32px
+        position: relative;
+        width: 56px;
+        height: 56px;
         border-radius: 50%;
-        overflow: hidden;
         flex-shrink: 0;
+        background: #f5f5f5;
 
         .avatar {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            border-radius: 50%;
+            display: block;
         }
 
         .avatar-placeholder {
             width: 100%;
             height: 100%;
             background: #e0e0e0;
+            border-radius: 50%;
+        }
+
+        .linkedin-badge {
+            position: absolute;
+            bottom: 0px;
+            right: 0px;
+            width: 20px;
+            height: 20px;
+            background: #0077b5;
+            color: white;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2;
+
+            .linkedin-icon {
+                width: 11px;
+                height: 11px;
+            }
         }
     }
 
@@ -41,16 +85,16 @@
 
         .chip-name {
             color: #19222B;
-            font-size: 0.85rem; // Increased from 0.75rem
+            font-size: 1rem;
             font-weight: 700;
-            line-height: 1;
+            line-height: 1.1;
             margin-bottom: 2px;
             white-space: nowrap;
         }
 
         .chip-role {
             color: #8F8F8F;
-            font-size: 0.7rem; // Increased for better readability
+            font-size: 0.75rem;
             font-weight: 400;
             line-height: 1;
             white-space: nowrap;
@@ -60,20 +104,32 @@
 
 @media (max-width: 768px) {
     .team-chip {
-        padding: 4px 10px;
-        gap: 6px;
+        padding: 6px 16px 6px 6px;
+        gap: 10px;
 
         .avatar-container {
-            width: 28px;
-            height: 28px;
+            width: 44px;
+            height: 44px;
+
+            .linkedin-badge {
+                width: 16px;
+                height: 16px;
+
+                .linkedin-icon {
+                    width: 9px;
+                    height: 9px;
+                }
+            }
         }
 
-        .chip-name {
-            font-size: 0.7rem;
-        }
+        .chip-info {
+            .chip-name {
+                font-size: 0.85rem;
+            }
 
-        .chip-role {
-            font-size: 0.6rem;
+            .chip-role {
+                font-size: 0.65rem;
+            }
         }
     }
 }

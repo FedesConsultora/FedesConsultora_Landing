@@ -4,6 +4,16 @@ import ContactForm from '../sections/Contacto/ContactForm';
 import './HeaderContactDropdown.scss';
 
 const HeaderContactDropdown = ({ isOpen, onClose }) => {
+    const [isSuccess, setIsSuccess] = React.useState(false);
+
+    // Reset success state when closing/opening
+    React.useEffect(() => {
+        if (!isOpen) {
+            const timer = setTimeout(() => setIsSuccess(false), 300);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen]);
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -14,12 +24,19 @@ const HeaderContactDropdown = ({ isOpen, onClose }) => {
                     exit={{ opacity: 0, y: -20, scale: 0.95 }}
                     transition={{ duration: 0.3, ease: [0.165, 0.84, 0.44, 1] }}
                 >
-                    <div className="dropdown-header">
-                        <h3>Hablemos</h3>
-                        <p>Contanos tu proyecto y nos pondremos en contacto con vos a la brevedad.</p>
-                    </div>
+                    {!isSuccess && (
+                        <div className="dropdown-header">
+                            <h3>Hablemos</h3>
+                            <p>Contanos tu proyecto y nos pondremos en contacto con vos a la brevedad.</p>
+                        </div>
+                    )}
 
-                    <ContactForm title="ESCRIBINOS" showTitle={false} onSuccess={onClose} />
+                    <ContactForm
+                        title="ESCRIBINOS"
+                        showTitle={false}
+                        onStartSuccess={() => setIsSuccess(true)}
+                        onSuccess={onClose}
+                    />
                 </motion.div>
             )}
         </AnimatePresence>

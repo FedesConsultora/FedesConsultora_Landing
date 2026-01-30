@@ -4,6 +4,10 @@ import { Link } from 'react-router-dom'
 import FedesLogoDegr from '../../../../assets/img/logo-degr.svg'
 import './Hero1.scss'
 
+// Import de las imágenes sugeridas (webp)
+import SolutionConsultora from '../../../../assets/img/hero/solution-consultora.webp'
+import SolutionAgencia from '../../../../assets/img/hero/solution-agencia.webp'
+
 const Hero1 = () => {
     const [isMobile, setIsMobile] = useState(false);
     const containerRef = useRef(null);
@@ -119,16 +123,19 @@ const Hero1 = () => {
 
                 <div className="hero-1-cards">
                     <div className="solution-card">
-                        <div className="card-image-placeholder"></div>
-                        <h3>¿Sentís que tu negocio te atrapa?
-                        </h3>
+                        <div className="card-image-wrap">
+                            <img src={SolutionConsultora} alt="Consultora" className="card-image" />
+                        </div>
+                        <h3>¿Sentís que <strong>tu negocio te atrapa?</strong></h3>
                         <p>Ventas desordenadas, rentabilidad baja, dependencia de estar presente 24/7.</p>
                         <Link to="/consultora" className="solution-btn">Necesito orden</Link>
                     </div>
 
                     <div className="solution-card">
-                        <div className="card-image-placeholder"></div>
-                        <h3>¿Sentís que el mercado te ignora?</h3>
+                        <div className="card-image-wrap">
+                            <img src={SolutionAgencia} alt="Agencia" className="card-image" />
+                        </div>
+                        <h3>¿Sentís que <strong>el mercado te ignora?</strong></h3>
                         <p>Marca desactualizada, anuncios que no convierten, competencia que avanza.</p>
                         <Link to="/agencia" className="solution-btn">Necesito clientes</Link>
                     </div>

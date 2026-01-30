@@ -34,36 +34,28 @@ const Blog = () => {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const data = await getBlogPosts();
-                setPosts(data);
+                const allPosts = await getBlogPosts();
+
+                if (allPosts.length > 0) {
+                    const firstBatch = allPosts.slice(0, postsPerPage + 1);
+                    setPosts(firstBatch);
+                    setLoading(false);
+
+                    if (allPosts.length > (postsPerPage + 1)) {
+                        setTimeout(() => {
+                            setPosts(allPosts);
+                        }, 100);
+                    }
+                } else {
+                    setLoading(false);
+                }
             } catch (error) {
                 console.error("Error loading posts:", error);
-            } finally {
                 setLoading(false);
             }
         };
         fetchPosts();
     }, []);
-
-    if (loading) {
-        return (
-            <section id="blog" className="blog-section">
-                <div className="container" style={{ textAlign: 'center', padding: '100px 0' }}>
-                    <p>Cargando artículos...</p>
-                </div>
-            </section>
-        );
-    }
-
-    if (posts.length === 0) {
-        return (
-            <section id="blog" className="blog-section">
-                <div className="container" style={{ textAlign: 'center', padding: '100px 0' }}>
-                    <p>No se encontraron artículos.</p>
-                </div>
-            </section>
-        );
-    }
 
     const featuredPost = posts[0];
     const allOtherPosts = posts.slice(1);
@@ -102,6 +94,7 @@ const Blog = () => {
                 <div className="blog-header-main">
                     <h2 className="main-title">
                         <motion.span
+                            className="dark-gradient-text"
                             initial="hidden"
                             whileInView="visible"
                             viewport={{ once: true, amount: 0 }}
@@ -112,7 +105,7 @@ const Blog = () => {
                             Lo que aprendimos haciendo,
                         </motion.span>
                         <motion.span
-                            className="gradient-text"
+                            className="white-text"
                             initial="hidden"
                             whileInView="visible"
                             viewport={{ once: true, amount: 0 }}
@@ -125,84 +118,117 @@ const Blog = () => {
                     </h2>
                 </div>
 
-                <div className="blog-featured">
-                    <Link
-                        to={`/blog/${featuredPost.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="featured-card-link"
-                    >
-                        <div className="featured-card">
-                            <div className="featured-image">
-                                <img src={featuredPost.image} alt={featuredPost.title} />
-                            </div>
-                            <div className="featured-content">
-                                <div className="content-inner">
-                                    <h2 style={{ fontWeight: 400 }} className="featured-title">{featuredPost.title}</h2>
-                                    <p className="featured-excerpt">{featuredPost.description}</p>
-                                </div>
-                                <div className="featured-meta">
-                                    <span className="badge-category">Fedes consultora</span>
-                                    <span className="badge-date">{featuredPost.date}</span>
-                                </div>
-                            </div>
+                {loading ? (
+                    <div className="loader-container">
+                        <div className="circular-loader">
+                            <div className="inner-circle"></div>
                         </div>
-                    </Link>
-                </div>
-
-                <div className="blog-grid">
-                    {currentPosts.map((post, index) => (
-                        <BlogCard
-                            key={`${post.id}-${index}`}
-                            id={post.id}
-                            category="Fedes consultora"
-                            date={post.date}
-                            title={post.title}
-                            excerpt={post.description}
-                            image={post.image}
-                        />
-                    ))}
-                </div>
-
-                {totalPages > 1 && (
-                    <div className="blog-pagination">
-                        <button
-                            className={`pagination-btn prev ${currentPage === 1 ? 'disabled' : ''}`}
-                            onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                        >
-                            Anterior
-                        </button>
-
-                        <div className="pagination-numbers">
-                            {[...Array(totalPages)].map((_, i) => (
-                                <button
-                                    key={i + 1}
-                                    className={`page-number ${currentPage === i + 1 ? 'active' : ''}`}
-                                    onClick={() => handlePageChange(i + 1)}
+                        <p className="loading-text">Cargando artículos...</p>
+                    </div>
+                ) : posts.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '100px 0' }}>
+                        <p>No se encontraron artículos.</p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="blog-featured">
+                            <motion.div
+                                initial={{ opacity: 0, y: 40 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                                viewport={{ once: true }}
+                            >
+                                <Link
+                                    to={`/blog/${featuredPost.id}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="featured-card-link"
                                 >
-                                    {i + 1}
-                                </button>
+                                    <div className="featured-card">
+                                        <div className="featured-image">
+                                            <img src={featuredPost.image} alt={featuredPost.title} />
+                                        </div>
+                                        <div className="featured-content">
+                                            <h2 className="featured-title">{featuredPost.title}</h2>
+                                            <p className="featured-excerpt">{featuredPost.description}</p>
+                                            <div className="featured-meta">
+                                                <span className="badge-category">Fedes consultora</span>
+                                                <span className="badge-date">{featuredPost.date}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Link>
+                            </motion.div>
+                        </div>
+
+                        <div className="blog-grid">
+                            {currentPosts.map((post, index) => (
+                                <motion.div
+                                    key={`${post.id}-${index}`}
+                                    initial={{ opacity: 0, y: 30 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    transition={{
+                                        duration: 0.8,
+                                        ease: [0.16, 1, 0.3, 1],
+                                        delay: (index % 3) * 0.1 // Stagger by row for better feel
+                                    }}
+                                    viewport={{ once: true, margin: "-50px" }}
+                                >
+                                    <BlogCard
+                                        id={post.id}
+                                        category="Fedes consultora"
+                                        date={post.date}
+                                        title={post.title}
+                                        excerpt={post.description}
+                                        image={post.image}
+                                    />
+                                </motion.div>
                             ))}
                         </div>
 
-                        <button
-                            className={`pagination-btn next ${currentPage === totalPages ? 'disabled' : ''}`}
-                            onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                        >
-                            Siguiente
-                        </button>
-                    </div>
+                        {totalPages > 1 && (
+                            <div className="blog-pagination">
+                                <button
+                                    className={`pagination-btn prev ${currentPage === 1 ? 'disabled' : ''}`}
+                                    onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                >
+                                    Anterior
+                                </button>
+
+                                <div className="pagination-numbers">
+                                    {[...Array(totalPages)].map((_, i) => (
+                                        <button
+                                            key={i + 1}
+                                            className={`page-number ${currentPage === i + 1 ? 'active' : ''}`}
+                                            onClick={() => handlePageChange(i + 1)}
+                                        >
+                                            {i + 1}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <button
+                                    className={`pagination-btn next ${currentPage === totalPages ? 'disabled' : ''}`}
+                                    onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    Siguiente
+                                </button>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
 
             <div className="blog-background-bottom">
-                <img src={BlogDegr2} className="bg-degr degr-bottom-center" alt="" />
+                <img src={BlogDegr2} className="bg-degr degr-bottom-1" alt="" />
+                <img src={BlogDegr1} className="bg-degr degr-bottom-2" alt="" />
+                <div className="floating-blob blob-1"></div>
+                <div className="floating-blob blob-2"></div>
             </div>
         </section>
     );
 };
 
 export default Blog;
-

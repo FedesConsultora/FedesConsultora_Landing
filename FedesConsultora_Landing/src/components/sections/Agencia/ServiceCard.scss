@@ -70,7 +70,16 @@
 
     // Adaptations for specialized usage if needed
     &.no-image {
-        background-color: #E5E5E5;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+
+        &::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0.4;
+            background-image: radial-gradient(#dee2e6 0.5px, transparent 0.5px);
+            background-size: 10px 10px;
+        }
     }
 
     @media (max-width: 768px) {

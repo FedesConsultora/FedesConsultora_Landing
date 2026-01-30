@@ -21,9 +21,9 @@ const Consultora = () => {
             opacity: 1,
             y: 0,
             transition: {
-                duration: 0.8,
-                delay: i * 0.18,
-                ease: [0.25, 1, 0.5, 1], // smooth agency easing
+                duration: 1.8,
+                delay: i * 0.1,
+                ease: [0.26, 1, 0.36, 1],
             },
         }),
     };
@@ -67,7 +67,7 @@ const Consultora = () => {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true, margin: '-80px' }}
                                 transition={{
-                                    duration: 2,
+                                    duration: 1.8,
                                     ease: [0.30, 1, 0.36, 1],
                                 }}
                             >
@@ -80,8 +80,8 @@ const Consultora = () => {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true, margin: '-80px' }}
                                 transition={{
-                                    duration: 1,
-                                    delay: 1.2,
+                                    duration: 0.8,
+                                    delay: 0.4,
                                     ease: [0.30, 1, 0.36, 1],
                                 }}
                             >
@@ -144,10 +144,10 @@ const Consultora = () => {
                                     cy="0"
                                     r="1"
                                     gradientUnits="userSpaceOnUse"
-                                    gradientTransform="translate(363.678 81.8939) rotate(89.7632) scale(417.245 355.177)"
+                                    gradientTransform="translate(363.678 81.8939) rotate(85.3712) scale(334.574 356.941)"
                                 >
                                     <stop stopColor="#3B82F6" />
-                                    <stop offset="1" stopColor="#1B5EBF" stopOpacity="0" />
+                                    <stop offset="1" stopColor="#3AB3FF" stopOpacity="0" />
                                 </radialGradient>
 
                                 <radialGradient
@@ -158,44 +158,21 @@ const Consultora = () => {
                                     gradientUnits="userSpaceOnUse"
                                     gradientTransform="translate(346.437 169.825) rotate(-20.7231) scale(423.906 114.677)"
                                 >
-                                    <stop stopColor="#1B5EBF" />
-                                    <stop offset="0.725952" stopColor="#1B5EBF" />
-                                    <stop offset="1" stopColor="#1B5EBF" stopOpacity="0" />
+                                    <stop stopColor="#3A54FF" />
+                                    <stop offset="0.725952" stopColor="#3A54FF" />
+                                    <stop offset="1" stopColor="#3A54FF" stopOpacity="0" />
                                 </radialGradient>
                             </defs>
 
-
                             <path
                                 className="chart-fill"
-                                d="
-      M3 352.584
-      L192.692 247.411
-      L304.761 259.48
-      L389.244 157.072
-      L463.382 207.756
-      L528.899 138.79
-      L640.968 119.825
-      L742.916 7.7561
-      V472.998
-      H3
-      Z
-    "
+                                d="M192.692 247.411L3 352.584V472.998H742.916V7.7561L640.968 119.825L528.899 138.79L463.382 207.756L389.244 157.072L304.761 259.48L192.692 247.411Z"
                                 fill="url(#paint0_radial_364_797)"
                             />
 
-
                             <path
                                 className="chart-line"
-                                d="
-      M3 352.584
-      L192.692 247.411
-      L304.761 259.48
-      L389.244 157.072
-      L463.382 207.756
-      L528.899 138.79
-      L640.968 119.825
-      L742.916 7.7561
-    "
+                                d="M3 352.584L192.692 247.411L304.761 259.48L389.244 157.072L463.382 207.756L528.899 138.79L640.968 119.825L742.916 7.7561"
                                 stroke="url(#paint1_radial_364_797)"
                                 strokeWidth="6"
                                 strokeLinecap="round"
@@ -209,7 +186,6 @@ const Consultora = () => {
                                 r="8"
                                 fill="url(#paint1_radial_364_797)"
                             />
-
 
                             <path
                                 className="chart-edge"
@@ -252,8 +228,8 @@ const Consultora = () => {
                 </div>
             </div>
 
-            {/* Bloque 4: Casos de éxito */}
-            <Consultora1 />
+            {/* Bloque 4: Casos de éxito (Hidden as requested) */}
+            {/* <Consultora1 /> */}
         </section>
     );
 };

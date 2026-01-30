@@ -23,6 +23,7 @@
         .bg-degr {
             position: absolute;
             pointer-events: none;
+            will-change: transform;
 
             &.degr-1 {
                 top: 30%;
@@ -31,6 +32,7 @@
                 width: 100%;
                 opacity: 1;
                 filter: blur(30px);
+                animation: agencia-1-fluid 25s ease-in-out infinite;
             }
 
             @media (max-width: 768px) {
@@ -245,5 +247,21 @@
                 background-color: #1e40af;
             }
         }
+    }
+}
+
+@keyframes agencia-1-fluid {
+
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0) scale(1, 1) rotate(0deg);
+    }
+
+    33% {
+        transform: translate3d(15%, 2%, 0) scale(1.15, 0.95) rotate(3deg);
+    }
+
+    66% {
+        transform: translate3d(-10%, -2%, 0) scale(0.95, 1.1) rotate(-3deg);
     }
 }

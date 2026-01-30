@@ -9,7 +9,7 @@ const Contacto = () => {
             <div className="container">
                 <div className="contacto-wrapper">
                     <div className="contacto-title">
-                        <h2>¿Listo para <span style={{ fontWeight: 'bold' }}>escalar?</span></h2>
+                        <h2>¿Listo para <span className='negrita'>escalar?</span></h2>
                     </div>
 
                     <div className="contacto-info-items">
@@ -19,13 +19,13 @@ const Contacto = () => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
-                                WhatsApp: +54 9 221 309-2529
+                                <span className='negrita'>WhatsApp:</span> +54 9 221 309-2529
                             </a>
                         </p>
 
                         <p>
                             <a className='contact-item' style={{ pointerEvents: ' auto' }} href="mailto:info@fedesconsultora.com" target="_blank" rel="noopener noreferrer">
-                                Email: info@fedesconsultora.com
+                               <span className='negrita'>Email:</span> info@fedesconsultora.com
                             </a>
                         </p>
 
@@ -35,7 +35,7 @@ const Contacto = () => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
-                                Dirección: Plaza Paso 159, Buenos Aires
+                               <span className='negrita'>Dirección:</span> Plaza Paso 159, Buenos Aires
                             </a>
                         </p>
 
