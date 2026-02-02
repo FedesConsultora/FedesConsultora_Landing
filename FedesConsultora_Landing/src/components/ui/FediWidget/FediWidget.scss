@@ -1,0 +1,259 @@
+@use '../../../styles/_variables.scss' as *;
+
+.fedi-widget {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+
+    .fedi-trigger-wrapper {
+        position: relative;
+        width: 110px;
+        height: 110px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        @media (max-width: 768px) {
+            width: 90px;
+            height: 90px;
+        }
+
+        &:hover {
+            .circular-text {
+                animation-play-state: paused;
+            }
+
+            .rocket-1 {
+                animation: fedi-rocket-launch-1 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            }
+
+            .rocket-2 {
+                animation: fedi-rocket-launch-2 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            }
+
+            .rocket-3 {
+                animation: fedi-rocket-launch-3 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            }
+        }
+    }
+
+    .circular-text {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        animation: fedi-rotate 15s linear infinite;
+        padding: 0px;
+        overflow: visible;
+        pointer-events: none;
+
+        svg {
+            width: 100%;
+            height: 100%;
+
+            text {
+                font-weight: 900;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+        }
+    }
+
+    .fedi-trigger {
+        width: 65px;
+        height: 65px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        padding: 0;
+        color: white;
+        position: relative;
+        z-index: 2;
+
+        @media (max-width: 768px) {
+            width: 50px;
+            height: 50px;
+        }
+
+        &:hover {
+            transform: scale(1.1);
+        }
+
+        .icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.4s ease;
+
+            svg {
+                width: 24px;
+                height: 24px;
+            }
+
+            .emoji {
+                font-size: 28px;
+
+                @media (max-width: 768px) {
+                    font-size: 20px;
+                }
+            }
+        }
+    }
+
+    &.is-open {
+        .fedi-trigger {
+            .icon {
+                transform: rotate(180deg);
+            }
+        }
+
+        .fedi-chat-container {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+    }
+
+    .fedi-chat-container {
+        position: absolute;
+        bottom: 120px;
+        right: 0;
+        width: 380px;
+        height: 600px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(20px);
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        transform-origin: bottom right;
+
+        @media (max-width: 768px) {
+            bottom: 100px;
+        }
+
+        .fedi-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+    }
+
+    @media (max-width: 450px) {
+        bottom: 20px;
+        right: 20px;
+
+        .fedi-chat-container {
+            width: calc(100vw - 40px);
+            height: 70vh;
+            max-height: 550px;
+        }
+    }
+
+    // Rocket Styles
+    .rocket-1 {
+        transform: translate(10px, 65px) rotate(160deg) scale(0.15);
+    }
+
+    .rocket-2 {
+        transform: translate(65px, 90px) rotate(70deg) scale(0.15);
+    }
+
+    .rocket-3 {
+        transform: translate(32px, 89px) rotate(105deg) scale(0.15);
+    }
+
+    .rocket-icon {
+        transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease;
+        will-change: transform, opacity;
+    }
+}
+
+@keyframes fedi-rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes fedi-rocket-launch-1 {
+    0% {
+        transform: translate(10px, 65px) rotate(160deg) scale(0.15);
+        opacity: 1;
+    }
+
+    50% {
+        transform: translate(110px, 340px) rotate(160deg) scale(0.25);
+        opacity: 0;
+    }
+
+    70% {
+        transform: translate(10px, 65px) rotate(160deg) scale(0.01);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translate(10px, 65px) rotate(160deg) scale(0.15);
+        opacity: 1;
+    }
+}
+
+@keyframes fedi-rocket-launch-2 {
+    0% {
+        transform: translate(65px, 90px) rotate(70deg) scale(0.15);
+        opacity: 1;
+    }
+
+    50% {
+        transform: translate(350px, -15px) rotate(70deg) scale(0.25);
+        opacity: 0;
+    }
+
+    70% {
+        transform: translate(65px, 90px) rotate(70deg) scale(0.01);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translate(65px, 90px) rotate(70deg) scale(0.15);
+        opacity: 1;
+    }
+}
+
+@keyframes fedi-rocket-launch-3 {
+    0% {
+        transform: translate(32px, 89px) rotate(105deg) scale(0.15);
+        opacity: 1;
+    }
+
+    50% {
+        transform: translate(320px, 160px) rotate(105deg) scale(0.25);
+        opacity: 0;
+    }
+
+    70% {
+        transform: translate(32px, 89px) rotate(105deg) scale(0.01);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translate(32px, 89px) rotate(105deg) scale(0.15);
+        opacity: 1;
+    }
+}

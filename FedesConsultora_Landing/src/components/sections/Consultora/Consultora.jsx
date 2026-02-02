@@ -118,9 +118,24 @@ const Consultora = () => {
                     </motion.h2>
 
                     <div className="familiar-pills">
-                        <div className="familiar-pill">Facturación alta, rentabilidad baja.</div>
-                        <div className="familiar-pill">El negocio depende 100% de vos y no tenés vida.</div>
-                        <div className="familiar-pill">Procesos comerciales informales o inexistentes.</div>
+                        <div
+                            className="familiar-pill"
+                            onClick={() => window.dispatchEvent(new CustomEvent('open-fedi', { detail: { message: 'Facturación alta, rentabilidad baja.' } }))}
+                        >
+                            Facturación alta, rentabilidad baja.
+                        </div>
+                        <div
+                            className="familiar-pill"
+                            onClick={() => window.dispatchEvent(new CustomEvent('open-fedi', { detail: { message: 'El negocio depende 100% de vos y no tenés vida.' } }))}
+                        >
+                            El negocio depende 100% de vos y no tenés vida.
+                        </div>
+                        <div
+                            className="familiar-pill"
+                            onClick={() => window.dispatchEvent(new CustomEvent('open-fedi', { detail: { message: 'Procesos comerciales informales o inexistentes.' } }))}
+                        >
+                            Procesos comerciales informales o inexistentes.
+                        </div>
                     </div>
                 </div>
             </div>
