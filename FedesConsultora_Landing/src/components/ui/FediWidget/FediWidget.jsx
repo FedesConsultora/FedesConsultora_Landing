@@ -7,23 +7,28 @@ const FediWidget = () => {
     const [isReady, setIsReady] = useState(false);
     const iframeRef = useRef(null);
 
+    const BASE_URL = 'https://fedi.fedes.ai';
+
     useEffect(() => {
         // Listen for messages from Fedi (inside the iframe)
         const handleIframeMessage = (event) => {
+            // Security check: only allow messages from our trusted subdomain
+            if (event.origin !== BASE_URL) return;
+
             const { type, action, url } = event.data;
 
             if (type === 'fedi:ready') {
-                console.log('Fedi Widget is ready');
+                console.log('Fedi Widget is ready at fedi.fedes.ai');
                 setIsReady(true);
             }
 
             if (type === 'fedi:action' && action === 'whatsapp_open') {
                 console.log('Fedi triggered WhatsApp open:', url);
-                // Here you could trigger an Analytics event
+                // You could trigger a Google Analytics event here
             }
         };
 
-        // Listen for global landing events
+        // Listen for global landing events (triggered by clicking "pill" phrases)
         const handleOpenRequest = (e) => {
             const message = e.detail?.message || '';
 
@@ -57,13 +62,18 @@ const FediWidget = () => {
 
     const toggleChat = () => {
         setIsOpen(!isOpen);
-        if (isOpen) setCurrentMessage('');
+        if (!isOpen) {
+            // Reset ready state when opening fresh
+            // isReady will be set back to true by the 'fedi:ready' message
+        } else {
+            setCurrentMessage('');
+        }
     };
 
-    // URL setup: using 'q' as specified in the contract
+    // URL setup: using 'q' as specified in the production contract
     const iframeSrc = currentMessage
-        ? `/fedi/?widget=true&bot_id=fedi_landing&q=${encodeURIComponent(currentMessage)}`
-        : '/fedi/?widget=true&bot_id=fedi_landing';
+        ? `${BASE_URL}/?widget=true&q=${encodeURIComponent(currentMessage)}`
+        : `${BASE_URL}/?widget=true`;
 
     return (
         <div className={`fedi-widget ${isOpen ? 'is-open' : ''}`}>
@@ -123,6 +133,7 @@ const FediWidget = () => {
                     title="Fedi AI Assistant"
                     frameBorder="0"
                     className="fedi-iframe"
+                    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
                 ></iframe>
             </div>
         </div>
