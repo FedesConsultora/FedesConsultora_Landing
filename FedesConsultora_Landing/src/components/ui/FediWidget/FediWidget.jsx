@@ -86,9 +86,21 @@ const FediWidget = () => {
         setIsRocketVisible(true);
     };
 
+
+    const [showNotification, setShowNotification] = useState(true);
+    const [showWelcomeBubble, setShowWelcomeBubble] = useState(true);
+
+    useEffect(() => {
+        // Hide welcome bubble after a while or if chat opened
+        const timer = setTimeout(() => setShowWelcomeBubble(false), 8000);
+        return () => clearTimeout(timer);
+    }, []);
+
     const toggleChat = (e) => {
         e.stopPropagation();
         setIsChatOpen(!isChatOpen);
+        setShowNotification(false);
+        setShowWelcomeBubble(false);
         if (isChatOpen) setCurrentMessage('');
     };
 
@@ -120,7 +132,14 @@ const FediWidget = () => {
         }
     };
 
-    const iframeSrc = `${BASE_URL}/?widget=true&theme=dark`;
+    const handleSuggestionClick = (suggestion) => {
+        iframeRef.current?.contentWindow?.postMessage({
+            type: 'fedi:send_message',
+            payload: suggestion
+        }, '*');
+    };
+
+    const iframeSrc = `${BASE_URL}/?widget=true&theme=light`;
 
     return (
         <div className={`fedi-main-wrapper ${isRocketVisible ? 'rocket-visible' : ''} ${isChatOpen ? 'chat-open' : ''}`}>
@@ -134,6 +153,7 @@ const FediWidget = () => {
                         onClick={toggleToRocket}
                         aria-label="Abrir asistente de Fedi"
                     >
+                        {showNotification && <span className="notification-badge" />}
                         <div className="hamburger-icon">
                             <span></span>
                             <span></span>
@@ -145,57 +165,73 @@ const FediWidget = () => {
 
             <AnimatePresence>
                 {isRocketVisible && !isChatOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.5, rotate: -45 }}
-                        animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                        exit={{ opacity: 0, scale: 0.5, rotate: 45 }}
-                        className="fedi-rocket-trigger-wrapper"
-                        onClick={toggleChat}
-                    >
-                        <div className="circular-text">
-                            <svg viewBox="0 0 100 100" style={{ overflow: 'visible' }}>
-                                <path d="M 10,50 a 40,40 0 1,1 80,0 a 40,40 0 1,1 -80,0" id="circle" fill="transparent" />
-                                <text fill="#19222B" fontSize="11" fontWeight="900">
-                                    <textPath xlinkHref="#circle" startOffset="0%">
-                                        FEDI TE AYUDA A ESCALAR
-                                    </textPath>
-                                </text>
+                    <div className="fedi-rocket-outer">
+                        <AnimatePresence>
+                            {showWelcomeBubble && (
+                                <motion.div
+                                    className="fedi-welcome-bubble"
+                                    initial={{ opacity: 0, x: 20, scale: 0.8 }}
+                                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                >
+                                    ¡Hola! Soy Fedi, <br /> ¿en qué puedo ayudarte?
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
-                                <g className="rocket-icon rocket-1" fill="#19222B">
-                                    <path d="M0-100c10 20 30 60 30 120 0 15-5 30-10 40H-20c-5-10-10-25-10-40 0-60 20-100 30-120z" />
-                                    <path d="M-30 20l-30 40h30V20zM30 20l30 40h-30V20z" />
-                                    <circle cx="0" cy="-20" r="8" fill="white" opacity="0.8" />
-                                </g>
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.5, rotate: -45 }}
+                            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                            exit={{ opacity: 0, scale: 0.5, rotate: 45 }}
+                            className="fedi-rocket-trigger-wrapper"
+                            onClick={toggleChat}
+                        >
+                            {showNotification && <span className="notification-badge big" />}
+                            <div className="circular-text">
+                                <svg viewBox="0 0 100 100" style={{ overflow: 'visible' }}>
+                                    <path d="M 10,50 a 40,40 0 1,1 80,0 a 40,40 0 1,1 -80,0" id="circle" fill="transparent" />
+                                    <text fill="#19222B" fontSize="11" fontWeight="900">
+                                        <textPath xlinkHref="#circle" startOffset="0%">
+                                            FEDI TE AYUDA A ESCALAR
+                                        </textPath>
+                                    </text>
 
-                                <g className="rocket-icon rocket-2" fill="#19222B">
-                                    <path d="M0-100c10 20 30 60 30 120 0 15-5 30-10 40H-20c-5-10-10-25-10-40 0-60 20-100 30-120z" />
-                                    <path d="M-30 20l-30 40h30V20zM30 20l30 40h-30V20z" />
-                                    <circle cx="0" cy="-20" r="8" fill="white" opacity="0.8" />
-                                </g>
+                                    <g className="rocket-icon rocket-1" fill="#19222B">
+                                        <path d="M0-100c10 20 30 60 30 120 0 15-5 30-10 40H-20c-5-10-10-25-10-40 0-60 20-100 30-120z" />
+                                        <path d="M-30 20l-30 40h30V20zM30 20l30 40h-30V20z" />
+                                        <circle cx="0" cy="-20" r="8" fill="white" opacity="0.8" />
+                                    </g>
 
-                                <g className="rocket-icon rocket-3" fill="#19222B">
-                                    <path d="M0-100c10 20 30 60 30 120 0 15-5 30-10 40H-20c-5-10-10-25-10-40 0-60 20-100 30-120z" />
-                                    <path d="M-30 20l-30 40h30V20zM30 20l30 40h-30V20z" />
-                                    <circle cx="0" cy="-20" r="8" fill="white" opacity="0.8" />
-                                </g>
-                            </svg>
-                        </div>
+                                    <g className="rocket-icon rocket-2" fill="#19222B">
+                                        <path d="M0-100c10 20 30 60 30 120 0 15-5 30-10 40H-20c-5-10-10-25-10-40 0-60 20-100 30-120z" />
+                                        <path d="M-30 20l-30 40h30V20zM30 20l30 40h-30V20z" />
+                                        <circle cx="0" cy="-20" r="8" fill="white" opacity="0.8" />
+                                    </g>
 
-                        <button className="fedi-rocket-btn">
-                            <img src={FediAvatar} alt="Fedi Robot" className="inner-robot-avatar" />
-                        </button>
+                                    <g className="rocket-icon rocket-3" fill="#19222B">
+                                        <path d="M0-100c10 20 30 60 30 120 0 15-5 30-10 40H-20c-5-10-10-25-10-40 0-60 20-100 30-120z" />
+                                        <path d="M-30 20l-30 40h30V20zM30 20l30 40h-30V20z" />
+                                        <circle cx="0" cy="-20" r="8" fill="white" opacity="0.8" />
+                                    </g>
+                                </svg>
+                            </div>
 
-                        <div className="close-rocket" onClick={closeEverything} title="Volver al menú">
-                            ✕
-                        </div>
-                    </motion.div>
+                            <button className="fedi-rocket-btn">
+                                <img src={FediAvatar} alt="Fedi Robot" className="inner-robot-avatar" />
+                            </button>
+
+                            <div className="close-rocket" onClick={closeEverything} title="Volver al menú">
+                                ✕
+                            </div>
+                        </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
 
             <AnimatePresence>
                 {isChatOpen && (
                     <motion.div
-                        className="fedi-chat-container"
+                        className="fedi-chat-container light-theme"
                         drag
                         dragMomentum={false}
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -211,7 +247,7 @@ const FediWidget = () => {
                                 </div>
                                 <div className="header-text">
                                     <span className="name">Fedi</span>
-                                    <span className="role">Fedi te ayuda a escalar ✨</span>
+                                    <span className="role">Asistente Virtual ✨</span>
                                 </div>
                             </div>
                             <button className="close-chat-btn" onClick={closeEverything} aria-label="Cerrar chat">
@@ -232,20 +268,8 @@ const FediWidget = () => {
                                 allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
                             ></iframe>
                         </div>
-                        <div
-                            className="fedi-input-area"
-                            style={{
-                                padding: '16px 20px 24px',
-                                background: '#19222B',
-                                borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '12px',
-                                flexShrink: 0,
-                                zIndex: 10,
-                                position: 'relative'
-                            }}
-                        >
+
+                        <div className="fedi-input-area">
                             <input
                                 type="text"
                                 placeholder="Escribí tu mensaje..."
@@ -253,36 +277,10 @@ const FediWidget = () => {
                                 onChange={(e) => setUserInput(e.target.value)}
                                 onKeyPress={handleKeyPress}
                                 className="chat-input"
-                                style={{
-                                    flexGrow: 1,
-                                    background: 'rgba(255, 255, 255, 0.05)',
-                                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                                    borderRadius: '14px',
-                                    padding: '12px 18px',
-                                    color: 'white',
-                                    fontSize: '0.95rem',
-                                    fontFamily: 'inherit',
-                                    outline: 'none',
-                                    transition: 'all 0.3s ease'
-                                }}
                             />
                             <button
                                 className="send-btn"
                                 onClick={handleSendMessage}
-                                style={{
-                                    background: '#6366f1',
-                                    border: 'none',
-                                    color: 'white',
-                                    width: '46px',
-                                    height: '46px',
-                                    borderRadius: '12px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    cursor: 'pointer',
-                                    flexShrink: 0,
-                                    boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)'
-                                }}
                             >
                                 <svg
                                     viewBox="0 0 24 24"
@@ -291,7 +289,6 @@ const FediWidget = () => {
                                     strokeWidth="2.5"
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
-                                    style={{ width: '22px', height: '22px' }}
                                 >
                                     <line x1="22" y1="2" x2="11" y2="13"></line>
                                     <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>

@@ -27,7 +27,6 @@
         border-bottom-left-radius: 5px;
         border-bottom-right-radius: 5px;
 
-        // Subtle top highlight for the "bubble" look
         border-top: 1px solid rgba(255, 255, 255, 0.3);
     }
 
@@ -213,6 +212,12 @@
                 &:hover {
                     color: #19222B;
                 }
+
+                &.active {
+                    color: $primary-color;
+                    transform: scale(1.05);
+                    display: inline-block;
+                }
             }
 
             .mobile-btn-contact {
@@ -287,9 +292,10 @@
         }
     }
 }
+
 //mediaquerie para mobile
 @media (max-width: 992px) {
-    .hero-floating-icon{
+    .hero-floating-icon {
         scale: 1.2;
     }
 }

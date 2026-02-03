@@ -81,21 +81,20 @@
     .nosotros-title-render {
         text-align: center;
         font-family: $font-title;
-        font-size: clamp(2.2rem, 6vw, 4.2rem);
-        font-weight: 500;
-        line-height: 1;
+        font-size: clamp(3rem, 8vw, 5.5rem);
+        font-weight: 800;
+        line-height: 0.95;
         letter-spacing: -3px;
         color: #19222b;
-        margin-bottom: 24px;
+        margin-bottom: 30px;
         text-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-        padding-bottom: 20px;
-
+        
         .title-line {
             display: block;
         }
 
         .bold-metallic {
-            font-weight: 800;
+            font-weight: 950;
             background: linear-gradient(123.75deg, #0F0F0F 0%, #7D7D7D 100%);
             -webkit-background-clip: text;
             background-clip: text;
@@ -108,16 +107,9 @@
             display: inline-block;
         }
 
-        .light-text {
-            font-weight: 400;
-            color: #19222b;
-            -webkit-text-fill-color: initial;
-            display: inline-block;
-        }
-
         .text-primary-bold {
             color: $primary-color;
-            font-weight: 800;
+            font-weight: 950;
             -webkit-text-fill-color: $primary-color;
             display: block;
             padding-bottom: 4rem;
@@ -163,8 +155,8 @@
         }
 
         .team-header-box {
-            margin-top: 5vh;
-            margin-bottom: 30px;
+            margin-top: 6vh;
+            margin-bottom: 40px;
             text-align: left;
             width: 100%;
             display: flex;
@@ -185,21 +177,24 @@
 
             .team-title-wrap {
                 flex: 1;
+                align-self: flex-start;
             }
 
             .team-title {
-                margin-bottom: 15px;
                 text-align: left;
-
+                font-size: clamp(2.5rem, 6vw, 6.2rem) !important;
+                line-height: 0.95;
+                width: 600px;
                 @media (max-width: 768px) {
                     text-align: center;
+                    font-size: clamp(2.3rem, 11vw, 4rem) !important;
                 }
             }
 
             .team-subtitle-text {
                 text-align: left;
                 margin: 0;
-
+                width: 500px;
                 @media (max-width: 768px) {
                     text-align: center;
                     margin: 0 auto;
@@ -209,76 +204,81 @@
 
         .bosses-container {
             display: flex;
-            gap: -140px;
             align-items: flex-end;
-            padding-right: 20px;
-
+            padding-right: 10px;
+            position: relative;
+            right: 100px;    
             @media (max-width: 768px) {
                 padding-right: 0;
                 justify-content: center;
                 margin-top: 30px;
-                gap: -80px;
+                margin-right: 0;
+                right: 0px;
             }
 
             .boss-card {
                 position: relative;
-                top: 2rem;
-                width: 320px;
-                height: 350px;
-                overflow: visible;
+                top: 0.5rem;
+                width: 160px; // Narrower hitbox to avoid overlapping interactions
+                height: 320px;
+                overflow: visible; // Allow the larger image to show
                 cursor: pointer;
                 background: transparent;
-                box-shadow: none;
-                transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-                pointer-events: none;
+                transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+                pointer-events: auto;
+                will-change: transform, z-index;
+                display: flex;
+                justify-content: center;
 
-                animation: boss-float 6s ease-in-out infinite;
+                // Fede Chironi (left) - default behind
+                &:nth-child(1) {
+                    z-index: 1;
+                    margin-right: -40px; // Visual overlap controlled by image width and negative margin
+                }
 
+                // Fede Juan (right) - default in front
                 &:nth-child(2) {
-                    animation-delay: -3s;
+                    z-index: 2;
                 }
 
                 @media (max-width: 1200px) {
-                    width: 260px;
-                    height: 290px;
+                    width: 120px;
+                    height: 280px;
                 }
 
                 @media (max-width: 480px) {
-                    width: 200px;
+                    width: 100px;
                     height: 230px;
                 }
 
                 img {
-                    width: 100%;
+                    max-width: fit-content;
                     height: 100%;
                     object-fit: contain;
                     display: block;
-                    pointer-events: auto;
-                    filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.08));
-                    transition: filter 0.5s ease;
+                    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.05));
+                    transition: all 0.2s ease;
+                    position: absolute;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    // Bottom blur effect
+                    mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+                    -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+
+                    @media (max-width: 1200px) {
+                        width: 250px;
+                    }
+
+                    @media (max-width: 480px) {
+                        width: 180px;
+                    }
                 }
 
                 &:hover {
-                    transform: scale(1.08) translateY(-12px) !important;
-                    z-index: 20;
-                    animation-play-state: paused;
+                    z-index: 30 !important; // Bring to absolute front
+                    transform: scale(1.05) translateY(-5px);
 
-                    img {
-                        filter: drop-shadow(0 40px 80px rgba(0, 0, 0, 0.18));
-                    }
                 }
-            }
-        }
-
-        @keyframes boss-float {
-
-            0%,
-            100% {
-                transform: translateY(0) rotate(0deg);
-            }
-
-            50% {
-                transform: translateY(-20px) rotate(1deg);
             }
         }
 
@@ -288,8 +288,8 @@
             margin-left: -40%;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            padding: 20px 0;
+            gap: 8px;
+            padding: 5px 0;
 
             @media (max-width: 768px) {
                 width: 100%;
@@ -300,6 +300,30 @@
             .chips-row {
                 width: 100%;
                 overflow: visible;
+                cursor: grab;
+                user-select: none !important;
+                touch-action: pan-y;
+                -webkit-user-drag: none;
+                pointer-events: auto;
+                -webkit-tap-highlight-color: transparent;
+
+                &:active {
+                    cursor: grabbing;
+                }
+
+                &:active {
+                    cursor: grabbing;
+                }
+
+                & * {
+                    pointer-events: inherit; // Allow events but drag should take precedence
+                    -webkit-user-drag: none;
+                    user-select: none !important;
+                }
+
+                &:active {
+                    cursor: grabbing;
+                }
 
                 .row-inner {
                     display: flex;
@@ -307,6 +331,7 @@
                     gap: 15px;
                     padding: 10px 0;
                     white-space: nowrap;
+                    will-change: transform;
                 }
 
                 mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
@@ -365,17 +390,22 @@
             overflow: hidden;
             box-shadow: 0 40px 80px rgba(0, 0, 0, 0.12);
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8f8f8; // Subtle bg for the wrap
 
             @media (max-width: 992px) {
-                width: 260px;
-                height: 320px;
+                width: 280px;
+                height: 350px;
                 border-radius: 20px;
             }
 
             img {
                 width: 100%;
                 height: 100%;
-                object-fit: cover;
+                object-fit: contain; // Changed to contain to ensure full person visibility
+                display: block;
             }
         }
 
@@ -404,7 +434,7 @@
             .boss-name {
                 font-family: $font-title;
                 font-size: clamp(2.5rem, 5vw, 4.5rem);
-                font-weight: 800;
+                font-weight: 950;
                 line-height: 0.95;
                 letter-spacing: -3px;
                 background: linear-gradient(123.75deg, #0F0F0F 0%, #7D7D7D 100%);
@@ -499,7 +529,7 @@
         }
 
         @media (max-width: 768px) {
-            top: 20px;
+            top: 80px;
             right: 20px;
             width: 50px;
             height: 50px;

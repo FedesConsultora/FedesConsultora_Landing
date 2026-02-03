@@ -96,7 +96,7 @@ const Consultora = () => {
                         </p>
 
                         <div className="consultora-cta">
-                            <a href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ19JF6L1eipDhqCCUQr1FpObl3R5w1WcsYH4wRPfnbOfUsCc2vz07la72glqvWmDA_Svg19CKBU?gv=true" target="_blank" rel="noopener noreferrer" className="btn-diagnostic">
+                            <a href="https://calendar.app.google/PJRvwpLUfYQciy1Y8" target="_blank" rel="noopener noreferrer" className="btn-diagnostic">
                                 Agendar sesión de diagnóstico
                             </a>
                         </div>

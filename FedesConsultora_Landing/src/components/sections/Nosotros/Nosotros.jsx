@@ -31,10 +31,10 @@ const BOSSES = [
         align: 'left',
         linkedin: 'https://www.linkedin.com/in/federicochironi/',
         details: [
-            'Máster en Marketing Digital en Texas (USA).',
-            'Gerente en Arcor S.A. de Marketing.',
-            'Certificado por Google Partner.',
-            'Miembro del Jurado Experto de la Asociación Argentina de Marketing.'
+            'Consultor en Marketing Estratégico y Análisis de Mercado.',
+            'Master en Marketing en The University of Texas at Arlington',
+            'Miembro del Jurado Experto de la Asociación Argentina de Marketing.',
+            'Empresario UNAJE.'
         ]
     },
     {
@@ -56,6 +56,8 @@ const BOSSES = [
 
 const Nosotros = () => {
     const containerRef = useRef(null);
+    const carouselRef1 = useRef(null);
+    const carouselRef2 = useRef(null);
     const [activeBoss, setActiveBoss] = useState(null);
 
     // Scroll progress de la sección completa (250vh)
@@ -128,8 +130,8 @@ const Nosotros = () => {
                         }}
                     >
                         <h2 className="nosotros-title-render">
-                            <span>Entendimos que,</span>
-                            <span>para escalar, una empresa</span>
+                            <span className="bold-metallic">Entendimos que,</span>
+                            <span className="bold-metallic">para escalar, una empresa</span>
                             <span className="text-primary-bold">necesita cerebro y corazón.</span>
                         </h2>
                         <p className="subtitle-intro-text">Desde ahí trabajamos.</p>
@@ -158,10 +160,7 @@ const Nosotros = () => {
                         <div className="team-header-box">
                             <div className="team-title-wrap">
                                 <h2 className="nosotros-title-render team-title">
-                                    <span className="title-line">
-                                        <span className="bold-metallic">Estrategas </span> <span className="light-text">y</span>
-                                    </span>
-                                    <span className="title-line bold-metallic">creativos.</span>
+                                    <span className="bold-metallic">Estrategas y creativos.</span>
                                 </h2>
                                 <p className="team-subtitle-text">
                                     Dos Fedes y un equipo multidisciplinario obsesionado con la excelencia.
@@ -185,17 +184,35 @@ const Nosotros = () => {
 
                         <div className="team-chips-display">
                             <div className="chips-row">
-                                <motion.div className="row-inner" style={{ x: x1 }}>
-                                    {[...leadersRow, ...leadersRow, ...leadersRow].map((member, index) => (
-                                        <TeamChip key={`leader-${index}`} {...member} />
-                                    ))}
+                                <motion.div style={{ x: x1 }}>
+                                    <motion.div
+                                        className="row-inner"
+                                        drag="x"
+                                        dragConstraints={{ left: -1200, right: 1200 }}
+                                        dragElastic={0}
+                                        dragMomentum={true}
+                                        dragTransition={{ power: 0.1, timeConstant: 200 }}
+                                    >
+                                        {[...leadersRow, ...leadersRow, ...leadersRow].map((member, index) => (
+                                            <TeamChip key={`leader-${index}`} {...member} />
+                                        ))}
+                                    </motion.div>
                                 </motion.div>
                             </div>
                             <div className="chips-row">
-                                <motion.div className="row-inner" style={{ x: x2 }}>
-                                    {[...theRestRow, ...theRestRow, ...theRestRow].map((member, index) => (
-                                        <TeamChip key={`rest-${index}`} {...member} />
-                                    ))}
+                                <motion.div style={{ x: x2 }}>
+                                    <motion.div
+                                        className="row-inner"
+                                        drag="x"
+                                        dragConstraints={{ left: -1200, right: 1200 }}
+                                        dragElastic={0}
+                                        dragMomentum={true}
+                                        dragTransition={{ power: 0.1, timeConstant: 200 }}
+                                    >
+                                        {[...theRestRow, ...theRestRow, ...theRestRow].map((member, index) => (
+                                            <TeamChip key={`rest-${index}`} {...member} />
+                                        ))}
+                                    </motion.div>
                                 </motion.div>
                             </div>
                         </div>

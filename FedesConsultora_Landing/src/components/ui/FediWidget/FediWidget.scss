@@ -47,6 +47,56 @@
                 transition: background 0.3s ease;
             }
         }
+
+        .notification-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 14px;
+            height: 14px;
+            background: #ef4444;
+            border-radius: 50%;
+            border: 2px solid white;
+            animation: fedi-pulse 2s infinite;
+            z-index: 10;
+        }
+    }
+
+    .fedi-rocket-outer {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 15px;
+    }
+
+    .fedi-welcome-bubble {
+        background: white;
+        padding: 12px 18px;
+        border-radius: 18px 18px 0 18px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #19222B;
+        line-height: 1.4;
+        white-space: nowrap;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        position: absolute;
+        bottom: 120px;
+        right: 40px;
+        z-index: 100;
+        pointer-events: none;
+
+        &::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            right: 0;
+            width: 15px;
+            height: 15px;
+            background: white;
+            clip-path: polygon(0 0, 100% 0, 100% 100%);
+        }
     }
 
     /* 2. Rocket Trigger Wrapper */
@@ -58,6 +108,19 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
+
+        .notification-badge.big {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            width: 18px;
+            height: 18px;
+            background: #ef4444;
+            border-radius: 50%;
+            border: 3px solid white;
+            z-index: 20;
+            animation: fedi-pulse 2s infinite;
+        }
 
         &:hover {
             .circular-text {
@@ -156,8 +219,8 @@
         bottom: 30px;
         right: 170px;
         width: 420px;
-        height: 700px;
-        max-height: 88vh;
+        height: 800px;
+        max-height: 95vh;
         background: #19222B;
         border-radius: 28px;
         box-shadow: 0 40px 120px rgba(0, 0, 0, 0.5);
@@ -166,6 +229,77 @@
         display: flex;
         flex-direction: column;
         z-index: 10000;
+
+        &.light-theme {
+            background: white;
+            box-shadow: 0 40px 120px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+
+            .chat-header {
+                background: white;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+                .header-text {
+                    .name {
+                        color: #19222B !important;
+                    }
+
+                    .role {
+                        color: #6B7280 !important;
+                    }
+                }
+
+                .close-chat-btn {
+                    background: #F3F4F6 !important;
+                    color: #4B5563 !important;
+
+                    &:hover {
+                        background: rgba(239, 68, 68, 0.1) !important;
+                        color: #ef4444 !important;
+                    }
+                }
+            }
+
+            .chat-iframe-wrapper {
+                background: #f9fafb;
+            }
+
+            .fedi-suggestions-area {
+                background: #f9fafb !important;
+                border-top: 1px solid rgba(0, 0, 0, 0.05) !important;
+
+                .suggestions-title {
+                    color: #9CA3AF !important;
+                }
+
+                .suggestion-tag {
+                    background: white !important;
+                    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+                    color: #4B5563 !important;
+
+                    &:hover {
+                        background: #6366f1 !important;
+                        color: white !important;
+                        border-color: #6366f1 !important;
+                    }
+                }
+            }
+
+            .fedi-input-area {
+                background: white !important;
+                border-top: 1px solid rgba(0, 0, 0, 0.05) !important;
+
+                .chat-input {
+                    background: #F3F4F6 !important;
+                    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+                    color: #19222B !important;
+
+                    &::placeholder {
+                        color: #9CA3AF !important;
+                    }
+                }
+            }
+        }
 
         .chat-header {
             padding: 18px 24px;
@@ -277,6 +411,111 @@
             }
         }
 
+        .fedi-suggestions-area {
+            padding: 15px 20px;
+            background: #19222B;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+
+            .suggestions-title {
+                font-size: 0.75rem;
+                color: rgba(255, 255, 255, 0.4);
+                margin: 0;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+
+            .suggestions-grid {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .suggestion-tag {
+                background: rgba(99, 102, 241, 0.1);
+                border: 1px solid rgba(99, 102, 241, 0.2);
+                color: #a5b4fc;
+                padding: 6px 12px;
+                border-radius: 100px;
+                font-size: 0.75rem;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                white-space: normal;
+                text-align: left;
+                line-height: 1.2;
+
+                &:hover {
+                    background: rgba(99, 102, 241, 0.2);
+                    border-color: rgba(99, 102, 241, 0.4);
+                    color: white;
+                    transform: translateY(-2px);
+                }
+            }
+        }
+
+        .fedi-input-area {
+            padding: 16px 20px 24px;
+            background: #19222B;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+            z-index: 10;
+            position: relative;
+
+            .chat-input {
+                flex-grow: 1;
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 14px;
+                padding: 12px 18px;
+                color: white;
+                font-size: 0.95rem;
+                font-family: inherit;
+                outline: none;
+                transition: all 0.3s ease;
+
+                &:focus {
+                    border-color: #6366f1;
+                    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+                }
+            }
+
+            .send-btn {
+                background: #6366f1;
+                border: none;
+                color: white;
+                width: 46px;
+                height: 46px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                flex-shrink: 0;
+                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+                transition: all 0.2s ease;
+
+                &:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 15px rgba(99, 102, 241, 0.4);
+                }
+
+                &:active {
+                    transform: scale(0.95);
+                }
+
+                svg {
+                    width: 22px;
+                    height: 22px;
+                }
+            }
+        }
+
         @media (max-width: 768px) {
             width: calc(100vw - 32px);
             height: 78vh;
@@ -302,6 +541,20 @@
 
     .rocket-3 {
         transform: translate(32px, 89px) rotate(105deg) scale(0.15);
+    }
+}
+
+@keyframes fedi-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
     }
 }
 

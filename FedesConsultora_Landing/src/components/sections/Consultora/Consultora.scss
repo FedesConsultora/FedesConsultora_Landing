@@ -119,20 +119,23 @@
 
         .consultora-title {
             font-family: $font-title;
-            font-size: 7rem;
-            font-weight: 500;
-            line-height: 1.1; // Increased to prevent descender clipping (like the "g")
+            font-size: 8rem;
+            font-weight: 800;
+            line-height: 0.95;
             display: inline-block;
             margin-bottom: 2rem;
             margin-top: 6rem;
-            letter-spacing: -2px;
+            letter-spacing: -3px;
             position: relative;
             z-index: 5;
 
             .highlight {
-                font-weight: 800;
+                font-weight: 950;
                 display: block;
-                padding-bottom: 5px; // Extra space for descenders
+                padding-bottom: 10px !important;
+                padding-top: 0px !important;
+                position: relative;
+                bottom: 5px;
             }
 
             .consultora-title-inner {
@@ -142,37 +145,38 @@
                 -webkit-text-fill-color: transparent;
                 display: inline-block;
                 will-change: transform, opacity;
-                padding: 5px 0; // Prevent clipping at edges
+                padding: 5px 0;
+                padding-bottom: 0px;
             }
 
             @media (max-width: 1400px) {
-                font-size: 6rem;
+                font-size: 7rem;
             }
 
             @media (max-width: 1200px) {
-                font-size: 5rem;
+                font-size: 6rem;
             }
 
             @media (max-width: 768px) {
-                font-size: 3rem !important;
-                line-height: 1;
+                font-size: 3.5rem !important;
+                line-height: 0.9;
                 margin-top: 0;
                 margin-bottom: 1rem;
             }
         }
 
         .consultora-subtitle {
-            font-size: 1.15rem;
-            line-height: 1.3;
+            font-size: 1.25rem;
+            line-height: 1.4;
             color: #5E5E5E;
-            max-width: 400px;
+            max-width: 450px;
             margin-left: auto;
 
             margin-bottom: 2.5rem;
-            font-weight: 400;
+            font-weight: 450;
 
             @media (max-width: 768px) {
-                font-size: 1.1rem;
+                font-size: 1.15rem;
                 margin: 0 auto 2.5rem;
             }
         }
@@ -196,7 +200,6 @@
 
                 @media (max-width: 768px) {
                     font-size: 1rem;
-                    margin: 10rem auto 2.5rem;
                 }
             }
 
@@ -229,18 +232,18 @@
     }
 
     .familiar-title {
-        font-size: 4rem;
-        font-weight: 800;
+        font-size: 4.8rem;
+        font-weight: 900;
         background: linear-gradient(123.75deg, #2F2F2F 0%, #707070 100%);
         -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: transparent;
         display: inline-block;
         margin-bottom: 50px;
-        letter-spacing: -2px;
+        letter-spacing: -3px;
 
         @media (max-width: 768px) {
-            font-size: 4.2rem;
+            font-size: 4.5rem;
         }
     }
 
@@ -291,10 +294,7 @@
     z-index: 1;
 
 
-    @media (max-width: 992px) {
-        padding-top: 200px;
-
-    }
+    
 
     .container {
         display: flex;
@@ -304,7 +304,7 @@
         gap: 4rem;
 
         @media (max-width: 992px) {
-            flex-direction: column-reverse;
+            flex-direction: column;
             text-align: center;
             gap: 0rem;
 
@@ -384,10 +384,10 @@
         }
 
         .engineering-main-title {
-            font-size: 3rem;
-            font-weight: 800;
-            line-height: 1.1;
-            letter-spacing: -2px;
+            font-size: 3.8rem;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -3px;
             margin: 0;
 
             .blue {
@@ -442,5 +442,24 @@
 
     66% {
         transform: translate3d(-15%, 12%, 0) scale(1.1, 1.7) rotate(6deg);
+    }
+}
+
+@media (max-width: 992px) {
+    .consultora-familiar-block {
+        padding-bottom: 0;
+    }
+
+    .engineering-main-title {
+        position: relative;
+        bottom: 8rem;
+    }
+
+    .consultora-content {
+        .consultora-cta {
+            a {
+                margin-bottom: 0;
+            }
+        }
     }
 }

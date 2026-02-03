@@ -379,8 +379,8 @@
 
     .blog-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 60px;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 40px;
         row-gap: 80px;
         margin-bottom: 60px;
     }

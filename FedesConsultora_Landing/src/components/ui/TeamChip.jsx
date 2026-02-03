@@ -36,6 +36,7 @@ const TeamChip = ({ name, role, photo, linkedin }) => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="team-chip is-link"
+                draggable="false"
             >
                 <Content />
             </a>

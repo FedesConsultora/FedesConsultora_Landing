@@ -153,6 +153,7 @@ const Header = () => {
                 <NavLink
                   to={item.path}
                   end={item.path === '/'}
+                  className={({ isActive }) => isActive ? 'active' : ''}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}

@@ -12,13 +12,12 @@ import { motion } from 'framer-motion';
 // 1. Guardar tus imágenes en: src/assets/img/services/
 // 2. Nombres: paid-media.webp, branding.webp, social.webp
 // 3. Descomentar las siguientes líneas cuando las tengas:
-// import PaidMediaImg from '../../../assets/img/services/paid-media.webp';
+import PaidMediaImg from '../../../assets/img/services/paid-media.webp';
 import BrandingImg from '../../../assets/img/services/branding.webp';
 import SocialImg from '../../../assets/img/services/social.webp';
 
 const Agencia = () => {
     // Definimos como null las que aún no existen para que no den error
-    const PaidMediaImg = null;
     const dropVariants = {
         hidden: {
             opacity: 0,
@@ -130,9 +129,17 @@ const Agencia = () => {
                             Branding, contenido y paid media pensados para que tu marca deje de competir y empiece a liderar.                        </p>
 
                         <div className="agencia-cta">
-                            <a href="#planes" className="btn-planes">
+                            <button
+                                onClick={() => {
+                                    const event = new CustomEvent('open-fedi', {
+                                        detail: { message: 'Ver Planes' }
+                                    });
+                                    window.dispatchEvent(event);
+                                }}
+                                className="btn-planes"
+                            >
                                 Ver nuestros planes
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </div>
