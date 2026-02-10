@@ -52,7 +52,7 @@ const Hero = () => {
             whileInView="visible"
             viewport={{ once: true }}
           >
-            ¿Orden o <br />clientes?
+            <span className="hero-title-light">¿Estás <br /> buscando</span> <br /> <span className="hero-title-bold">orden o clientes?</span>
           </motion.h1>
           <motion.p
             className='hero-subtitle'

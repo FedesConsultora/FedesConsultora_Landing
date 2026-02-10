@@ -12,9 +12,9 @@ import { motion } from 'framer-motion';
 // 1. Guardar tus imágenes en: src/assets/img/services/
 // 2. Nombres: paid-media.webp, branding.webp, social.webp
 // 3. Descomentar las siguientes líneas cuando las tengas:
-import PaidMediaImg from '../../../assets/img/services/paid-media.webp';
-import BrandingImg from '../../../assets/img/services/branding.webp';
-import SocialImg from '../../../assets/img/services/social.webp';
+import PaidMediaImg from '../../../assets/img/services/paid-media-1.webp';
+import BrandingImg from '../../../assets/img/services/branding-y-diseño-1.webp';
+import SocialImg from '../../../assets/img/services/social-content-1.webp';
 
 const Agencia = () => {
     // Definimos como null las que aún no existen para que no den error
