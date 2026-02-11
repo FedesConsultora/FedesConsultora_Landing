@@ -4,7 +4,7 @@
     background-color: #ffffff;
     width: 100%;
     position: relative;
-    overflow: hidden; // Prevent any expansion from animated elements
+    overflow: hidden;
 
     .agencia-background {
         position: absolute;
@@ -14,7 +14,7 @@
         height: 100%;
         z-index: 0;
         pointer-events: none;
-        overflow: hidden; // Contain the blur and movements here too
+        overflow: hidden;
 
         .bg-degr {
             position: absolute;
@@ -28,7 +28,7 @@
                 width: 70%;
                 opacity: 0.75;
                 filter: blur(80px) saturate(1.5) brightness(1.1);
-                animation: agencia-fluid-1 8s ease-in-out infinite; // Faster: 10s -> 8s
+                animation: agencia-fluid-1 8s ease-in-out infinite;
             }
 
             &.degr-2 {
@@ -38,7 +38,7 @@
                 width: 75%;
                 opacity: 0.65;
                 filter: blur(90px) saturate(1.4) brightness(1.1);
-                animation: agencia-fluid-2 10s ease-in-out infinite alternate; // Faster: 12s -> 10s
+                animation: agencia-fluid-2 10s ease-in-out infinite alternate;
             }
         }
 
@@ -93,7 +93,7 @@
         }
 
         .agencia-content {
-            max-width: 800px; // Increased width
+            max-width: 800px;
             text-align: left;
 
             @media (max-width: 1400px) {
@@ -110,14 +110,14 @@
             .agencia-title {
                 font-family: $font-title;
                 font-size: 7rem;
-                font-weight: 500; // Normal weight like Consultora
+                font-weight: 500;
                 line-height: .95;
                 display: inline-block;
                 width: fit-content;
                 margin-bottom: 2.5rem;
 
                 .highlight {
-                    font-weight: 800; // Only specific word gets bold
+                    font-weight: 800;
                     display: block;
                 }
 
@@ -126,7 +126,7 @@
                     -webkit-background-clip: text;
                     background-clip: text;
                     -webkit-text-fill-color: transparent;
-                    display: block; // Changed to block for better structure
+                    display: block;
                     will-change: transform, opacity;
                 }
 
@@ -209,7 +209,7 @@
         width: 100%;
         display: flex;
         align-items: center;
-        background-color: transparent; // Allow background to show
+        background-color: transparent;
         position: relative;
         z-index: 1;
 
