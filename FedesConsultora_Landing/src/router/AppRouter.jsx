@@ -8,6 +8,8 @@ import Nosotros from '../components/sections/Nosotros/Nosotros'
 import Blog from '../components/sections/Blog/Blog'
 import Galeria from '../components/sections/Galeria/Galeria'
 import Contacto from '../components/sections/Contacto/Contacto'
+import OdooLanding from '../pages/OdooLanding/OdooLanding'
+import OnboardingEmpresas from '../pages/Onboarding/OnboardingEmpresas'
 
 export default function AppRouter() {
   return (
@@ -22,6 +24,9 @@ export default function AppRouter() {
           <Route path="/nosotros" element={<Nosotros />} />
           <Route path="/blog" element={<Blog />} />
         </Route>
+        {/* Standalone Landing Pages */}
+        <Route path="/odoo" element={<OdooLanding />} />
+        <Route path="/onboarding-empresas" element={<OnboardingEmpresas />} />
       </Routes>
     </BrowserRouter>
   )
