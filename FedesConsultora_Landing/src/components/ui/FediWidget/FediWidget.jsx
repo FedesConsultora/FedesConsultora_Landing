@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Sparkles } from 'lucide-react';
 import FediAvatar from '../../../assets/img/fedi/avatar.png';
 import './FediWidget.scss';
 
@@ -10,7 +11,7 @@ const FediWidget = () => {
     const [userInput, setUserInput] = useState('');
     const iframeRef = useRef(null);
 
-    const BASE_URL = 'https://fedi.fedes.ai';
+    const BASE_URL = 'https://bot.fedes.ai';
 
     const isChatOpenRef = useRef(false);
     const isReadyRef = useRef(false);
@@ -154,11 +155,7 @@ const FediWidget = () => {
                         aria-label="Abrir asistente de Fedi"
                     >
                         {showNotification && <span className="notification-badge" />}
-                        <div className="hamburger-icon">
-                            <span></span>
-                            <span></span>
-                            <span></span>
-                        </div>
+                        <Sparkles className="ai-menu-icon" size={28} />
                     </motion.button>
                 )}
             </AnimatePresence>
