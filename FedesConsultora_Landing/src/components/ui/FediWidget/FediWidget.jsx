@@ -8,7 +8,6 @@ const FediWidget = () => {
     const [isRocketVisible, setIsRocketVisible] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [currentMessage, setCurrentMessage] = useState('');
-    const [userInput, setUserInput] = useState('');
     const iframeRef = useRef(null);
 
     const BASE_URL = 'https://bot.fedes.ai';
@@ -110,35 +109,10 @@ const FediWidget = () => {
         setIsChatOpen(false);
         setIsRocketVisible(false);
         setCurrentMessage('');
-        setUserInput('');
         isReadyRef.current = false;
         pendingMessageRef.current = null;
     };
 
-    const handleSendMessage = (e) => {
-        if (e) e.preventDefault();
-        if (!userInput.trim()) return;
-
-        iframeRef.current?.contentWindow?.postMessage({
-            type: 'fedi:send_message',
-            payload: userInput
-        }, '*');
-
-        setUserInput('');
-    };
-
-    const handleKeyPress = (e) => {
-        if (e.key === 'Enter') {
-            handleSendMessage();
-        }
-    };
-
-    const handleSuggestionClick = (suggestion) => {
-        iframeRef.current?.contentWindow?.postMessage({
-            type: 'fedi:send_message',
-            payload: suggestion
-        }, '*');
-    };
 
     const iframeSrc = `${BASE_URL}/?widget=true&theme=light`;
 
@@ -228,32 +202,12 @@ const FediWidget = () => {
             <AnimatePresence>
                 {isChatOpen && (
                     <motion.div
-                        className="fedi-chat-container light-theme"
-                        drag
-                        dragMomentum={false}
+                        className="fedi-chat-container"
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
                         transition={{ type: "spring", damping: 25, stiffness: 300 }}
                     >
-                        <div className="chat-header drag-handle">
-                            <div className="header-info">
-                                <div className="header-avatar">
-                                    <img src={FediAvatar} alt="Fedi Bot" />
-                                    <span className="status-dot"></span>
-                                </div>
-                                <div className="header-text">
-                                    <span className="name">Fedi</span>
-                                    <span className="role">Asistente Virtual ✨</span>
-                                </div>
-                            </div>
-                            <button className="close-chat-btn" onClick={closeEverything} aria-label="Cerrar chat">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                                </svg>
-                            </button>
-                        </div>
                         <div className="chat-iframe-wrapper">
                             <iframe
                                 ref={iframeRef}
@@ -264,33 +218,6 @@ const FediWidget = () => {
                                 className="fedi-iframe"
                                 allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
                             ></iframe>
-                        </div>
-
-                        <div className="fedi-input-area">
-                            <input
-                                type="text"
-                                placeholder="Escribí tu mensaje..."
-                                value={userInput}
-                                onChange={(e) => setUserInput(e.target.value)}
-                                onKeyPress={handleKeyPress}
-                                className="chat-input"
-                            />
-                            <button
-                                className="send-btn"
-                                onClick={handleSendMessage}
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2.5"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                >
-                                    <line x1="22" y1="2" x2="11" y2="13"></line>
-                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                                </svg>
-                            </button>
                         </div>
                     </motion.div>
                 )}

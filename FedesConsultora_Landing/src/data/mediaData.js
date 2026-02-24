@@ -26,6 +26,9 @@ import vid2poster from '../assets/img/galeria/videos/vid2_poster.jpg';
 import vid3mp4 from '../assets/img/galeria/videos/vid3.mp4';
 import vid3webm from '../assets/img/galeria/videos/vid3.webm';
 import vid3poster from '../assets/img/galeria/videos/vid3_poster.jpg';
+import vid4mp4 from '../assets/img/galeria/videos/vid4.mp4';
+import vid4webm from '../assets/img/galeria/videos/vid4.webm';
+import vid4poster from '../assets/img/galeria/videos/vid4_poster.webp';
 
 export const allMediaData = [
     { src: img1, category: 'producciones', type: 'image' },
@@ -50,6 +53,13 @@ export const allMediaData = [
     { src: img6, category: 'none', type: 'image' },
     { src: img7, category: 'none', type: 'image' },
     { src: img8, category: 'none', type: 'image' },
+    {
+        src: vid4mp4,
+        webm: vid4webm,
+        poster: vid4poster,
+        category: 'none',
+        type: 'video'
+    },
     {
         src: vid3mp4,
         webm: vid3webm,
