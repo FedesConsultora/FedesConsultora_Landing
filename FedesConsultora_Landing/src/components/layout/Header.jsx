@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation, useSearchParams } from 'react-router-dom';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { RxHamburgerMenu, RxCross1 } from 'react-icons/rx';
 import FedesLogo from '../../assets/img/Logo.svg'
@@ -11,6 +11,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const { scrollY } = useScroll();
   const formRef = useRef(null);
@@ -78,6 +79,25 @@ const Header = () => {
     setIsHidden(false);
     scrollUpAmount.current = 0;
   }, [location]);
+
+  // Sync URL with form state for GTM tracking
+  useEffect(() => {
+    const hasContactParam = searchParams.get('contact') === 'true';
+    if (isFormOpen && !hasContactParam) {
+      searchParams.set('contact', 'true');
+      setSearchParams(searchParams, { replace: true });
+    } else if (!isFormOpen && hasContactParam) {
+      searchParams.delete('contact');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [isFormOpen, searchParams, setSearchParams]);
+
+  // Open form if contact=true is in URL on mount
+  useEffect(() => {
+    if (searchParams.get('contact') === 'true') {
+      setIsFormOpen(true);
+    }
+  }, []);
 
   // Prevent scroll when menu is open
   useEffect(() => {
@@ -164,7 +184,7 @@ const Header = () => {
               <div className="mobile-dropdown-anchor">
                 <button
                   className="mobile-btn-contact"
-                  onClick={() => setIsFormOpen(!isFormOpen)}
+                  onClick={toggleForm}
                 >
                   Hablemos
                 </button>
