@@ -14,7 +14,7 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 200vh; 
+    height: 200vh;
     z-index: 0;
     overflow: hidden;
 
@@ -394,5 +394,97 @@
 
   66% {
     transform: translate3d(20%, -25%, 0) scale(0.6, 0.7) rotate(20deg);
+  }
+}
+
+.hero-bottom-combined {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  background-color: transparent;
+  padding: 100px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0; // Secciones seguidas sin espacio extra
+
+  @media (max-width: 768px) {
+    padding: 60px 0;
+  }
+
+  .hero-2-degr {
+    position: absolute;
+    pointer-events: none;
+    height: auto; // Mantener ratio original
+    width: auto;
+    opacity: 0.6;
+    will-change: transform;
+    z-index: 0;
+    // Máscara más suave para evitar cortes rectos en los bordes
+    mask-image: radial-gradient(circle at center, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 75%);
+    -webkit-mask-image: radial-gradient(circle at center, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 75%);
+
+    &.degr-left {
+      width: 40vw;
+      top: 50%; // Bajado para que no toque el borde superior
+      left: -10%;
+      animation: fluid-float-left 25s ease-in-out infinite;
+
+      @media (max-width: 768px) {
+        width: 80vw;
+        left: -20%;
+        top: 30%;
+      }
+    }
+
+    &.degr-right {
+      width: 50vw;
+      bottom: -10%; // Un poco hacia afuera para que no se vea el fin de la mancha
+      right: -10%;
+      animation: fluid-float-right 30s ease-in-out infinite;
+
+      @media (max-width: 768px) {
+        width: 90vw;
+        right: -30%;
+        bottom: 5%;
+      }
+    }
+  }
+
+  // Asegurar que el contenido esté sobre el fondo
+  >*:not(.hero-2-degr) {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+@keyframes fluid-float-left {
+
+  0%,
+  100% {
+    transform: translate3d(0, -20%, 0) scale(1, 1) rotate(0deg);
+  }
+
+  33% {
+    transform: translate3d(10%, -15%, 0) scale(1.2, 0.9) rotate(8deg);
+  }
+
+  66% {
+    transform: translate3d(-5%, -25%, 0) scale(0.9, 1.1) rotate(-8deg);
+  }
+}
+
+@keyframes fluid-float-right {
+
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1, 1) rotate(0deg);
+  }
+
+  33% {
+    transform: translate3d(-10%, -10%, 0) scale(0.8, 1.2) rotate(-12deg);
+  }
+
+  66% {
+    transform: translate3d(8%, 10%, 0) scale(1.1, 0.9) rotate(15deg);
   }
 }

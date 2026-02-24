@@ -1,8 +1,11 @@
 import React from 'react';
 import Hero1 from './subsections/Hero1';
 import Hero2 from './subsections/Hero2';
+import Consultora1 from '../Consultora/subsections/Consultora1';
 import Degr4 from '../../../assets/img/backgrounds/inicio-degr (4).svg';
 import Degr3 from '../../../assets/img/backgrounds/inicio-degr (1).svg';
+import DegrHero2Left from '../../../assets/img/backgrounds/inicio-degr (3).svg'
+import DegrHero2Right from '../../../assets/img/backgrounds/inicio-degr (2).svg'
 import './Hero.scss';
 import { motion } from 'framer-motion';
 
@@ -70,8 +73,13 @@ const Hero = () => {
         <Hero1 />
       </section>
 
-      <section>
+      <section className="hero-bottom-combined">
         <Hero2 />
+        <Consultora1 />
+
+        {/* Background Ornaments Shared */}
+        <img src={DegrHero2Left} className="hero-2-degr degr-left" alt="" />
+        <img src={DegrHero2Right} className="hero-2-degr degr-right" alt="" />
       </section>
     </>
   );
