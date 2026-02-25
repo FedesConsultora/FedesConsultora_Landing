@@ -17,6 +17,8 @@ import FlorImg from '../../../assets/img/feders/fmarchesotti.webp';
 import MateoImg from '../../../assets/img/feders/mgermano.webp';
 import MicaImg from '../../../assets/img/feders/mmartinez.webp';
 import GonzaloImg from '../../../assets/img/feders/gcanibano.webp';
+import matiImg from '../../../assets/img/feders/mlazcano.webp';
+import victoriaImg from '../../../assets/img/feders/vpellegrino.webp';
 
 // Import Boss Photos
 import ChironiImg from '../../../assets/img/feders/jefes/Fede Chironi.webp';
@@ -92,7 +94,7 @@ const Nosotros = () => {
         { name: "Martín Spinelli", role: "COO", photo: MartinImg, linkedin: "https://www.linkedin.com/in/mart%C3%ADn-spinelli-310606203/" },
         { name: "Romina Albanesi", role: "Responsable Editorial", photo: RominaImg, linkedin: "https://www.linkedin.com/in/rominaalbanesi/" },
         { name: "Enzo Pinotti", role: "Analista de Sistemas", photo: EnzoImg, linkedin: "https://www.linkedin.com/in/enzo-daniel-pinotti-667270179/" },
-        { name: "Victoria Pellegrino", role: "Analista de Cuentas", photo: null, linkedin: "https://www.linkedin.com/in/victoria-pellegrino-23b966208/" },
+        { name: "Victoria Pellegrino", role: "Analista de Cuentas", photo: victoriaImg, linkedin: "https://www.linkedin.com/in/victoria-pellegrino-23b966208/" },
         { name: "Florencia Marchesotti", role: "Coordinadora de Proyectos", photo: FlorImg, linkedin: "https://www.linkedin.com/in/florencia-marchesotti-7570a3212/" },
         { name: "Gonzalo Cañibano", role: "Ejecutivo de Cuentas", photo: GonzaloImg, linkedin: "https://www.linkedin.com/in/gonzalo-canibano-a703872a/" },
     ];
@@ -101,7 +103,7 @@ const Nosotros = () => {
     // Reordered to put Belen in the middle (index 2 of 5)
     const theRestRow = [
         { name: "Mateo Germano", role: "Editor de Contenido Audiovisual", photo: MateoImg, linkedin: "https://www.linkedin.com/in/mateo-germano-898b872b1/" },
-        { name: "Matías Lazcano", role: "Editor de Proyectos", photo: null, linkedin: "https://www.linkedin.com/in/mat%C3%ADas-lazcano-b86342240/" },
+        { name: "Matías Lazcano", role: "Editor de Proyectos", photo: matiImg, linkedin: "https://www.linkedin.com/in/mat%C3%ADas-lazcano-b86342240/" },
         { name: "Belén L. Espilman", role: "Desarrolladora Web", photo: BelenImg, linkedin: "https://www.linkedin.com/in/belenespilman/" },
         { name: "Micaela Martínez", role: "Asesora Comercial", photo: MicaImg, linkedin: "https://www.linkedin.com/in/micaela-martinez-82609339b/" },
         { name: "Juan Perozo", role: "Diseñador UX/UI", photo: JuanPImg, linkedin: "https://www.linkedin.com/in/jperozo97/" },

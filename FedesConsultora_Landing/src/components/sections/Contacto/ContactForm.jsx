@@ -70,16 +70,16 @@ const ContactForm = ({ title = "ESCRIBINOS", showTitle = true, onSuccess, onStar
         telefono: "",
         email: "",
         empresa: "",
-        servicio: "Consultoría Empresarial",
+        servicio: "Consultoría empresarial",
         mensaje: ""
     });
 
     const serviceOptions = [
-        "Consultoría Empresarial",
-        "Gestión de Redes Sociales",
-        "Publicidad y Performance",
-        "Desarrollo Web",
-        "Estrategia Digital"
+        "Consultoría empresarial",
+        "Gestión de redes sociales",
+        "Publicidad y performance",
+        "Desarrollo web",
+        "Estrategia digital"
     ];
 
     const handleChange = (e) => {

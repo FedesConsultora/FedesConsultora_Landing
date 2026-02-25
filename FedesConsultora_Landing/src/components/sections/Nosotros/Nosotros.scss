@@ -88,7 +88,7 @@
         color: #19222b;
         margin-bottom: 30px;
         text-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-        
+
         .title-line {
             display: block;
         }
@@ -185,6 +185,7 @@
                 font-size: clamp(2.5rem, 6vw, 6.2rem) !important;
                 line-height: 0.95;
                 width: 600px;
+
                 @media (max-width: 768px) {
                     text-align: center;
                     font-size: clamp(2.3rem, 11vw, 4rem) !important;
@@ -195,6 +196,7 @@
                 text-align: left;
                 margin: 0;
                 width: 500px;
+
                 @media (max-width: 768px) {
                     text-align: center;
                     margin: 0 auto;
@@ -207,7 +209,8 @@
             align-items: flex-end;
             padding-right: 10px;
             position: relative;
-            right: 100px;    
+            right: 100px;
+
             @media (max-width: 768px) {
                 padding-right: 0;
                 justify-content: center;
@@ -284,12 +287,15 @@
 
 
         .team-chips-display {
-            width: 180%;
-            margin-left: -40%;
+            width: 100%;
+            margin-left: 0;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             gap: 8px;
             padding: 5px 0;
+            mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
 
             @media (max-width: 768px) {
                 width: 100%;
@@ -299,7 +305,7 @@
 
             .chips-row {
                 width: 100%;
-                overflow: visible;
+                overflow: hidden;
                 cursor: grab;
                 user-select: none !important;
                 touch-action: pan-y;
@@ -311,18 +317,10 @@
                     cursor: grabbing;
                 }
 
-                &:active {
-                    cursor: grabbing;
-                }
-
                 & * {
-                    pointer-events: inherit; // Allow events but drag should take precedence
+                    pointer-events: inherit;
                     -webkit-user-drag: none;
                     user-select: none !important;
-                }
-
-                &:active {
-                    cursor: grabbing;
                 }
 
                 .row-inner {
@@ -333,8 +331,6 @@
                     white-space: nowrap;
                     will-change: transform;
                 }
-
-                mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
             }
         }
     }
