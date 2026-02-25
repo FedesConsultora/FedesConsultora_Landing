@@ -23,6 +23,7 @@ export default function AppRouter() {
           <Route path="/galeria" element={<Galeria />} />
           <Route path="/nosotros" element={<Nosotros />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/hablemos" element={<LandingPage />} />
         </Route>
         {/* Standalone Landing Pages */}
         <Route path="/odoo" element={<OdooLanding />} />

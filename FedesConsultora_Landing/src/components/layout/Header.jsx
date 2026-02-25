@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, NavLink, useLocation, useSearchParams } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { RxHamburgerMenu, RxCross1 } from 'react-icons/rx';
 import FedesLogo from '../../assets/img/Logo.svg'
@@ -11,8 +11,8 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
-  const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
+  const prevPath = useRef('/');
   const { scrollY } = useScroll();
   const formRef = useRef(null);
 
@@ -82,19 +82,17 @@ const Header = () => {
 
   // Sync URL with form state for GTM tracking
   useEffect(() => {
-    const hasContactParam = searchParams.get('contact') === 'true';
-    if (isFormOpen && !hasContactParam) {
-      searchParams.set('contact', 'true');
-      setSearchParams(searchParams, { replace: true });
-    } else if (!isFormOpen && hasContactParam) {
-      searchParams.delete('contact');
-      setSearchParams(searchParams, { replace: true });
+    if (isFormOpen && window.location.pathname !== '/hablemos') {
+      prevPath.current = window.location.pathname;
+      window.history.pushState(null, '', '/hablemos');
+    } else if (!isFormOpen && window.location.pathname === '/hablemos') {
+      window.history.pushState(null, '', prevPath.current);
     }
-  }, [isFormOpen, searchParams, setSearchParams]);
+  }, [isFormOpen]);
 
-  // Open form if contact=true is in URL on mount
+  // Open form if /hablemos is in URL on mount
   useEffect(() => {
-    if (searchParams.get('contact') === 'true') {
+    if (window.location.pathname === '/hablemos') {
       setIsFormOpen(true);
     }
   }, []);
