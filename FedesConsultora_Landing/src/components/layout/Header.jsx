@@ -78,7 +78,7 @@ const Header = () => {
     setIsFormOpen(false);
     setIsHidden(false);
     scrollUpAmount.current = 0;
-  }, [location]);
+  }, [location.pathname]);
 
   // Sync URL with form state for GTM tracking
   useEffect(() => {

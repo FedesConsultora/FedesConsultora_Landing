@@ -9,25 +9,78 @@ import GaleriaGrilla from '../../../assets/img/backgrounds/galeria-grilla.svg';
 
 import { allMediaData, categories } from '../../../data/mediaData';
 
-const renderMedia = (media, className = "thumb-img", isActive = false) => {
+const VideoPlayer = ({ media, className, isActive, isNear, isStatic }) => {
+    const videoRef = useRef(null);
+    const [hasSources, setHasSources] = useState(false);
+
+    // Only add sources if active or near to save bandwidth
+    useEffect(() => {
+        if (isActive || isNear) {
+            setHasSources(true);
+        }
+    }, [isActive, isNear]);
+
+    // Force load if sources were just added
+    useEffect(() => {
+        if (videoRef.current && hasSources) {
+            videoRef.current.load();
+        }
+    }, [hasSources]);
+
+    // Control playback based on isActive state
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video || isStatic) return;
+
+        if (isActive) {
+            // Slight delay to ensure DOM is ready and sources are loaded
+            const playPromise = video.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log("Autoplay was prevented:", error);
+                });
+            }
+        } else {
+            video.pause();
+        }
+    }, [isActive, isStatic]);
+
+    const preloadValue = isActive || isNear ? "auto" : "metadata";
+
+    return (
+        <video
+            ref={videoRef}
+            className={className}
+            muted
+            loop
+            playsInline
+            preload={preloadValue}
+            poster={media.poster || ""}
+            style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+        >
+            {hasSources && (
+                <>
+                    <source src={media.webm} type="video/webm" />
+                    <source src={media.src} type="video/mp4" />
+                </>
+            )}
+        </video>
+    );
+};
+
+const renderMedia = (media, className = "thumb-img", isActive = false, isNear = false, isStatic = false) => {
     if (media.type === 'video') {
         return (
-            <video
+            <VideoPlayer
+                media={media}
                 className={className}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="auto"
-                poster={media.poster || ""}
-                style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-            >
-                <source src={media.webm} type="video/webm" />
-                <source src={media.src} type="video/mp4" />
-            </video>
+                isActive={isActive}
+                isNear={isNear}
+                isStatic={isStatic}
+            />
         );
     }
-    return <img src={media.src} alt="" className={className} draggable="false" />;
+    return <img src={media.src} alt="" className={className} draggable="false" loading="lazy" />;
 };
 
 const MobileCarouselRow = ({ images, direction = 1, speed = 40, onMediaClick }) => {
@@ -66,7 +119,7 @@ const MobileCarouselRow = ({ images, direction = 1, speed = 40, onMediaClick }) 
                         className="mobile-item"
                         onClick={() => onMediaClick(media)}
                     >
-                        {renderMedia(media, "mobile-media")}
+                        {renderMedia(media, "mobile-media", false, false, true)}
                     </div>
                 ))}
             </motion.div>
@@ -342,7 +395,9 @@ const Galeria = () => {
                     >
                         {reversedFilteredMedia.length > 0 ? reversedFilteredMedia.map((media, index) => {
                             const isActive = index === activeIndex && (isDragging || index === virtualIndex) && !isClosingForNext;
+                            const isNear = Math.abs(index - activeIndex) <= 1;
                             const isVertical = imageAspects[media.src] || false;
+
                             return (
                                 <motion.div
                                     key={`${media.src}-${index}`}
@@ -354,7 +409,7 @@ const Galeria = () => {
                                     transition={{ type: "spring", stiffness: 100, damping: 20 }}
                                     style={{ transformOrigin: 'bottom' }}
                                 >
-                                    {renderMedia(media, isVertical ? "thumb-img vertical" : "thumb-img horizontal", isActive)}
+                                    {renderMedia(media, isVertical ? "thumb-img vertical" : "thumb-img horizontal", isActive, isNear)}
                                 </motion.div>
                             );
                         }) : (
@@ -400,7 +455,7 @@ const Galeria = () => {
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 <button className="close-overlay" onClick={() => setFullScreenMedia(null)}>×</button>
-                                {renderMedia(fullScreenMedia, "full-media")}
+                                {renderMedia(fullScreenMedia, "full-media", true, true)}
                             </motion.div>
                         </motion.div>
                     )}

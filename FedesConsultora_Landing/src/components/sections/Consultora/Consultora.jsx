@@ -1,6 +1,7 @@
 import React from 'react';
 import './Consultora.scss';
 import Consultora1 from './subsections/Consultora1';
+import OnboardingMenu from './subsections/OnboardingMenu';
 import EngineeringGraphic from '../../../assets/img/backgrounds/consultora-graph.svg';
 import ConsultoraDegr1 from '../../../assets/img/backgrounds/consultora-degr (1).svg';
 import ConsultoraDegr2 from '../../../assets/img/backgrounds/consultora-degr (2).svg';
@@ -140,6 +141,9 @@ const Consultora = () => {
                 </div>
             </div>
 
+            {/* Bloque 2.5: Menú de Onboarding */}
+            <OnboardingMenu />
+
             {/* Bloque 3: No improvisamos / Ingeniería */}
             <div className="consultora-engineering-block">
                 <div className="container">
@@ -243,9 +247,9 @@ const Consultora = () => {
                 </div>
             </div>
 
-            {/* Bloque 4: Casos de éxito (Hidden as requested) */}
-            {/* <Consultora1 /> */}
-        </section>
+            {/* Bloque 4: Casos de éxito */}
+            <Consultora1 />
+        </section >
     );
 };
 

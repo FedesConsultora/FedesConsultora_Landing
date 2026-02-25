@@ -93,7 +93,7 @@ const Nosotros = () => {
         { name: "Romina Albanesi", role: "Responsable Editorial", photo: RominaImg, linkedin: "https://www.linkedin.com/in/rominaalbanesi/" },
         { name: "Enzo Pinotti", role: "Analista de Sistemas", photo: EnzoImg, linkedin: "https://www.linkedin.com/in/enzo-daniel-pinotti-667270179/" },
         { name: "Victoria Pellegrino", role: "Analista de Cuentas", photo: null, linkedin: "https://www.linkedin.com/in/victoria-pellegrino-23b966208/" },
-        { name: "Flor Marchesotti", role: "Coordinadora de proyectos", photo: FlorImg, linkedin: "https://www.linkedin.com/in/florencia-marchesotti-7570a3212/" },
+        { name: "Florencia Marchesotti", role: "Coordinadora de Proyectos", photo: FlorImg, linkedin: "https://www.linkedin.com/in/florencia-marchesotti-7570a3212/" },
         { name: "Gonzalo Cañibano", role: "Ejecutivo de Cuentas", photo: GonzaloImg, linkedin: "https://www.linkedin.com/in/gonzalo-canibano-a703872a/" },
     ];
 
@@ -103,7 +103,7 @@ const Nosotros = () => {
         { name: "Mateo Germano", role: "Editor de Contenido Audiovisual", photo: MateoImg, linkedin: "https://www.linkedin.com/in/mateo-germano-898b872b1/" },
         { name: "Matías Lazcano", role: "Editor de Proyectos", photo: null, linkedin: "https://www.linkedin.com/in/mat%C3%ADas-lazcano-b86342240/" },
         { name: "Belén L. Espilman", role: "Desarrolladora Web", photo: BelenImg, linkedin: "https://www.linkedin.com/in/belenespilman/" },
-        { name: "Micaela Martinez", role: "Asesora Comercial", photo: MicaImg, linkedin: "https://www.linkedin.com/in/micaela-martinez-82609339b/" },
+        { name: "Micaela Martínez", role: "Asesora Comercial", photo: MicaImg, linkedin: "https://www.linkedin.com/in/micaela-martinez-82609339b/" },
         { name: "Juan Perozo", role: "Diseñador UX/UI", photo: JuanPImg, linkedin: "https://www.linkedin.com/in/jperozo97/" },
     ];
 

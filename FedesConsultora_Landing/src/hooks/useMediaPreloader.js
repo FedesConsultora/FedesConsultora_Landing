@@ -33,8 +33,7 @@ const useMediaPreloader = () => {
                 if (media.type === 'image') {
                     preloadImage(media.src);
                 } else if (media.type === 'video') {
-                    if (media.src) preloadVideo(media.src);
-                    if (media.webm) preloadVideo(media.webm);
+                    // Only preload posters, not the full video files
                     if (media.poster) preloadImage(media.poster);
                 }
             });

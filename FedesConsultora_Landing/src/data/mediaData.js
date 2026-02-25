@@ -6,7 +6,6 @@ import img2 from '../assets/img/galeria/imagenes/img2.webp';
 import img3 from '../assets/img/galeria/imagenes/img3.webp';
 import img4 from '../assets/img/galeria/imagenes/img4.webp';
 import img5 from '../assets/img/galeria/imagenes/img5.webp';
-import img6 from '../assets/img/galeria/imagenes/img6.webp';
 import img7 from '../assets/img/galeria/imagenes/img7.webp';
 import img8 from '../assets/img/galeria/imagenes/img8.webp';
 import img9 from '../assets/img/galeria/imagenes/img9.webp';
@@ -50,7 +49,6 @@ export const allMediaData = [
         category: 'producciones',
         type: 'video'
     },
-    { src: img6, category: 'none', type: 'image' },
     { src: img7, category: 'none', type: 'image' },
     { src: img8, category: 'none', type: 'image' },
     {
@@ -77,6 +75,6 @@ export const allMediaData = [
 
 export const categories = [
     { id: 'todo', label: 'Todo' },
-    { id: 'testimonios', label: 'Testimonios (Próximamente)' },
+    { id: 'testimonios', label: 'Testimonios (próximamente)' },
     { id: 'producciones', label: 'Producciones' }
 ];

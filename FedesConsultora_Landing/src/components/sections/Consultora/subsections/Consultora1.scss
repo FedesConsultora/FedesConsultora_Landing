@@ -1,210 +1,224 @@
-@use '../../../../styles/_variables.scss' as *;
-
 .consultora-cases-block {
-    padding: 120px 0;
-    background-color: transparent; // Changed from #ffffff to see the grid
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
+    padding: 80px 0;
+    background: transparent;
+    position: relative;
 
     .cases-title {
-        font-size: 5rem;
-        font-weight: 800;
-        background: linear-gradient(123.75deg, #0F0F0F 20%, #7D7D7D 80%);
+        font-size: clamp(2.5rem, 5vw, 4.8rem);
+        font-weight: 900;
+        text-align: center;
+        background: linear-gradient(123.75deg, #2F2F2F 0%, #707070 100%);
         -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: transparent;
-        text-align: center;
-        margin-bottom: 80px;
-        letter-spacing: -2px;
+        margin-bottom: 60px;
+        letter-spacing: -3px;
 
         @media (max-width: 768px) {
-            font-size: 3rem;
+            letter-spacing: -1px;
             margin-bottom: 40px;
         }
     }
 
-    .cases-slider-main {
+    .cases-slider-container {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 40px;
+        gap: 20px;
+        position: relative;
         max-width: 1100px;
         margin: 0 auto;
 
-        @media (max-width: 992px) {
-            gap: 20px;
+        .slider-nav {
+            background: transparent;
+            border: none;
+            color: #ccc;
+            cursor: pointer;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.3s ease;
+            z-index: 10;
+
+            &:hover {
+                color: #3b82f6;
+            }
+
+            svg {
+                width: 40px;
+                height: 40px;
+            }
+
+            @media (max-width: 768px) {
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                background: rgba(255, 255, 255, 0.8);
+                border-radius: 50%;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+                &.prev {
+                    left: 10px;
+                }
+
+                &.next {
+                    right: 10px;
+                }
+            }
         }
     }
 
-    .slider-nav {
-        background: none;
-        border: none;
-        color: #D1D1D1;
-        cursor: pointer;
-        padding: 10px;
-        transition: $transition-base;
-        flex-shrink: 0;
+    .case-content-wrapper {
+        flex-grow: 1;
+        overflow: hidden;
+        min-height: 400px;
+        display: flex;
+        align-items: center;
+    }
 
-        svg {
-            width: 40px;
-            height: 40px;
-        }
+    .case-card-grid {
+        display: grid;
+        grid-template-columns: 1.8fr 1fr; // Even larger video area
+        gap: 40px;
+        align-items: center;
+        width: 100%;
 
-        &:hover {
-            color: #19222B;
-            transform: scale(1.1);
+        @media (max-width: 991px) {
+            gap: 40px;
         }
 
         @media (max-width: 768px) {
-            display: none; // Hide arrows on mobile for better space
-        }
-    }
-
-    .case-card {
-        display: flex;
-        align-items: center;
-        gap: 60px;
-        width: 100%;
-
-        @media (max-width: 992px) {
-            flex-direction: column;
-            gap: 30px;
+            grid-template-columns: 1fr;
             text-align: center;
+            gap: 30px;
         }
     }
 
-    .case-image-container {
-        flex: 1.2;
+    .case-video-container {
         width: 100%;
+        border-radius: 30px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        background: #000;
+        position: relative; // For controls
 
-        .case-image-ratio {
+        .video-inner {
             position: relative;
-            width: 100%;
-            padding-bottom: 56.25%; // 16:9
-            border-radius: 30px;
-            overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        }
+            padding-top: 56.25%; // 16:9 Aspect Ratio
 
-        .case-image {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-size: cover;
-            background-position: center;
-
-            &::after {
-                content: '';
+            .main-video {
                 position: absolute;
                 top: 0;
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: linear-gradient(0deg, rgba(0, 0, 0, 0.2) 0%, transparent 100%);
+                object-fit: cover;
+                border: none;
             }
-        }
 
-        .play-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 2;
-        }
-
-        .play-button {
-            width: 60px;
-            height: 60px;
-            background-color: white;
-            border-radius: 50%;
-            position: relative;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-
-            &::after {
-                content: '';
+            .video-custom-controls {
                 position: absolute;
-                top: 50%;
-                left: 55%;
-                transform: translate(-50%, -50%);
-                border-left: 15px solid $primary-color;
-                border-top: 10px solid transparent;
-                border-bottom: 10px solid transparent;
+                bottom: 20px;
+                right: 20px;
+                display: flex;
+                gap: 12px;
+                opacity: 0.6; // Visible by default
+                transition: all 0.3s ease;
+                z-index: 5;
+
+                .control-btn {
+                    background: rgba(0, 0, 0, 0.3);
+                    backdrop-filter: blur(8px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    color: white;
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+
+                    svg {
+                        width: 18px;
+                        height: 18px;
+                    }
+
+                    &:hover {
+                        background: rgba(0, 0, 0, 0.6);
+                        transform: scale(1.1);
+                    }
+                }
+            }
+
+            &:hover {
+                .video-custom-controls {
+                    opacity: 1;
+                }
             }
         }
     }
 
-    .case-details {
-        flex: 1;
+    .case-info {
         display: flex;
         flex-direction: column;
-        text-align: left;
+        justify-content: center;
 
-        @media (max-width: 992px) {
+        @media (max-width: 768px) {
             align-items: center;
-            text-align: center;
         }
 
-        .case-label {
-            font-size: 0.9rem;
-            color: #8F8F8F;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
+        .case-tag {
+            font-size: 0.95rem;
+            color: #666;
+            margin-bottom: 15px;
             font-weight: 500;
         }
 
-        .case-client {
-            font-size: 4rem;
-            font-weight: 800;
-            color: #19222B;
-            margin: 0;
-            line-height: 1;
-
-            @media (max-width: 768px) {
-                font-size: 2.5rem;
-            }
-        }
-
         .case-stat {
-            font-size: 8rem;
+            font-size: 6.5rem;
             font-weight: 800;
-            color: #19222B;
+            color: #1a1a1a;
             line-height: 1;
-            letter-spacing: -4px;
-            margin: 10px 0;
+            margin-bottom: 5px;
+            letter-spacing: -0.04em;
 
-            @media (max-width: 768px) {
+            @media (max-width: 1200px) {
                 font-size: 5rem;
             }
         }
 
         .case-result {
-            font-size: 1.25rem;
-            color: $primary-color;
-            font-weight: 600;
-            margin-bottom: 40px;
-            letter-spacing: -0.5px;
+            font-size: 1.4rem;
+            color: #0056b3; // Blue from image
+            font-weight: 700;
+            margin-bottom: 35px;
+            line-height: 1.3;
+
+            @media (max-width: 1200px) {
+                font-size: 1.2rem;
+            }
         }
 
-        .btn-view-gallery {
-            background-color: $primary-color;
-            color: white;
-            padding: 15px 35px;
-            border-radius: 100px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1rem;
-            display: inline-block;
-            transition: $transition-base;
-            box-shadow: 0 10px 20px rgba(58, 84, 255, 0.2);
+        .case-action {
+            .btn-success-gallery {
+                display: inline-block;
+                padding: 16px 32px;
+                background-color: #165bb7; // Corporate blue from image
+                color: white;
+                border-radius: 100px;
+                font-weight: 600;
+                font-size: 1rem;
+                text-decoration: none;
+                transition: all 0.3s ease;
+                box-shadow: 0 10px 20px rgba(22, 91, 183, 0.2);
 
-            &:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 15px 25px rgba(58, 84, 255, 0.3);
-                filter: brightness(1.1);
+                &:hover {
+                    background-color: #0e4a9a;
+                    transform: translateY(-2px);
+                    box-shadow: 0 15px 30px rgba(22, 91, 183, 0.3);
+                }
             }
         }
     }

@@ -38,7 +38,7 @@ const Agencia = () => {
         {
             title: "Paid media (ads)",
             tag: "Growth",
-            desc: "Ponemos tu mensaje frente a quienes ya están listos para comprar. Meta y Google Ads con foco en ROI",
+            desc: "Ponemos tu mensaje frente a quienes ya están listos para comprar. Meta y Google Ads con foco en ROI.",
             image: PaidMediaImg
         },
         {
