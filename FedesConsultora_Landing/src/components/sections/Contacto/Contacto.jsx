@@ -1,6 +1,7 @@
 import React from 'react';
 import SectionPill from '../../ui/SectionPill';
 import ContactForm from './ContactForm';
+import { trackEvent } from '../../../services/googleApi';
 import './Contacto.scss';
 
 const Contacto = () => {
@@ -18,13 +19,15 @@ const Contacto = () => {
                                 href="https://wa.me/5492213092529"
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                onClick={() => trackEvent('Redes/Contacto', 'Click WhatsApp Directo')}
                             >
                                 <span className='negrita'>WhatsApp:</span> +54 9 221 309-2529
                             </a>
                         </p>
 
                         <p>
-                            <a className='contact-item' style={{ pointerEvents: ' auto' }} href="mailto:info@fedesconsultora.com" target="_blank" rel="noopener noreferrer">
+                            <a className='contact-item' style={{ pointerEvents: ' auto' }} href="mailto:info@fedesconsultora.com" target="_blank" rel="noopener noreferrer"
+                                onClick={() => trackEvent('Redes/Contacto', 'Click Email Directo')}>
                                <span className='negrita'>Email:</span> info@fedesconsultora.com
                             </a>
                         </p>
@@ -34,6 +37,7 @@ const Contacto = () => {
                                 href='https://www.google.com/maps/place/Pl.+Paso+159,+B1900+La+Plata,+Provincia+de+Buenos+Aires/@-34.9164597,-57.9653554,17z/data=!3m1!4b1!4m6!3m5!1s0x95a2e634a32c953f:0xa7f9bb231a4546c7!8m2!3d-34.9164598!4d-57.9604845!16s%2Fg%2F11s9kvmwr8?entry=ttu&g_ep=EgoyMDI2MDEyMC4wIKXMDSoKLDEwMDc5MjA3MUgBUAM%3D'
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                onClick={() => trackEvent('Redes/Contacto', 'Click Maps')}
                             >
                                <span className='negrita'>Dirección:</span> Plaza Paso 159, Buenos Aires
                             </a>
@@ -42,7 +46,8 @@ const Contacto = () => {
                     </div>
 
                     <div className="contacto-cta">
-                        <a href="https://calendar.app.google/PJRvwpLUfYQciy1Y8" target="_blank" rel="noopener noreferrer" className='btn-appointment-white'>Agendar una reunión</a>
+                        <a href="https://calendar.app.google/PJRvwpLUfYQciy1Y8" target="_blank" rel="noopener noreferrer" className='btn-appointment-white'
+                            onClick={() => trackEvent('Contacto', 'Click Agendar Reunión', 'Sección Contacto')}>Agendar una reunión</a>
                     </div>
                 </div>
             </div>

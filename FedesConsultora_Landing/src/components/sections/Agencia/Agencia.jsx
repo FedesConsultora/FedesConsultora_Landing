@@ -8,6 +8,7 @@ import AgenciaDegr1 from '../../../assets/img/backgrounds/agencia-degr (2).svg';
 import AgenciaDegr2 from '../../../assets/img/backgrounds/agencia-degr (1).svg';
 import ConsultoraGrid from '../../../assets/img/backgrounds/consultora-grilla (3).svg';
 import { motion } from 'framer-motion';
+import { trackEvent } from '../../../services/googleApi';
 
 // 1. Guardar tus imágenes en: src/assets/img/services/
 // 2. Nombres: paid-media.webp, branding.webp, social.webp
@@ -131,6 +132,7 @@ const Agencia = () => {
                         <div className="agencia-cta">
                             <button
                                 onClick={() => {
+                                    trackEvent('Agencia', 'Click Ver Planes');
                                     const event = new CustomEvent('open-fedi', {
                                         detail: { message: 'Ver Planes' }
                                     });

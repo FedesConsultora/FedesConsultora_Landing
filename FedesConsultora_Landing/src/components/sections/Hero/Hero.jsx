@@ -8,6 +8,7 @@ import DegrHero2Left from '../../../assets/img/backgrounds/inicio-degr (3).svg'
 import DegrHero2Right from '../../../assets/img/backgrounds/inicio-degr (2).svg'
 import './Hero.scss';
 import { motion } from 'framer-motion';
+import { trackEvent } from '../../../services/googleApi';
 
 const Hero = () => {
   const dropVariants = {
@@ -24,6 +25,7 @@ const Hero = () => {
       <section
         id="inicio"
         className="hero-section"
+        onViewportEnter={() => trackEvent('Scroll Home', 'Sección: Inicio')}
       >
         <div className="hero-background">
           {/* Layer 1: Independent Float (Organic) */}
@@ -69,11 +71,11 @@ const Hero = () => {
         </div>
       </section>
 
-      <section>
+      <section onViewportEnter={() => trackEvent('Scroll Home', 'Sección: Hero1 (Orden/Clientes)')}>
         <Hero1 />
       </section>
 
-      <section className="hero-bottom-combined">
+      <section className="hero-bottom-combined" onViewportEnter={() => trackEvent('Scroll Home', 'Sección: Bottom (Consultora1)')}>
         <Hero2 />
         <Consultora1 />
 

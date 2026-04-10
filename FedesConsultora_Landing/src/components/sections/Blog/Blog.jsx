@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import BlogCard from './BlogCard';
 import './Blog.scss';
-import { getBlogPosts } from '../../../services/googleApi';
+import { getBlogPosts, trackEvent } from '../../../services/googleApi';
 import { motion } from 'framer-motion';
 
 // Import background assets
@@ -143,6 +143,7 @@ const Blog = () => {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="featured-card-link"
+                                    onClick={() => trackEvent('Blog', 'Click Artículo Destacado', featuredPost.title)}
                                 >
                                     <div className="featured-card">
                                         <div className="featured-image">
@@ -210,7 +211,12 @@ const Blog = () => {
 
                                 <button
                                     className={`pagination-btn next ${currentPage === totalPages ? 'disabled' : ''}`}
-                                    onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                                    onClick={() => {
+                                        if (currentPage < totalPages) {
+                                            trackEvent('Blog', 'Click Paginación', `Siguiente a Pag ${currentPage + 1}`);
+                                            handlePageChange(currentPage + 1);
+                                        }
+                                    }}
                                     disabled={currentPage === totalPages}
                                 >
                                     Siguiente

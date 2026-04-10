@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion';
 import TeamChip from '../../ui/TeamChip';
+import { trackEvent } from '../../../services/googleApi';
 import './Nosotros.scss';
 
 // Import background assets
@@ -176,7 +177,10 @@ const Nosotros = () => {
                                         className="boss-card"
                                         style={{ '--boss-image': `url(${boss.photo})` }}
                                         whileHover={{ scale: 1.02 }}
-                                        onClick={() => setActiveBoss(boss)}
+                                        onClick={() => {
+                                            trackEvent('Nosotros', 'Click Perfil Jefe', boss.name);
+                                            setActiveBoss(boss);
+                                        }}
                                     >
                                         <img src={boss.photo} alt={boss.name} />
                                     </motion.div>
@@ -256,6 +260,7 @@ const Nosotros = () => {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="btn-linkedin-boss"
+                                    onClick={() => trackEvent('Redes', 'Click LinkedIn Jefe', activeBoss.name)}
                                 >
                                     <span>VER LINKEDIN</span>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

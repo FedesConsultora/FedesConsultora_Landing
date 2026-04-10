@@ -8,6 +8,7 @@ import ConsultoraDegr2 from '../../../assets/img/backgrounds/consultora-degr (2)
 import ConsultoraGrid from '../../../assets/img/backgrounds/consultora-grilla (3).svg';
 import { useEffect, useRef, useState } from "react";
 import { motion } from 'framer-motion';
+import { trackEvent } from '../../../services/googleApi';
 
 const Consultora = () => {
     const graphRef = useRef(null);
@@ -97,7 +98,8 @@ const Consultora = () => {
                         </p>
 
                         <div className="consultora-cta">
-                            <a href="https://calendar.app.google/PJRvwpLUfYQciy1Y8" target="_blank" rel="noopener noreferrer" className="btn-diagnostic">
+                            <a href="https://calendar.app.google/PJRvwpLUfYQciy1Y8" target="_blank" rel="noopener noreferrer" className="btn-diagnostic"
+                                onClick={() => trackEvent('Consultora', 'Click Diagnóstico', 'Sección Intro')}>
                                 Agendar sesión de diagnóstico
                             </a>
                         </div>
@@ -121,19 +123,28 @@ const Consultora = () => {
                     <div className="familiar-pills">
                         <div
                             className="familiar-pill"
-                            onClick={() => window.dispatchEvent(new CustomEvent('open-fedi', { detail: { message: 'Facturación alta, rentabilidad baja.' } }))}
+                            onClick={() => {
+                                trackEvent('Consultora', 'Click Pill Familiar', 'Facturación alta');
+                                window.dispatchEvent(new CustomEvent('open-fedi', { detail: { message: 'Facturación alta, rentabilidad baja.' } }));
+                            }}
                         >
                             Facturación alta, rentabilidad baja.
                         </div>
                         <div
                             className="familiar-pill"
-                            onClick={() => window.dispatchEvent(new CustomEvent('open-fedi', { detail: { message: 'El negocio depende 100% de vos y no tenés vida.' } }))}
+                            onClick={() => {
+                                trackEvent('Consultora', 'Click Pill Familiar', 'Negocio depende 100%');
+                                window.dispatchEvent(new CustomEvent('open-fedi', { detail: { message: 'El negocio depende 100% de vos y no tenés vida.' } }));
+                            }}
                         >
                             El negocio depende 100% de vos y no tenés vida.
                         </div>
                         <div
                             className="familiar-pill"
-                            onClick={() => window.dispatchEvent(new CustomEvent('open-fedi', { detail: { message: 'Procesos comerciales informales o inexistentes.' } }))}
+                            onClick={() => {
+                                trackEvent('Consultora', 'Click Pill Familiar', 'Procesos informales');
+                                window.dispatchEvent(new CustomEvent('open-fedi', { detail: { message: 'Procesos comerciales informales o inexistentes.' } }));
+                            }}
                         >
                             Procesos comerciales informales o inexistentes.
                         </div>

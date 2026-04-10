@@ -1,4 +1,5 @@
 import React from 'react';
+import { trackEvent } from '../../services/googleApi';
 import './TeamChip.scss';
 
 const LinkedInIcon = () => (
@@ -37,6 +38,7 @@ const TeamChip = ({ name, role, photo, linkedin }) => {
                 rel="noopener noreferrer"
                 className="team-chip is-link"
                 draggable="false"
+                onClick={() => trackEvent('Redes', 'Click LinkedIn Equipo', name)}
             >
                 <Content />
             </a>

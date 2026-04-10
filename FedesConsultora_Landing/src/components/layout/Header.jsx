@@ -6,6 +6,7 @@ import FedesLogo from '../../assets/img/Logo.svg'
 import './Header.scss';
 
 import HeaderContactDropdown from './HeaderContactDropdown';
+import { trackEvent } from '../../services/googleApi';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -30,12 +31,19 @@ const Header = () => {
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+    if (!isMenuOpen) {
+      trackEvent('Navegación', 'Menú Mobile Abierto');
+    }
     if (isFormOpen) setIsFormOpen(false);
   };
 
   const toggleForm = (e) => {
     e.preventDefault();
-    setIsFormOpen(!isFormOpen);
+    const newState = !isFormOpen;
+    setIsFormOpen(newState);
+    if (newState) {
+      trackEvent('Contacto', 'Click Botón Hablemos', 'Header');
+    }
   };
 
   // Close dropdown when clicking outside
@@ -127,8 +135,9 @@ const Header = () => {
               <li key={item.name}>
                 <NavLink
                   to={item.path}
-                  end={item.path === '/'}
+                   end={item.path === '/'}
                   className={({ isActive }) => isActive ? 'active' : ''}
+                  onClick={() => trackEvent('Navegación', 'Click Tab', item.name)}
                 >
                   {item.name}
                 </NavLink>

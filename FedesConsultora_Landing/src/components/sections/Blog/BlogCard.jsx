@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { trackEvent } from '../../../services/googleApi';
 import './BlogCard.scss';
 
 const BlogCard = ({ id, category, date, title, excerpt, image }) => {
@@ -8,6 +9,7 @@ const BlogCard = ({ id, category, date, title, excerpt, image }) => {
             target="_blank"
             rel="noopener noreferrer"
             className="blog-card-link"
+            onClick={() => trackEvent('Blog', 'Click Artículo', title)}
         >
             <div className="blog-card">
                 <div className="card-image-container">

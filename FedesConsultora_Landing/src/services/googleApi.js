@@ -168,3 +168,31 @@ export const getOnboardingProgress = async (cuit) => {
         return null;
     }
 };
+
+/**
+ * Registra un evento de analítica (clics, scroll, etc)
+ */
+export const trackEvent = async (category, label, value = "", extraData = {}) => {
+    try {
+        const payload = {
+            category,
+            label,
+            value,
+            url: window.location.pathname,
+            timestamp: new Date().toISOString(),
+            ...extraData
+        };
+        
+        // Enviamos los datos como un string JSON simple dentro del cuerpo
+        await fetch(`${API_URL}?action=track`, {
+            method: "POST",
+            mode: "no-cors",
+            // No ponemos headers de JSON para evitar el preflight de CORS
+            body: JSON.stringify(payload),
+        });
+        return { success: true };
+    } catch (error) {
+        console.warn("Error tracking event:", error);
+        return { success: false };
+    }
+};

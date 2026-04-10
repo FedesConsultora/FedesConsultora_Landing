@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import { trackEvent } from '../../../../services/googleApi'
 import FedesLogoDegr from '../../../../assets/img/logo-degr.svg'
 import './Hero1.scss'
 
@@ -128,7 +129,7 @@ const Hero1 = () => {
                         </div>
                         <h3>¿Sentís que <strong>tu negocio te atrapa?</strong></h3>
                         <p>Ventas desordenadas, rentabilidad baja, dependencia de estar presente 24/7.</p>
-                        <Link to="/consultora" className="solution-btn">Necesito orden</Link>
+                        <Link to="/consultora" className="solution-btn" onClick={() => trackEvent('Inicio', 'Click Necesito Orden')}>Necesito orden</Link>
                     </div>
 
                     <div className="solution-card">
@@ -137,7 +138,7 @@ const Hero1 = () => {
                         </div>
                         <h3>¿Sentís que <strong>el mercado te ignora?</strong></h3>
                         <p>Marca desactualizada, anuncios que no convierten, competencia que avanza.</p>
-                        <Link to="/agencia" className="solution-btn">Necesito clientes</Link>
+                        <Link to="/agencia" className="solution-btn" onClick={() => trackEvent('Inicio', 'Click Necesito Clientes')}>Necesito clientes</Link>
                     </div>
                 </div>
             </div>

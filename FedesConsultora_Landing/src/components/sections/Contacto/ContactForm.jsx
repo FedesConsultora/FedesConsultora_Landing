@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Player } from "@lottiefiles/react-lottie-player";
 import { FaWhatsapp, FaChevronDown } from "react-icons/fa";
-import { enviarConsultaContacto } from '../../../services/googleApi';
+import { enviarConsultaContacto, trackEvent } from '../../../services/googleApi';
 import coheteLottie from '../../../assets/lotties/coheteThankYou.json';
 import './ContactForm.scss';
 
@@ -123,12 +123,14 @@ const ContactForm = ({ title = "ESCRIBINOS", showTitle = true, onSuccess, onStar
         const result = await enviarConsultaContacto({ ...formData, origen: "web" });
 
         if (result.success) {
+            trackEvent('Contacto', 'Formulario Enviado', 'Email');
             setShowSuccess(true);
             if (onStartSuccess) onStartSuccess();
             if (onSuccess) {
                 setTimeout(() => onSuccess(), 4500);
             }
         } else {
+            trackEvent('Contacto', 'Error Envío Formulario', 'Email');
             setErrors({ submit: "Error al enviar. Inténtalo de nuevo." });
         }
         setIsSending(false);
@@ -153,6 +155,7 @@ const ContactForm = ({ title = "ESCRIBINOS", showTitle = true, onSuccess, onStar
         );
 
         const wpNum = import.meta.env.VITE_WHATSAPP_NUMBER || "5492213092529";
+        trackEvent('Contacto', 'Click WhatsApp', 'Formulario');
         window.open(`https://wa.me/${wpNum}?text=${texto}`, "_blank");
 
         setShowSuccess(true);

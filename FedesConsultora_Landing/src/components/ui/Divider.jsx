@@ -1,6 +1,6 @@
 import React from 'react';
 import './Divider.scss';
-import logo from '../../assets/img/FedesLogo.webp';
+import logo from '../../assets/img/Logo.svg';
 
 const Divider = ({ variant = 'blue', data }) => {
     const defaultStats = [

@@ -1,6 +1,6 @@
 import React from 'react';
 import './Footer.scss';
-import FedesLogo from '../../../assets/img/FedesLogo.webp'
+import FedesLogo from '../../../assets/img/Logo.svg'
 
 const Footer = () => {
     return (
