@@ -9,6 +9,7 @@ const FediWidget = () => {
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [currentMessage, setCurrentMessage] = useState('');
     const iframeRef = useRef(null);
+    const widgetRef = useRef(null);
 
     const BASE_URL = 'https://bot.fedes.ai';
 
@@ -96,6 +97,24 @@ const FediWidget = () => {
         return () => clearTimeout(timer);
     }, []);
 
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (widgetRef.current && !widgetRef.current.contains(event.target)) {
+                setIsChatOpen(false);
+            }
+        };
+
+        if (isChatOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+            document.addEventListener('touchstart', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, [isChatOpen]);
+
     const toggleChat = (e) => {
         e.stopPropagation();
         setIsChatOpen(!isChatOpen);
@@ -117,7 +136,7 @@ const FediWidget = () => {
     const iframeSrc = `${BASE_URL}/?widget=true&theme=light`;
 
     return (
-        <div className={`fedi-main-wrapper ${isRocketVisible ? 'rocket-visible' : ''} ${isChatOpen ? 'chat-open' : ''}`}>
+        <div ref={widgetRef} className={`fedi-main-wrapper ${isRocketVisible ? 'rocket-visible' : ''} ${isChatOpen ? 'chat-open' : ''}`}>
             <AnimatePresence>
                 {!isRocketVisible && (
                     <motion.button
