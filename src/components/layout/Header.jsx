@@ -26,7 +26,7 @@ const Header = () => {
     { name: 'Agencia', path: '/agencia' },
     { name: 'Galería', path: '/galeria' },
     { name: 'Nosotros', path: '/nosotros' },
-    { name: 'Blog', path: '/blog' },
+
   ];
 
   const toggleMenu = () => {
@@ -135,7 +135,7 @@ const Header = () => {
               <li key={item.name}>
                 <NavLink
                   to={item.path}
-                   end={item.path === '/'}
+                  end={item.path === '/'}
                   className={({ isActive }) => isActive ? 'active' : ''}
                   onClick={() => trackEvent('Navegación', 'Click Tab', item.name)}
                 >
