@@ -10,6 +10,7 @@ import Galeria from '../components/sections/Galeria/Galeria'
 import Contacto from '../components/sections/Contacto/Contacto'
 import OdooLanding from '../pages/OdooLanding/OdooLanding'
 import OnboardingEmpresas from '../pages/Onboarding/OnboardingEmpresas'
+import FerdersCard from '../pages/FerdersCard/FerdersCard'
 
 export default function AppRouter() {
   return (
@@ -28,6 +29,8 @@ export default function AppRouter() {
         {/* Standalone Landing Pages */}
         <Route path="/odoo" element={<OdooLanding />} />
         <Route path="/onboarding-empresas" element={<OnboardingEmpresas />} />
+        <Route path="/ferders/cards/:slug" element={<FerdersCard />} />
+        <Route path="/feders/cards/:slug" element={<FerdersCard />} />
       </Routes>
     </BrowserRouter>
   )
