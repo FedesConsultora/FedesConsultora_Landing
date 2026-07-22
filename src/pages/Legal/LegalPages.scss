@@ -1,0 +1,339 @@
+@use '../../styles/_variables.scss' as *;
+
+.legal-page-wrapper {
+  position: relative;
+  background-color: #ffffff;
+  width: 100%;
+  overflow-x: hidden;
+  padding-top: 140px;
+  padding-bottom: 100px;
+  color: #111827;
+  font-family: $font-body;
+
+  @media (max-width: 768px) {
+    padding-top: 110px;
+    padding-bottom: 60px;
+  }
+
+  // ── Background decorations ──
+  .legal-bg-decor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+
+    .bg-degr {
+      position: absolute;
+      pointer-events: none;
+      will-change: transform;
+
+      &.degr-1 {
+        top: -10%;
+        right: -25%;
+        width: 120vw;
+        opacity: 0.3;
+        filter: blur(50px);
+      }
+
+      &.degr-2 {
+        top: 30%;
+        left: -30%;
+        width: 130vw;
+        opacity: 0.35;
+        filter: blur(70px);
+      }
+    }
+
+    .bg-grid {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.08;
+    }
+  }
+
+  // ── Container ──
+  .legal-container {
+    position: relative;
+    z-index: 2;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 30px;
+
+    @media (max-width: 768px) {
+      padding: 0 16px;
+    }
+  }
+
+  // ── Hero ──
+  .legal-hero {
+    text-align: center;
+    margin-bottom: 48px;
+
+    .legal-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      background: rgba(27, 94, 191, 0.07);
+      border: 1px solid rgba(27, 94, 191, 0.15);
+      border-radius: 30px;
+      color: $primary-color;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-family: $font-title;
+      font-size: 2.8rem !important;
+      font-weight: 700 !important;
+      line-height: 1.2;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+      text-shadow: none !important;
+
+      @media (max-width: 768px) {
+        font-size: 2rem !important;
+      }
+    }
+
+    .last-updated {
+      font-size: 0.92rem;
+      color: #64748b;
+      font-weight: 400;
+    }
+  }
+
+  // ── Card ──
+  .legal-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 48px;
+    box-shadow: 0 4px 30px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+
+    @media (max-width: 768px) {
+      padding: 24px 18px;
+      border-radius: 14px;
+    }
+  }
+
+  // ── Sections (override global section styles) ──
+  .legal-section {
+    // Reset global section styles that break the layout
+    display: block !important;
+    min-height: auto !important;
+    align-items: unset !important;
+    justify-content: unset !important;
+    padding: 0 !important;
+    width: 100%;
+    margin-bottom: 40px;
+    scroll-margin-top: 0;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 16px;
+
+      .section-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        min-width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: rgba(27, 94, 191, 0.08);
+        color: $primary-color;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+      }
+
+      h2 {
+        font-family: $font-title;
+        font-size: 1.4rem !important;
+        font-weight: 600 !important;
+        color: #0f172a;
+        margin: 0;
+        line-height: 1.35;
+        padding-top: 5px;
+        text-shadow: none !important;
+
+        @media (max-width: 768px) {
+          font-size: 1.2rem !important;
+        }
+      }
+    }
+
+    p {
+      font-size: 0.98rem;
+      line-height: 1.75;
+      color: #475569;
+      margin-bottom: 14px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      strong {
+        color: #1e293b;
+      }
+
+      a {
+        color: $primary-color;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+
+        &:hover {
+          color: darken($primary-color, 10%);
+        }
+      }
+    }
+
+    ul, ol {
+      margin: 12px 0 16px 0;
+      padding-left: 22px;
+      list-style: disc;
+
+      li {
+        font-size: 0.96rem;
+        line-height: 1.7;
+        color: #475569;
+        margin-bottom: 8px;
+
+        strong {
+          color: #1e293b;
+        }
+
+        // Nested lists
+        ul {
+          margin-top: 6px;
+          margin-bottom: 6px;
+        }
+      }
+    }
+
+    ol {
+      list-style: decimal;
+    }
+
+    // ── Data Deletion highlight box ──
+    .deletion-box {
+      background: linear-gradient(135deg, rgba(27, 94, 191, 0.04) 0%, rgba(99, 102, 241, 0.05) 100%);
+      border: 1px solid rgba(27, 94, 191, 0.18);
+      border-left: 5px solid $primary-color;
+      border-radius: 14px;
+      padding: 28px;
+      margin: 24px 0;
+
+      @media (max-width: 768px) {
+        padding: 20px 16px;
+      }
+
+      .deletion-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: $font-title;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: $primary-color;
+        margin-bottom: 12px;
+      }
+
+      p {
+        color: #334155;
+        font-size: 0.95rem;
+      }
+
+      ol {
+        margin-top: 12px;
+        margin-bottom: 0;
+        padding-left: 20px;
+
+        li {
+          color: #334155;
+          margin-bottom: 10px;
+          font-size: 0.95rem;
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+    }
+
+    // ── Contact card ──
+    .contact-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 22px 28px;
+      margin-top: 16px;
+
+      @media (max-width: 768px) {
+        padding: 18px 16px;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .contact-info {
+        h4 {
+          font-family: $font-title;
+          font-size: 1rem;
+          font-weight: 600;
+          color: #0f172a;
+          margin: 0 0 2px 0;
+        }
+
+        p {
+          font-size: 0.9rem;
+          color: #64748b;
+          margin: 0;
+        }
+      }
+
+      .contact-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 22px;
+        background: $primary-color;
+        color: #ffffff;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 4px 14px rgba(27, 94, 191, 0.2);
+
+        &:hover {
+          background: darken($primary-color, 8%);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(27, 94, 191, 0.3);
+        }
+      }
+    }
+  }
+}

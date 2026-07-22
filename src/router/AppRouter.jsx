@@ -11,6 +11,8 @@ import Contacto from '../components/sections/Contacto/Contacto'
 import OdooLanding from '../pages/OdooLanding/OdooLanding'
 import OnboardingEmpresas from '../pages/Onboarding/OnboardingEmpresas'
 import FerdersCard from '../pages/FerdersCard/FerdersCard'
+import TerminosCondiciones from '../pages/Legal/TerminosCondiciones'
+import Privacidad from '../pages/Legal/Privacidad'
 
 export default function AppRouter() {
   return (
@@ -25,6 +27,8 @@ export default function AppRouter() {
           <Route path="/nosotros" element={<Nosotros />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/hablemos" element={<LandingPage />} />
+          <Route path="/terminos-y-condiciones" element={<TerminosCondiciones />} />
+          <Route path="/privacidad" element={<Privacidad />} />
         </Route>
         {/* Standalone Landing Pages */}
         <Route path="/odoo" element={<OdooLanding />} />
