@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import MainLayout from '../components/layout/MainLayout'
 import LandingPage from '../pages/LandingPage/LandingPage'
 import BlogPostDetail from '../pages/BlogPostDetail/BlogPostDetail'
@@ -16,8 +16,14 @@ import Privacidad from '../pages/Legal/Privacidad'
 import AdminDashboard from '../pages/Admin/AdminDashboard'
 
 export default function AppRouter() {
+  // Redirección de compatibilidad si alguien entra con la URL antigua con '#' (ej: /#/onboarding-empresas)
+  if (window.location.hash.startsWith('#/')) {
+    const cleanPath = window.location.hash.replace('#/', '/');
+    window.history.replaceState(null, '', cleanPath);
+  }
+
   return (
-    <HashRouter>
+    <BrowserRouter>
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" element={<LandingPage />} />
@@ -37,7 +43,8 @@ export default function AppRouter() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/ferders/cards/:slug" element={<FerdersCard />} />
         <Route path="/feders/cards/:slug" element={<FerdersCard />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </HashRouter>
+    </BrowserRouter>
   )
 }
