@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { HashRouter, Routes, Route } from 'react-router-dom'
 import MainLayout from '../components/layout/MainLayout'
 import LandingPage from '../pages/LandingPage/LandingPage'
 import BlogPostDetail from '../pages/BlogPostDetail/BlogPostDetail'
@@ -13,10 +13,11 @@ import OnboardingEmpresas from '../pages/Onboarding/OnboardingEmpresas'
 import FerdersCard from '../pages/FerdersCard/FerdersCard'
 import TerminosCondiciones from '../pages/Legal/TerminosCondiciones'
 import Privacidad from '../pages/Legal/Privacidad'
+import AdminDashboard from '../pages/Admin/AdminDashboard'
 
 export default function AppRouter() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" element={<LandingPage />} />
@@ -33,9 +34,10 @@ export default function AppRouter() {
         {/* Standalone Landing Pages */}
         <Route path="/odoo" element={<OdooLanding />} />
         <Route path="/onboarding-empresas" element={<OnboardingEmpresas />} />
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/ferders/cards/:slug" element={<FerdersCard />} />
         <Route path="/feders/cards/:slug" element={<FerdersCard />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   )
 }
