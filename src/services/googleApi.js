@@ -196,3 +196,50 @@ export const trackEvent = async (category, label, value = "", extraData = {}) =>
         return { success: false };
     }
 };
+
+/**
+ * Funciones de Administración
+ */
+export const getAllOnboardings = async () => {
+    if (!API_URL) return [];
+    try {
+        const response = await fetch(`${API_URL}?action=getAllOnboardings`, { mode: "cors" });
+        if (!response.ok) return [];
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error("Error obteniendo lista de onboardings:", error);
+        return [];
+    }
+};
+
+export const addGaleriaFoto = async (imageUrl) => {
+    try {
+        await fetch(`${API_URL}?action=addGaleriaFoto`, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ imageUrl, id: "foto_" + Date.now() }),
+        });
+        return { success: true };
+    } catch (error) {
+        console.error("Error agregando foto a la galería:", error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const deleteGaleriaFoto = async (id) => {
+    try {
+        await fetch(`${API_URL}?action=deleteGaleriaFoto`, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id }),
+        });
+        return { success: true };
+    } catch (error) {
+        console.error("Error eliminando foto de la galería:", error);
+        return { success: false, error: error.message };
+    }
+};
+
