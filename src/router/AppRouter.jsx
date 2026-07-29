@@ -16,12 +16,6 @@ import Privacidad from '../pages/Legal/Privacidad'
 import AdminDashboard from '../pages/Admin/AdminDashboard'
 
 export default function AppRouter() {
-  // Redirección de compatibilidad si alguien entra con la URL antigua con '#' (ej: /#/onboarding-empresas)
-  if (window.location.hash.startsWith('#/')) {
-    const cleanPath = window.location.hash.replace('#/', '/');
-    window.history.replaceState(null, '', cleanPath);
-  }
-
   return (
     <BrowserRouter>
       <Routes>
