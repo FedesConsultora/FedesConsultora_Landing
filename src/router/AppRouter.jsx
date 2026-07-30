@@ -8,8 +8,7 @@ import Nosotros from '../components/sections/Nosotros/Nosotros'
 import Blog from '../components/sections/Blog/Blog'
 import Galeria from '../components/sections/Galeria/Galeria'
 import Contacto from '../components/sections/Contacto/Contacto'
-// Redirección externa a fedes.ai/odoo
-const RedirectToOdoo = () => { window.location.href = 'https://fedes.ai/odoo'; return null; }
+import OdooLanding from '../pages/OdooLanding/OdooLanding'
 import OnboardingEmpresas from '../pages/Onboarding/OnboardingEmpresas'
 import FerdersCard from '../pages/FerdersCard/FerdersCard'
 import TerminosCondiciones from '../pages/Legal/TerminosCondiciones'
@@ -33,7 +32,7 @@ export default function AppRouter() {
           <Route path="/privacidad" element={<Privacidad />} />
         </Route>
         {/* Standalone Landing Pages */}
-        <Route path="/odoo" element={<RedirectToOdoo />} />
+        <Route path="/odoo" element={<OdooLanding />} />
         <Route path="/onboarding-empresas" element={<OnboardingEmpresas />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/ferders/cards/:slug" element={<FerdersCard />} />
