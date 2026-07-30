@@ -213,6 +213,32 @@ export const getAllOnboardings = async () => {
     }
 };
 
+export const getAllContacts = async () => {
+    if (!API_URL) return [];
+    try {
+        const response = await fetch(`${API_URL}?action=getAllContacts`, { mode: "cors" });
+        if (!response.ok) return [];
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error("Error obteniendo consultas de contacto:", error);
+        return [];
+    }
+};
+
+export const getAnalyticsTracking = async () => {
+    if (!API_URL) return [];
+    try {
+        const response = await fetch(`${API_URL}?action=getAnalyticsTracking`, { mode: "cors" });
+        if (!response.ok) return [];
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error("Error obteniendo datos de tracking:", error);
+        return [];
+    }
+};
+
 export const addGaleriaFoto = async (imageUrl) => {
     try {
         await fetch(`${API_URL}?action=addGaleriaFoto`, {
