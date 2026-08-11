@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL
+const API_URL = import.meta.env.VITE_CMS_SCRIPT_URL || import.meta.env.VITE_GOOGLE_SCRIPT_URL
 
 const DEFAULT_TIMEOUT = 12000
 const POLL_INTERVAL = 650
@@ -6,7 +6,7 @@ const POLL_ATTEMPTS = 12
 
 function assertApiUrl() {
   if (!API_URL) {
-    throw new Error('Falta configurar VITE_GOOGLE_SCRIPT_URL')
+    throw new Error('Falta configurar VITE_CMS_SCRIPT_URL o VITE_GOOGLE_SCRIPT_URL')
   }
 }
 
