@@ -22,10 +22,11 @@ const Hero = () => {
 
   return (
     <>
-      <section
+      <motion.section
         id="inicio"
         className="hero-section"
         onViewportEnter={() => trackEvent('Scroll Home', 'Sección: Inicio')}
+        viewport={{ once: true }}
       >
         <div className="hero-background">
           {/* Layer 1: Independent Float (Organic) */}
@@ -69,20 +70,27 @@ const Hero = () => {
             Trabajamos sobre las dos razones reales <br /> por las que un negocio no escala.
           </motion.p>
         </div>
-      </section>
+      </motion.section>
 
-      <section onViewportEnter={() => trackEvent('Scroll Home', 'Sección: Hero1 (Orden/Clientes)')}>
+      <motion.section
+        onViewportEnter={() => trackEvent('Scroll Home', 'Sección: Hero1 (Orden/Clientes)')}
+        viewport={{ once: true }}
+      >
         <Hero1 />
-      </section>
+      </motion.section>
 
-      <section className="hero-bottom-combined" onViewportEnter={() => trackEvent('Scroll Home', 'Sección: Bottom (Consultora1)')}>
+      <motion.section
+        className="hero-bottom-combined"
+        onViewportEnter={() => trackEvent('Scroll Home', 'Sección: Bottom (Consultora1)')}
+        viewport={{ once: true }}
+      >
         <Hero2 />
         <Consultora1 />
 
         {/* Background Ornaments Shared */}
         <img src={DegrHero2Left} className="hero-2-degr degr-left" alt="" />
         <img src={DegrHero2Right} className="hero-2-degr degr-right" alt="" />
-      </section>
+      </motion.section>
     </>
   );
 };
