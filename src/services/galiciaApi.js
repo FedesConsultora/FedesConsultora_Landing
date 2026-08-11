@@ -1,8 +1,9 @@
 const API_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL
 
-const DEFAULT_TIMEOUT = 12000
-const POLL_INTERVAL = 650
-const POLL_ATTEMPTS = 12
+const DEFAULT_TIMEOUT = 30000
+const POLL_INTERVAL = 900
+const POLL_ATTEMPTS = 10
+const LATE_CALLBACK_TTL = 60000
 
 function assertApiUrl() {
   if (!API_URL) {
@@ -27,18 +28,40 @@ function jsonp(params, timeout = DEFAULT_TIMEOUT) {
 
     const callback = `__fedesCms_${Date.now()}_${Math.random().toString(36).slice(2)}`
     const script = document.createElement('script')
-    const timer = window.setTimeout(() => cleanup(new Error('La consulta al CMS demoró demasiado.')), timeout)
+    let settled = false
 
-    const cleanup = (error, value) => {
-      window.clearTimeout(timer)
-      delete window[callback]
-      script.remove()
-      if (error) reject(error)
-      else resolve(value)
+    const removeLateCallback = () => {
+      window.setTimeout(() => {
+        try { delete window[callback] } catch { window[callback] = undefined }
+      }, LATE_CALLBACK_TTL)
     }
 
-    window[callback] = (payload) => cleanup(null, payload)
-    script.onerror = () => cleanup(new Error('No se pudo consultar el CMS.'))
+    const finish = (error, value) => {
+      if (settled) return
+      settled = true
+      window.clearTimeout(timer)
+      script.remove()
+
+      if (error) {
+        // Apps Script puede completar un cold start luego del timeout. Dejamos un
+        // callback no-op temporal para evitar ReferenceError cuando llegue tarde.
+        window[callback] = () => {}
+        removeLateCallback()
+        reject(error)
+        return
+      }
+
+      try { delete window[callback] } catch { window[callback] = undefined }
+      resolve(value)
+    }
+
+    const timer = window.setTimeout(
+      () => finish(new Error('La consulta al CMS demoró demasiado.')),
+      timeout,
+    )
+
+    window[callback] = (payload) => finish(null, payload)
+    script.onerror = () => finish(new Error('No se pudo consultar el CMS.'))
     script.src = buildUrl({ ...params, callback })
     document.body.appendChild(script)
   })
@@ -63,27 +86,45 @@ async function postOpaque(action, payload) {
 
 const wait = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms))
 
-export async function getLeadStatus(leadId) {
-  return jsonp({ api: 'lead-status', leadId })
+export async function getLeadStatus(leadId, timeout = DEFAULT_TIMEOUT) {
+  return jsonp({ api: 'lead-status', leadId }, timeout)
 }
 
 export async function waitForLead(leadId, predicate, attempts = POLL_ATTEMPTS) {
   let last = null
+  let lastError = null
 
   for (let attempt = 0; attempt < attempts; attempt += 1) {
-    last = await getLeadStatus(leadId)
-    if (last?.found && predicate(last)) return last
+    try {
+      last = await getLeadStatus(leadId)
+      if (last?.found && predicate(last)) return last
+      lastError = null
+    } catch (error) {
+      // Un cold start o una respuesta JSONP lenta no debe cancelar todo el flujo.
+      lastError = error
+    }
+
     await wait(POLL_INTERVAL)
   }
 
-  throw new Error(last?.found
-    ? 'El registro todavía se está procesando. Volvé a intentar en unos segundos.'
-    : 'No pudimos confirmar el registro. Revisá tu conexión e intentá nuevamente.')
+  if (last?.found) {
+    throw new Error('El registro todavía se está procesando. Volvé a intentar en unos segundos.')
+  }
+
+  throw new Error(lastError?.message || 'No pudimos confirmar el registro. Revisá tu conexión e intentá nuevamente.')
 }
 
 export async function startGaliciaLead(payload) {
+  // El Paso 1 tiene que sentirse inmediato. Enviamos el registro y dejamos la
+  // confirmación persistente para el backend / siguientes lecturas.
   await postOpaque('galiciaStart', payload)
-  return waitForLead(payload.leadId, (lead) => lead.status === 'incomplete' || lead.status === 'complete')
+  return {
+    found: false,
+    leadId: payload.leadId,
+    status: 'incomplete',
+    stage: 'captured',
+    pendingConfirmation: true,
+  }
 }
 
 export async function completeGaliciaLead(payload) {
@@ -104,13 +145,19 @@ export async function markGaliciaMeetingClick(leadId, source) {
   }
 }
 
+let campaignPromise = null
+
 export async function getGaliciaCampaign() {
-  try {
-    return await jsonp({ api: 'campaign', key: 'galicia-2026' })
-  } catch (error) {
-    console.warn('[Galicia] Campaña no disponible desde CMS', error)
-    return null
+  if (!campaignPromise) {
+    campaignPromise = jsonp({ api: 'campaign', key: 'galicia-2026' })
+      .catch((error) => {
+        // La campaña puede estar en draft o Apps Script puede estar frío. La
+        // landing no depende de esta lectura para capturar ni completar leads.
+        console.info('[Galicia] Datos de campaña no disponibles todavía', error.message)
+        return null
+      })
   }
+  return campaignPromise
 }
 
 export function createLeadId() {
