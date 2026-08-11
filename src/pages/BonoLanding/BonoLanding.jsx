@@ -80,7 +80,7 @@ function validateCorporateEmail(value) {
   const email = value.trim().toLowerCase()
   const match = email.match(/^[^\s@]+@([^\s@]+\.[^\s@]+)$/)
   if (!match) return 'Ingresá un correo electrónico válido.'
-  if (FREE_EMAIL_DOMAINS.has(match[1])) return 'Para esta postulación necesitamos un correo corporativo de tu empresa.'
+  if (FREE_EMAIL_DOMAINS.has(match[1])) return 'Para continuar, usá el correo corporativo de tu empresa.'
   return ''
 }
 
@@ -100,15 +100,15 @@ function ResultView({ result, campaign, leadId, source }) {
     return (
       <div className="bono-result bono-result--qualified">
         <span className="bono-result__icon">✓</span>
-        <p className="bono-kicker">Postulación calificada</p>
-        <h1>Tu beneficio quedó <strong>pre-aprobado.</strong></h1>
+        <p className="bono-kicker">Registro completado</p>
+        <h1>¡Listo! Podés avanzar con <strong>tu beneficio.</strong></h1>
         <p>
-          Por el perfil de tu organización, podés avanzar por uno de los cupos del beneficio
-          de <strong>50% de bonificación en el primer mes</strong> del Onboarding estratégico.
+          Tu empresa puede continuar con uno de los cupos del beneficio de
+          <strong> 50% de bonificación en el primer mes</strong> del Onboarding estratégico.
         </p>
         <div className="bono-result__note">
-          El proceso contempla una auditoría inicial profunda y un roadmap de crecimiento anual.
-          La bonificación se confirma comercialmente al validar el cupo y el alcance.
+          El proceso comienza con una auditoría integral y se integra a un roadmap de crecimiento anual.
+          La bonificación queda sujeta a disponibilidad de cupo y validación final del alcance.
         </div>
         {meetingUrl ? (
           <a
@@ -130,16 +130,15 @@ function ResultView({ result, campaign, leadId, source }) {
   if (classification === 'EN_EVALUACION') {
     return (
       <div className="bono-result">
-        <span className="bono-result__icon">↗</span>
-        <p className="bono-kicker">Postulación recibida</p>
-        <h1>Tu empresa quedó <strong>en evaluación.</strong></h1>
+        <span className="bono-result__icon">✓</span>
+        <p className="bono-kicker">Registro completado</p>
+        <h1>¡Listo! Ya tenemos <strong>la información de tu empresa.</strong></h1>
         <p>
-          Vemos señales de buen encaje, pero antes de confirmar el beneficio queremos revisar
-          la estructura, el sitio y el desafío que nos compartiste.
+          Gracias por compartirnos tu contexto. Nuestro equipo va a revisar la información y se pondrá
+          en contacto para indicarte el próximo paso y conversar sobre el beneficio.
         </p>
         <div className="bono-result__note">
-          Un consultor de Fedes revisará la información para determinar si nuestro Onboarding
-          estratégico es la herramienta adecuada para esta etapa de tu empresa.
+          En Fedes trabajamos con cada organización a partir de su estructura, sus procesos y sus objetivos de crecimiento.
         </div>
       </div>
     )
@@ -147,13 +146,12 @@ function ResultView({ result, campaign, leadId, source }) {
 
   return (
     <div className="bono-result">
-      <span className="bono-result__icon">→</span>
+      <span className="bono-result__icon">✓</span>
       <p className="bono-kicker">Registro completado</p>
-      <h1>Gracias por contarnos <strong>dónde está hoy tu empresa.</strong></h1>
+      <h1>¡Gracias! Ya conocemos un poco más <strong>sobre tu empresa.</strong></h1>
       <p>
-        Nuestro Onboarding corporativo está pensado para organizaciones que buscan procesos
-        de transformación de mediano y largo plazo. Por tus respuestas, hoy no sería el formato
-        más adecuado para lo que necesitás.
+        Con la información que nos compartiste podemos acercarte contenidos y próximos pasos más útiles
+        para el momento actual de tu negocio.
       </p>
       <a className="bono-button bono-button--secondary" href="/blog">Ver recursos estratégicos de Fedes</a>
     </div>
@@ -207,10 +205,14 @@ export default function BonoLanding() {
     const emailError = validateCorporateEmail(form.email)
     if (emailError) return setError(emailError)
     if (!form.company.trim()) return setError('Ingresá el nombre de tu empresa.')
-    if (!validateWebsite(form.website)) return setError('Ingresá el sitio web de tu empresa, por ejemplo empresa.com.ar.')
 
     const id = leadId || createLeadId()
-    const cleanForm = { ...form, website: normalizeWebsite(form.website) }
+    const cleanForm = {
+      ...form,
+      fullName: form.fullName.trim(),
+      email: form.email.trim().toLowerCase(),
+      company: form.company.trim(),
+    }
     setLeadId(id)
     setLoading(true)
 
@@ -218,6 +220,7 @@ export default function BonoLanding() {
       const status = await startGaliciaLead({
         leadId: id,
         ...cleanForm,
+        website: '',
         source: attribution.source,
         utmSource: attribution.utmSource,
         utmMedium: attribution.utmMedium,
@@ -249,16 +252,20 @@ export default function BonoLanding() {
     event.preventDefault()
     setError('')
 
+    if (!validateWebsite(form.website)) return setError('Ingresá el sitio web de tu empresa, por ejemplo empresa.com.ar.')
     const unanswered = QUESTIONS.find(({ key }) => !answers[key])
-    if (unanswered) return setError('Respondé las cuatro preguntas para finalizar la postulación.')
+    if (unanswered) return setError('Respondé las cuatro preguntas para completar el registro.')
     if (!leadId) return setError('No pudimos recuperar tu registro inicial. Volvé al primer paso.')
 
+    const cleanForm = { ...form, website: normalizeWebsite(form.website) }
     setLoading(true)
-    persist({ leadId, form, answers })
+    setForm(cleanForm)
+    persist({ leadId, form: cleanForm, answers })
 
     try {
       const status = await completeGaliciaLead({
         leadId,
+        website: cleanForm.website,
         ...answers,
         source: attribution.source,
         pagePath: '/bono',
@@ -267,7 +274,7 @@ export default function BonoLanding() {
       setStep(3)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (requestError) {
-      setError(requestError.message || 'No pudimos finalizar la postulación. Intentá nuevamente.')
+      setError(requestError.message || 'No pudimos completar el registro. Intentá nuevamente.')
     } finally {
       setLoading(false)
     }
@@ -293,7 +300,7 @@ export default function BonoLanding() {
               <strong> Activá tu beneficio con Fedes.</strong>
             </h1>
             <p className="bono-intro__copy">
-              Postulá a tu empresa para acceder a un <strong>50% de bonificación en el primer mes</strong>
+              Registrá tu empresa para acceder a un <strong>50% de bonificación en el primer mes</strong>
               de nuestro Onboarding estratégico. Primero entendemos tu negocio; después diseñamos el camino.
             </p>
 
@@ -314,9 +321,9 @@ export default function BonoLanding() {
         <section className={`bono-card ${step === 3 ? 'bono-card--result' : ''}`}>
           {step !== 3 && (
             <div className="bono-progress" aria-label={`Paso ${step} de 2`}>
-              <div className={`bono-progress__item ${step >= 1 ? 'is-active' : ''}`}><span>1</span> Datos</div>
+              <div className={`bono-progress__item ${step >= 1 ? 'is-active' : ''}`}><span>1</span> Tus datos</div>
               <div className="bono-progress__line"><i style={{ width: step === 1 ? '0%' : '100%' }} /></div>
-              <div className={`bono-progress__item ${step >= 2 ? 'is-active' : ''}`}><span>2</span> Aptitud</div>
+              <div className={`bono-progress__item ${step >= 2 ? 'is-active' : ''}`}><span>2</span> Tu empresa</div>
             </div>
           )}
 
@@ -324,8 +331,8 @@ export default function BonoLanding() {
             <form onSubmit={handleStepOne} className="bono-form">
               <div className="bono-card__heading">
                 <p className="bono-kicker">Paso 1 de 2</p>
-                <h2>Reservá tu postulación.</h2>
-                <p>Guardamos tus datos ahora para que puedas continuar sin perder tu registro.</p>
+                <h2>Empecemos por tus datos.</h2>
+                <p>Son tres datos rápidos. Los guardamos ahora para que no pierdas tu registro si necesitás continuar después.</p>
               </div>
 
               <label>
@@ -347,7 +354,7 @@ export default function BonoLanding() {
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="nombre@empresa.com"
                 />
-                <small>Usá el dominio de tu empresa para validar la postulación.</small>
+                <small>Usá el correo de tu empresa para continuar.</small>
               </label>
 
               <label>
@@ -360,6 +367,23 @@ export default function BonoLanding() {
                 />
               </label>
 
+              {error && <div className="bono-error" role="alert">{error}</div>}
+
+              <button className="bono-button bono-button--primary" type="submit" disabled={loading}>
+                {loading ? 'Guardando…' : 'Reservar mi beneficio y continuar'}
+              </button>
+              <p className="bono-privacy">Tus datos se utilizan para gestionar el beneficio y continuar el contacto comercial.</p>
+            </form>
+          )}
+
+          {step === 2 && (
+            <form onSubmit={handleComplete} className="bono-form bono-form--questions">
+              <div className="bono-card__heading">
+                <p className="bono-kicker">Paso 2 de 2</p>
+                <h2>Contanos un poco más sobre tu empresa.</h2>
+                <p>Completá el sitio web y cuatro preguntas rápidas para que podamos entender mejor tu contexto.</p>
+              </div>
+
               <label>
                 <span>Sitio web</span>
                 <input
@@ -370,23 +394,6 @@ export default function BonoLanding() {
                   placeholder="empresa.com.ar"
                 />
               </label>
-
-              {error && <div className="bono-error" role="alert">{error}</div>}
-
-              <button className="bono-button bono-button--primary" type="submit" disabled={loading}>
-                {loading ? 'Guardando registro…' : 'Reservar mi beneficio y continuar'}
-              </button>
-              <p className="bono-privacy">Tus datos se utilizan únicamente para evaluar y gestionar esta postulación comercial.</p>
-            </form>
-          )}
-
-          {step === 2 && (
-            <form onSubmit={handleComplete} className="bono-form bono-form--questions">
-              <div className="bono-card__heading">
-                <p className="bono-kicker">Paso 2 de 2</p>
-                <h2>Veamos si el Onboarding encaja con tu empresa.</h2>
-                <p>Son cuatro preguntas. No hay respuestas “correctas”: buscamos validar el momento y la estructura de tu organización.</p>
-              </div>
 
               {QUESTIONS.map(({ key, eyebrow, question, options }, questionIndex) => (
                 <fieldset className="bono-question" key={key}>
@@ -404,7 +411,7 @@ export default function BonoLanding() {
                           checked={answers[key] === optionKey}
                           onChange={() => setAnswers({ ...answers, [key]: optionKey })}
                         />
-                        <span className="bono-option__mark">{optionKey}</span>
+                        <span className="bono-option__mark" aria-hidden="true">•</span>
                         <span>{label}</span>
                       </label>
                     ))}
@@ -415,7 +422,7 @@ export default function BonoLanding() {
               {error && <div className="bono-error" role="alert">{error}</div>}
 
               <button className="bono-button bono-button--primary" type="submit" disabled={loading}>
-                {loading ? 'Evaluando postulación…' : 'Finalizar y conocer mi resultado'}
+                {loading ? 'Guardando…' : 'Completar mi registro'}
               </button>
             </form>
           )}
