@@ -11,6 +11,7 @@ import Contacto from '../components/sections/Contacto/Contacto'
 import OdooLanding from '../pages/OdooLanding/OdooLanding'
 import OnboardingEmpresas from '../pages/Onboarding/OnboardingEmpresas'
 import FerdersCard from '../pages/FerdersCard/FerdersCard'
+import BonoLanding from '../pages/BonoLanding/BonoLanding'
 import TerminosCondiciones from '../pages/Legal/TerminosCondiciones'
 import Privacidad from '../pages/Legal/Privacidad'
 import AdminDashboard from '../pages/Admin/AdminDashboard'
@@ -32,6 +33,7 @@ export default function AppRouter() {
           <Route path="/privacidad" element={<Privacidad />} />
         </Route>
         {/* Standalone Landing Pages */}
+        <Route path="/bono" element={<BonoLanding />} />
         <Route path="/odoo" element={<OdooLanding />} />
         <Route path="/onboarding-empresas" element={<OnboardingEmpresas />} />
         <Route path="/admin" element={<AdminDashboard />} />
