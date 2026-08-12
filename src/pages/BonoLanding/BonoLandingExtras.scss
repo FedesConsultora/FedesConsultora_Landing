@@ -1,0 +1,60 @@
+.bono-restoring {
+  min-height: 320px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 14px;
+  color: #686868;
+  text-align: center;
+
+  p {
+    margin: 0;
+    font-size: 0.88rem;
+  }
+
+  &__spinner {
+    width: 34px;
+    height: 34px;
+    border: 3px solid #ececec;
+    border-top-color: #ff6b00;
+    border-radius: 50%;
+    animation: bono-spin 0.8s linear infinite;
+  }
+}
+
+@keyframes bono-spin {
+  to { transform: rotate(360deg); }
+}
+
+.bono-notice {
+  margin: -12px 0 24px;
+  padding: 12px 14px;
+  border: 1px solid #dce8df;
+  border-radius: 10px;
+  background: #f4faf6;
+  color: #406248;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.bono-autosave {
+  min-height: 20px;
+  margin: -12px 0 -8px;
+  color: #888;
+  font-size: 0.72rem;
+  line-height: 1.4;
+
+  &--saving { color: #8a5a35; }
+  &--saved { color: #4e7256; }
+  &--error { color: #8b5b45; }
+}
+
+.bono-privacy a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bono-restoring__spinner { animation-duration: 1.8s; }
+}
