@@ -227,11 +227,24 @@ export default function AdminDashboard() {
     }
   }
 
+  const openRecord = async (row, mode) => {
+    if (!activeDef) return
+    setBusy(true)
+    try {
+      const data = await adminCommand('record', { tableKey, id: row[activeDef.pk] })
+      setModal({ type: 'record', mode, record: data.record })
+    } catch (error) {
+      handleCommandError(error)
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const viewRecord = async (row) => {
     if (activeDef.special === 'campaign') return openCampaign360(row.campaign_key)
     if (activeDef.special === 'lead') return openLead360(row.lead_id)
     if (activeDef.special === 'onboarding') return openOnboarding360(row.onboarding_id)
-    setModal({ type: 'record', mode: 'view', record: row })
+    return openRecord(row, 'view')
   }
 
   const openCampaign360 = async (campaignKey) => {
@@ -278,7 +291,7 @@ export default function AdminDashboard() {
   return (
     <AdminShell workspace={workspace} view={view} tableKey={tableKey} title={title} subtitle={subtitle} onDashboard={openDashboard} onTable={openTable} onRefresh={refresh} onLogout={logout} onSecurity={() => setModal({ type: 'security' })}>
       {newButton && <div className="admin-view-actions">{newButton}</div>}
-      {view === 'dashboard' ? <DashboardView dashboard={dashboard} insights={insights} onTable={openTable} onCampaign={openCampaign360} onLead={openLead360} /> : activeDef && <><FilterBar def={activeDef} result={result} query={query} setQuery={setQuery} onApply={() => fetchTable(tableKey, query)} onClear={() => { const next = { ...INITIAL_QUERY }; setQuery(next); fetchTable(tableKey, next) }} onExport={exportRows} /><DataTable def={activeDef} result={result} selected={selected} setSelected={setSelected} onView={viewRecord} onEdit={(row) => setModal({ type: 'record', mode: 'edit', record: row })} onDuplicate={(row) => mutateRow('duplicate', row, 'Registro duplicado.')} onArchive={(row) => window.confirm('¿Dar de baja este registro?') && mutateRow('archive', row, 'Registro dado de baja.')} onRestore={(row) => mutateRow('restore', row, 'Registro restaurado.')} onDelete={(row) => window.confirm('Esta baja es definitiva. ¿Eliminar el registro?') && mutateRow('delete', row, 'Registro eliminado.')} onBulk={bulk} onPage={(page) => { const next = { ...query, page }; setQuery(next); fetchTable(tableKey, next) }} onPageSize={(pageSize) => { const next = { ...query, page: 1, pageSize }; setQuery(next); fetchTable(tableKey, next) }} /></>}
+      {view === 'dashboard' ? <DashboardView dashboard={dashboard} insights={insights} onTable={openTable} onCampaign={openCampaign360} onLead={openLead360} /> : activeDef && <><FilterBar def={activeDef} result={result} query={query} setQuery={setQuery} onApply={() => fetchTable(tableKey, query)} onClear={() => { const next = { ...INITIAL_QUERY }; setQuery(next); fetchTable(tableKey, next) }} onExport={exportRows} /><DataTable def={activeDef} result={result} selected={selected} setSelected={setSelected} onView={viewRecord} onEdit={(row) => openRecord(row, 'edit')} onDuplicate={(row) => mutateRow('duplicate', row, 'Registro duplicado.')} onArchive={(row) => window.confirm('¿Dar de baja este registro?') && mutateRow('archive', row, 'Registro dado de baja.')} onRestore={(row) => mutateRow('restore', row, 'Registro restaurado.')} onDelete={(row) => window.confirm('Esta baja es definitiva. ¿Eliminar el registro?') && mutateRow('delete', row, 'Registro eliminado.')} onBulk={bulk} onPage={(page) => { const next = { ...query, page }; setQuery(next); fetchTable(tableKey, next) }} onPageSize={(pageSize) => { const next = { ...query, page: 1, pageSize }; setQuery(next); fetchTable(tableKey, next) }} /></>}
 
       {modal?.type === 'record' && activeDef && <RecordModal def={activeDef} mode={modal.mode} record={modal.record} onClose={() => setModal(null)} onSave={(payload) => saveRecord(modal.mode, modal.record, payload)} />}
       {modal?.type === 'campaign360' && <Campaign360Modal data={modal.data} onClose={() => setModal(null)} onOpenLeads={() => openTable('leads', { filters: { campaign_key: modal.data.campaign.campaign_key } })} onEditCampaign={() => { const row = modal.data.campaign; setTableKey('campaigns'); setModal({ type: 'record', mode: 'edit', record: row }) }} />}
