@@ -2,6 +2,10 @@ import { useMemo, useState } from 'react'
 import { Save, X } from 'lucide-react'
 import { StatusPill } from './DataTable'
 
+function asBoolean(value) {
+  return value === true || value === 1 || String(value).toLowerCase() === 'true' || String(value) === '1'
+}
+
 function formatInputValue(value, type) {
   if (value == null) return ''
   if (type === 'datetime' && value) {
@@ -13,7 +17,7 @@ function formatInputValue(value, type) {
 }
 
 function DetailValue({ field, value }) {
-  if (field.type === 'boolean') return <StatusPill value={value === true || value === 'true' ? 'Sí' : 'No'} />
+  if (field.type === 'boolean') return <StatusPill value={asBoolean(value) ? 'Sí' : 'No'} />
   if (['status', 'classification', 'mailing_segment', 'manual_review_status', 'meeting_status'].includes(field.name)) return <StatusPill value={value} />
   if (field.type === 'json') {
     let pretty = value || ''
@@ -41,7 +45,7 @@ export default function RecordModal({ def, mode, record, onClose, onSave }) {
       const payload = {}
       editableFields.forEach((field) => {
         let value = form[field.name]
-        if (field.type === 'boolean') value = Boolean(value)
+        if (field.type === 'boolean') value = asBoolean(value)
         if (field.type === 'number' && value !== '') value = Number(value)
         if (field.type === 'json' && value) JSON.parse(value)
         payload[field.name] = value
@@ -66,7 +70,7 @@ export default function RecordModal({ def, mode, record, onClose, onSave }) {
               {editableFields.map((field) => (
                 <label className={`admin-field ${['textarea', 'json'].includes(field.type) ? 'is-wide' : ''}`} key={field.name}>
                   <span>{field.label}</span>
-                  {field.type === 'boolean' ? <input type="checkbox" checked={Boolean(form[field.name])} onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.checked }))} /> : field.type === 'select' ? <select value={formatInputValue(form[field.name], field.type)} onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.value }))}><option value="">Sin definir</option>{(field.options || []).filter(Boolean).map((option) => <option key={option} value={option}>{option}</option>)}</select> : ['textarea', 'json'].includes(field.type) ? <textarea className={field.type === 'json' ? 'is-code' : ''} value={formatInputValue(form[field.name], field.type)} onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.value }))} /> : <input type={field.type === 'datetime' ? 'datetime-local' : field.type} value={formatInputValue(form[field.name], field.type)} onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.value }))} />}
+                  {field.type === 'boolean' ? <input type="checkbox" checked={asBoolean(form[field.name])} onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.checked }))} /> : field.type === 'select' ? <select value={formatInputValue(form[field.name], field.type)} onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.value }))}><option value="">Sin definir</option>{(field.options || []).filter(Boolean).map((option) => <option key={option} value={option}>{option}</option>)}</select> : ['textarea', 'json'].includes(field.type) ? <textarea className={field.type === 'json' ? 'is-code' : ''} value={formatInputValue(form[field.name], field.type)} onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.value }))} /> : <input type={field.type === 'datetime' ? 'datetime-local' : field.type} value={formatInputValue(form[field.name], field.type)} onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.value }))} />}
                 </label>
               ))}
               {mode === 'edit' && def.fields.filter((field) => field.readOnly).map((field) => <article className="admin-detail-card" key={field.name}><label>{field.label}</label><DetailValue field={field} value={record?.[field.name]} /></article>)}
