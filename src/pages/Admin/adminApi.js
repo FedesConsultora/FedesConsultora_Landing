@@ -1,5 +1,9 @@
 const API_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL
 const TOKEN_KEY = 'fedes_admin_token'
+const REQUIRED_BACKEND_MAJOR = 4
+
+let backendCheck = null
+let backendCheckedAt = 0
 
 function opaqueId() {
   if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID().replace(/-/g, '')
@@ -29,6 +33,33 @@ function jsonp(url, timeout = 15000) {
   })
 }
 
+function backendVersionError(version) {
+  const detected = version ? `v${version}` : 'una versión anterior'
+  return new Error(`El backend de Apps Script está desactualizado (${detected}). El Backoffice React requiere backend v4 o superior. Actualizá la implementación existente de la Web App y volvé a intentar.`)
+}
+
+async function ensureAdminBackend() {
+  if (!API_URL) throw new Error('Falta VITE_GOOGLE_SCRIPT_URL')
+  const now = Date.now()
+  if (backendCheck && now - backendCheckedAt < 60000) return backendCheck
+
+  const url = new URL(API_URL)
+  url.searchParams.set('api', 'health')
+  backendCheck = jsonp(url.toString()).then((response) => {
+    const version = String(response?.version || '')
+    const major = Number(version.split('.')[0])
+    if (!response?.success || !Number.isFinite(major) || major < REQUIRED_BACKEND_MAJOR) {
+      throw backendVersionError(version)
+    }
+    return response
+  }).catch((error) => {
+    backendCheck = null
+    throw error
+  })
+  backendCheckedAt = now
+  return backendCheck
+}
+
 async function pollResult(requestId, clientSecret) {
   const started = Date.now()
   while (Date.now() - started < 30000) {
@@ -37,9 +68,21 @@ async function pollResult(requestId, clientSecret) {
     url.searchParams.set('requestId', requestId)
     url.searchParams.set('clientSecret', clientSecret)
     const response = await jsonp(url.toString())
+
+    if (response?.code === 'INVALID_API' || /API no válida/i.test(response?.error || '')) {
+      backendCheck = null
+      throw backendVersionError('')
+    }
+
     if (!response?.pending) {
       const result = response?.result ?? response
-      if (result?.success === false) throw new Error(result.error || 'Error administrativo')
+      if (result?.success === false) {
+        if (result?.code === 'INVALID_API' || /API no válida/i.test(result?.error || '')) {
+          backendCheck = null
+          throw backendVersionError('')
+        }
+        throw new Error(result.error || 'Error administrativo')
+      }
       return result
     }
     await new Promise((resolve) => window.setTimeout(resolve, 280))
@@ -48,7 +91,7 @@ async function pollResult(requestId, clientSecret) {
 }
 
 export async function adminCommand(operation, payload = {}, token = getAdminToken()) {
-  if (!API_URL) throw new Error('Falta VITE_GOOGLE_SCRIPT_URL')
+  await ensureAdminBackend()
   const requestId = opaqueId()
   const clientSecret = opaqueId()
   const body = { action: 'adminCommand', operation, requestId, clientSecret, token: token || '', payload }
