@@ -6,7 +6,7 @@ import {
 
 const ICONS = {
   Activity, BadgeCheck, Boxes, ChartNoAxesCombined, ClipboardCheck, ContactRound, Database,
-  History, Image, Images, ListChecks, Mail, Megaphone, Newspaper, PanelsTopLeft, Quote,
+  History, Home, Image, Images, ListChecks, Mail, Megaphone, Newspaper, PanelsTopLeft, Quote,
   Settings, UserRoundSearch, Users,
 }
 
