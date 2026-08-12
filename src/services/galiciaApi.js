@@ -43,8 +43,6 @@ function jsonp(params, timeout = DEFAULT_TIMEOUT) {
       script.remove()
 
       if (error) {
-        // Apps Script puede completar un cold start luego del timeout. Dejamos un
-        // callback no-op temporal para evitar ReferenceError cuando llegue tarde.
         window[callback] = () => {}
         removeLateCallback()
         reject(error)
@@ -80,6 +78,7 @@ async function postOpaque(action, payload) {
   await fetch(buildUrl(), {
     method: 'POST',
     mode: 'no-cors',
+    keepalive: true,
     body,
   })
 }
@@ -88,6 +87,14 @@ const wait = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms))
 
 export async function getLeadStatus(leadId, timeout = DEFAULT_TIMEOUT) {
   return jsonp({ api: 'lead-status', leadId }, timeout)
+}
+
+export async function getLeadProgress(leadId, timeout = DEFAULT_TIMEOUT) {
+  return jsonp({ api: 'lead-progress', leadId }, timeout)
+}
+
+export async function getGaliciaResume(token, timeout = DEFAULT_TIMEOUT) {
+  return jsonp({ api: 'galicia-resume', token }, timeout)
 }
 
 export async function waitForLead(leadId, predicate, attempts = POLL_ATTEMPTS) {
@@ -100,7 +107,6 @@ export async function waitForLead(leadId, predicate, attempts = POLL_ATTEMPTS) {
       if (last?.found && predicate(last)) return last
       lastError = null
     } catch (error) {
-      // Un cold start o una respuesta JSONP lenta no debe cancelar todo el flujo.
       lastError = error
     }
 
@@ -115,8 +121,6 @@ export async function waitForLead(leadId, predicate, attempts = POLL_ATTEMPTS) {
 }
 
 export async function startGaliciaLead(payload) {
-  // El Paso 1 tiene que sentirse inmediato. Enviamos el registro y dejamos la
-  // confirmación persistente para el backend / siguientes lecturas.
   await postOpaque('galiciaStart', payload)
   return {
     found: false,
@@ -125,6 +129,11 @@ export async function startGaliciaLead(payload) {
     stage: 'captured',
     pendingConfirmation: true,
   }
+}
+
+export async function saveGaliciaProgress(payload) {
+  await postOpaque('galiciaProgress', payload)
+  return { success: true, pendingConfirmation: true }
 }
 
 export async function completeGaliciaLead(payload) {
@@ -138,7 +147,7 @@ export async function markGaliciaMeetingClick(leadId, source) {
     await postOpaque('galiciaMeetingClick', {
       leadId,
       source,
-      pagePath: '/bono',
+      pagePath: '/regalo-galicia',
     })
   } catch (error) {
     console.warn('[Galicia] No se pudo registrar meeting_click', error)
@@ -151,8 +160,6 @@ export async function getGaliciaCampaign() {
   if (!campaignPromise) {
     campaignPromise = jsonp({ api: 'campaign', key: 'galicia-2026' })
       .catch((error) => {
-        // La campaña puede estar en draft o Apps Script puede estar frío. La
-        // landing no depende de esta lectura para capturar ni completar leads.
         console.info('[Galicia] Datos de campaña no disponibles todavía', error.message)
         return null
       })
