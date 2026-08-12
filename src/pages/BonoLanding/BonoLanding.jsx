@@ -1,17 +1,25 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Logo from '../../assets/img/Logo.svg'
 import {
   completeGaliciaLead,
   createLeadId,
   getAttribution,
   getGaliciaCampaign,
+  getGaliciaResume,
+  getLeadProgress,
   getLeadStatus,
   markGaliciaMeetingClick,
+  saveGaliciaProgress,
   startGaliciaLead,
 } from '../../services/galiciaApi'
 import './BonoLanding.scss'
 
-const STORAGE_KEY = 'fedes_galicia_2026_lead'
+const SESSION_STORAGE_KEY = 'fedes_galicia_2026_session'
+const LOCAL_STORAGE_KEY = 'fedes_galicia_2026_lead'
+const CANONICAL_PATH = '/regalo-galicia'
+
+const EMPTY_FORM = { fullName: '', email: '', company: '', website: '' }
+const EMPTY_ANSWERS = { q1: '', q2: '', q3: '', q4: '' }
 
 const QUESTIONS = [
   {
@@ -84,17 +92,84 @@ function validateCorporateEmail(value) {
   return ''
 }
 
-function readStoredLead() {
+function readStorage(storage, key) {
   try {
-    return JSON.parse(window.sessionStorage.getItem(STORAGE_KEY) || 'null')
+    return JSON.parse(storage.getItem(key) || 'null')
   } catch {
     return null
   }
 }
 
+function readStoredLead() {
+  const local = readStorage(window.localStorage, LOCAL_STORAGE_KEY)
+  const session = readStorage(window.sessionStorage, SESSION_STORAGE_KEY)
+
+  // Migra cualquier formato anterior: localStorage conserva solamente el ID opaco.
+  const leadId = session?.leadId || local?.leadId || ''
+  if (leadId) {
+    window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ leadId }))
+  }
+
+  return { leadId, session }
+}
+
+function persistLead(leadId, form, answers) {
+  if (!leadId) return
+  window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ leadId }))
+  window.sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({ leadId, form, answers }))
+}
+
+function persistLeadIdOnly(leadId) {
+  if (!leadId) return
+  window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ leadId }))
+  window.sessionStorage.removeItem(SESSION_STORAGE_KEY)
+}
+
+function clearStoredLead() {
+  window.localStorage.removeItem(LOCAL_STORAGE_KEY)
+  window.sessionStorage.removeItem(SESSION_STORAGE_KEY)
+}
+
+function stripResumeTokenFromUrl() {
+  const url = new URL(window.location.href)
+  if (!url.searchParams.has('resume')) return
+  url.searchParams.delete('resume')
+  window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`)
+}
+
+function highestAnsweredKey(answers) {
+  for (let index = 4; index >= 1; index -= 1) {
+    if (answers[`q${index}`]) return `q${index}`
+  }
+  return ''
+}
+
+function setPageMetadata() {
+  document.title = 'Beneficio Banco Galicia 2026 | Fedes'
+
+  let description = document.querySelector('meta[name="description"]')
+  if (!description) {
+    description = document.createElement('meta')
+    description.setAttribute('name', 'description')
+    document.head.appendChild(description)
+  }
+  description.setAttribute(
+    'content',
+    'Beneficio exclusivo Banco Galicia 2026: registrá tu empresa y accedé al Onboarding estratégico de Fedes.',
+  )
+
+  let canonical = document.querySelector('link[rel="canonical"]')
+  if (!canonical) {
+    canonical = document.createElement('link')
+    canonical.setAttribute('rel', 'canonical')
+    document.head.appendChild(canonical)
+  }
+  canonical.setAttribute('href', `${window.location.origin}${CANONICAL_PATH}`)
+}
+
 function ResultView({ result, campaign, leadId, source }) {
   const classification = result?.classification
-  const meetingUrl = campaign?.meeting_url || ''
+  const meetingUrl = campaign?.meeting_url || result?.meetingUrl || ''
 
   if (classification === 'CALIFICADO') {
     return (
@@ -160,46 +235,155 @@ function ResultView({ result, campaign, leadId, source }) {
 
 export default function BonoLanding() {
   const attribution = useMemo(() => getAttribution(), [])
+  const autosaveSequence = useRef(0)
   const [step, setStep] = useState(1)
   const [leadId, setLeadId] = useState('')
   const [campaign, setCampaign] = useState(null)
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [restoring, setRestoring] = useState(true)
+  const [autosaveState, setAutosaveState] = useState('idle')
   const [error, setError] = useState('')
-  const [form, setForm] = useState({ fullName: '', email: '', company: '', website: '' })
-  const [answers, setAnswers] = useState({ q1: '', q2: '', q3: '', q4: '' })
+  const [notice, setNotice] = useState('')
+  const [form, setForm] = useState(EMPTY_FORM)
+  const [answers, setAnswers] = useState(EMPTY_ANSWERS)
 
   useEffect(() => {
-    document.title = 'Beneficio Banco Galicia 2026 | Fedes'
-    getGaliciaCampaign().then(setCampaign)
+    let cancelled = false
+    setPageMetadata()
+    getGaliciaCampaign().then((data) => {
+      if (!cancelled) setCampaign(data)
+    })
 
-    const stored = readStoredLead()
-    if (!stored?.leadId) return
+    async function restore() {
+      const params = new URLSearchParams(window.location.search)
+      const resumeToken = params.get('resume') || ''
 
-    setLeadId(stored.leadId)
-    if (stored.form) setForm(stored.form)
-    if (stored.answers) setAnswers(stored.answers)
+      try {
+        if (resumeToken) {
+          try {
+            const state = await getGaliciaResume(resumeToken)
+            stripResumeTokenFromUrl()
 
-    getLeadStatus(stored.leadId)
-      .then((status) => {
-        if (!status?.found) return
-        if (status.status === 'complete') {
-          setResult(status)
-          setStep(3)
-        } else {
-          setStep(2)
+            if (!state?.found) {
+              setNotice('El enlace de recuperación ya no es válido. Ingresá nuevamente tus datos para continuar.')
+              return
+            }
+
+            const restoredForm = { ...EMPTY_FORM, ...(state.form || {}) }
+            const restoredAnswers = { ...EMPTY_ANSWERS, ...(state.answers || {}) }
+            setLeadId(state.leadId)
+            setForm(restoredForm)
+            setAnswers(restoredAnswers)
+
+            if (state.status === 'complete') {
+              setResult(state)
+              setStep(3)
+              persistLeadIdOnly(state.leadId)
+            } else {
+              setStep(2)
+              persistLead(state.leadId, restoredForm, restoredAnswers)
+              setNotice('Recuperamos tu registro. Podés continuar desde donde lo dejaste.')
+            }
+            return
+          } catch {
+            stripResumeTokenFromUrl()
+            setNotice('No pudimos abrir el enlace de recuperación. Ingresá nuevamente tus datos para continuar.')
+            return
+          }
         }
-      })
-      .catch(() => {})
+
+        const stored = readStoredLead()
+        if (!stored.leadId) return
+
+        setLeadId(stored.leadId)
+        if (stored.session?.form) setForm({ ...EMPTY_FORM, ...stored.session.form })
+        if (stored.session?.answers) setAnswers({ ...EMPTY_ANSWERS, ...stored.session.answers })
+
+        try {
+          const state = await getLeadProgress(stored.leadId)
+          if (!state?.found) {
+            clearStoredLead()
+            setLeadId('')
+            return
+          }
+
+          const restoredForm = {
+            ...EMPTY_FORM,
+            ...(stored.session?.form || {}),
+            website: state.website || stored.session?.form?.website || '',
+          }
+          const restoredAnswers = {
+            ...EMPTY_ANSWERS,
+            ...(stored.session?.answers || {}),
+            ...(state.answers || {}),
+          }
+
+          setLeadId(stored.leadId)
+          setForm(restoredForm)
+          setAnswers(restoredAnswers)
+
+          if (state.status === 'complete') {
+            setResult(state)
+            setStep(3)
+            persistLeadIdOnly(stored.leadId)
+          } else {
+            setStep(2)
+            persistLead(stored.leadId, restoredForm, restoredAnswers)
+          }
+        } catch {
+          try {
+            const status = await getLeadStatus(stored.leadId)
+            if (!status?.found) {
+              clearStoredLead()
+              setLeadId('')
+            } else if (status.status === 'complete') {
+              setResult(status)
+              setStep(3)
+              persistLeadIdOnly(stored.leadId)
+            } else {
+              setStep(2)
+            }
+          } catch {
+            // Si el CMS está temporalmente frío, conservamos la sesión local sin bloquear el formulario.
+          }
+        }
+      } finally {
+        if (!cancelled) setRestoring(false)
+      }
+    }
+
+    restore()
+    return () => { cancelled = true }
   }, [])
 
-  const persist = (next) => {
-    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+  const autosave = (nextAnswers, nextWebsite, lastQuestionKey) => {
+    if (!leadId) return
+
+    const sequence = autosaveSequence.current + 1
+    autosaveSequence.current = sequence
+    setAutosaveState('saving')
+
+    saveGaliciaProgress({
+      leadId,
+      website: validateWebsite(nextWebsite) ? normalizeWebsite(nextWebsite) : '',
+      ...nextAnswers,
+      lastQuestionKey: lastQuestionKey || highestAnsweredKey(nextAnswers),
+      source: attribution.source,
+      pagePath: CANONICAL_PATH,
+    })
+      .then(() => {
+        if (autosaveSequence.current === sequence) setAutosaveState('saved')
+      })
+      .catch(() => {
+        if (autosaveSequence.current === sequence) setAutosaveState('error')
+      })
   }
 
   const handleStepOne = async (event) => {
     event.preventDefault()
     setError('')
+    setNotice('')
 
     if (!form.fullName.trim()) return setError('Ingresá tu nombre completo.')
     const emailError = validateCorporateEmail(form.email)
@@ -217,7 +401,7 @@ export default function BonoLanding() {
     setLoading(true)
 
     try {
-      const status = await startGaliciaLead({
+      await startGaliciaLead({
         leadId: id,
         ...cleanForm,
         website: '',
@@ -226,26 +410,65 @@ export default function BonoLanding() {
         utmMedium: attribution.utmMedium,
         utmCampaign: attribution.utmCampaign,
         referrer: attribution.referrer,
-        pagePath: '/bono',
+        pagePath: CANONICAL_PATH,
         userAgent: navigator.userAgent,
-        client: 'fedes_landing_bono',
+        client: 'fedes_landing_galicia',
       })
 
-      persist({ leadId: id, form: cleanForm, answers })
+      persistLead(id, cleanForm, answers)
+      setForm(cleanForm)
+      setStep(2)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
 
-      if (status.status === 'complete') {
-        setResult(status)
-        setStep(3)
-      } else {
-        setForm(cleanForm)
-        setStep(2)
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-      }
+      // Si el email ya tenía un registro, el backend lo reutiliza. Recuperamos su
+      // progreso en segundo plano sin hacer esperar al usuario en el Paso 1.
+      getLeadProgress(id)
+        .then((state) => {
+          if (!state?.found) return
+          const restoredAnswers = { ...EMPTY_ANSWERS, ...(state.answers || {}) }
+          const restoredForm = { ...cleanForm, website: state.website || cleanForm.website }
+          setAnswers(restoredAnswers)
+          setForm(restoredForm)
+
+          if (state.status === 'complete') {
+            setResult(state)
+            setStep(3)
+            persistLeadIdOnly(id)
+          } else {
+            persistLead(id, restoredForm, restoredAnswers)
+            if (Object.values(restoredAnswers).some(Boolean)) {
+              setNotice('Encontramos un registro anterior y recuperamos tus respuestas guardadas.')
+            }
+          }
+        })
+        .catch(() => {})
     } catch (requestError) {
       setError(requestError.message || 'No pudimos guardar tus datos. Intentá nuevamente.')
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleAnswerChange = (questionKey, optionKey) => {
+    const nextAnswers = { ...answers, [questionKey]: optionKey }
+    setAnswers(nextAnswers)
+    persistLead(leadId, form, nextAnswers)
+    autosave(nextAnswers, form.website, questionKey)
+  }
+
+  const handleWebsiteChange = (value) => {
+    const nextForm = { ...form, website: value }
+    setForm(nextForm)
+    persistLead(leadId, nextForm, answers)
+  }
+
+  const handleWebsiteBlur = () => {
+    if (!form.website.trim() || !validateWebsite(form.website)) return
+    const normalized = normalizeWebsite(form.website)
+    const nextForm = { ...form, website: normalized }
+    setForm(nextForm)
+    persistLead(leadId, nextForm, answers)
+    autosave(answers, normalized, highestAnsweredKey(answers))
   }
 
   const handleComplete = async (event) => {
@@ -260,7 +483,7 @@ export default function BonoLanding() {
     const cleanForm = { ...form, website: normalizeWebsite(form.website) }
     setLoading(true)
     setForm(cleanForm)
-    persist({ leadId, form: cleanForm, answers })
+    persistLead(leadId, cleanForm, answers)
 
     try {
       const status = await completeGaliciaLead({
@@ -268,10 +491,11 @@ export default function BonoLanding() {
         website: cleanForm.website,
         ...answers,
         source: attribution.source,
-        pagePath: '/bono',
+        pagePath: CANONICAL_PATH,
       })
       setResult(status)
       setStep(3)
+      persistLeadIdOnly(leadId)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (requestError) {
       setError(requestError.message || 'No pudimos completar el registro. Intentá nuevamente.')
@@ -319,121 +543,143 @@ export default function BonoLanding() {
         )}
 
         <section className={`bono-card ${step === 3 ? 'bono-card--result' : ''}`}>
-          {step !== 3 && (
-            <div className="bono-progress" aria-label={`Paso ${step} de 2`}>
-              <div className={`bono-progress__item ${step >= 1 ? 'is-active' : ''}`}><span>1</span> Tus datos</div>
-              <div className="bono-progress__line"><i style={{ width: step === 1 ? '0%' : '100%' }} /></div>
-              <div className={`bono-progress__item ${step >= 2 ? 'is-active' : ''}`}><span>2</span> Tu empresa</div>
+          {restoring ? (
+            <div className="bono-restoring" role="status">
+              <span className="bono-restoring__spinner" aria-hidden="true" />
+              <p>Recuperando tu registro…</p>
             </div>
-          )}
+          ) : (
+            <>
+              {step !== 3 && (
+                <div className="bono-progress" aria-label={`Paso ${step} de 2`}>
+                  <div className={`bono-progress__item ${step >= 1 ? 'is-active' : ''}`}><span>1</span> Tus datos</div>
+                  <div className="bono-progress__line"><i style={{ width: step === 1 ? '0%' : '100%' }} /></div>
+                  <div className={`bono-progress__item ${step >= 2 ? 'is-active' : ''}`}><span>2</span> Tu empresa</div>
+                </div>
+              )}
 
-          {step === 1 && (
-            <form onSubmit={handleStepOne} className="bono-form">
-              <div className="bono-card__heading">
-                <p className="bono-kicker">Paso 1 de 2</p>
-                <h2>Empecemos por tus datos.</h2>
-                <p>Son tres datos rápidos. Los guardamos ahora para que no pierdas tu registro si necesitás continuar después.</p>
-              </div>
+              {notice && step !== 3 && <div className="bono-notice" role="status">{notice}</div>}
 
-              <label>
-                <span>Nombre completo</span>
-                <input
-                  autoComplete="name"
-                  value={form.fullName}
-                  onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-                  placeholder="Tu nombre y apellido"
-                />
-              </label>
-
-              <label>
-                <span>Correo corporativo</span>
-                <input
-                  type="email"
-                  autoComplete="email"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  placeholder="nombre@empresa.com"
-                />
-                <small>Usá el correo de tu empresa para continuar.</small>
-              </label>
-
-              <label>
-                <span>Empresa</span>
-                <input
-                  autoComplete="organization"
-                  value={form.company}
-                  onChange={(e) => setForm({ ...form, company: e.target.value })}
-                  placeholder="Nombre de la empresa"
-                />
-              </label>
-
-              {error && <div className="bono-error" role="alert">{error}</div>}
-
-              <button className="bono-button bono-button--primary" type="submit" disabled={loading}>
-                {loading ? 'Guardando…' : 'Reservar mi beneficio y continuar'}
-              </button>
-              <p className="bono-privacy">Tus datos se utilizan para gestionar el beneficio y continuar el contacto comercial.</p>
-            </form>
-          )}
-
-          {step === 2 && (
-            <form onSubmit={handleComplete} className="bono-form bono-form--questions">
-              <div className="bono-card__heading">
-                <p className="bono-kicker">Paso 2 de 2</p>
-                <h2>Contanos un poco más sobre tu empresa.</h2>
-                <p>Completá el sitio web y cuatro preguntas rápidas para que podamos entender mejor tu contexto.</p>
-              </div>
-
-              <label>
-                <span>Sitio web</span>
-                <input
-                  inputMode="url"
-                  autoComplete="url"
-                  value={form.website}
-                  onChange={(e) => setForm({ ...form, website: e.target.value })}
-                  placeholder="empresa.com.ar"
-                />
-              </label>
-
-              {QUESTIONS.map(({ key, eyebrow, question, options }, questionIndex) => (
-                <fieldset className="bono-question" key={key}>
-                  <legend>
-                    <span>{String(questionIndex + 1).padStart(2, '0')} · {eyebrow}</span>
-                    {question}
-                  </legend>
-                  <div className="bono-options">
-                    {Object.entries(options).map(([optionKey, label]) => (
-                      <label className={`bono-option ${answers[key] === optionKey ? 'is-selected' : ''}`} key={optionKey}>
-                        <input
-                          type="radio"
-                          name={key}
-                          value={optionKey}
-                          checked={answers[key] === optionKey}
-                          onChange={() => setAnswers({ ...answers, [key]: optionKey })}
-                        />
-                        <span className="bono-option__mark" aria-hidden="true">•</span>
-                        <span>{label}</span>
-                      </label>
-                    ))}
+              {step === 1 && (
+                <form onSubmit={handleStepOne} className="bono-form">
+                  <div className="bono-card__heading">
+                    <p className="bono-kicker">Paso 1 de 2</p>
+                    <h2>Empecemos por tus datos.</h2>
+                    <p>Son tres datos rápidos. Los guardamos ahora para que puedas continuar después si lo necesitás.</p>
                   </div>
-                </fieldset>
-              ))}
 
-              {error && <div className="bono-error" role="alert">{error}</div>}
+                  <label>
+                    <span>Nombre completo</span>
+                    <input
+                      autoComplete="name"
+                      value={form.fullName}
+                      onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                      placeholder="Tu nombre y apellido"
+                    />
+                  </label>
 
-              <button className="bono-button bono-button--primary" type="submit" disabled={loading}>
-                {loading ? 'Guardando…' : 'Completar mi registro'}
-              </button>
-            </form>
-          )}
+                  <label>
+                    <span>Correo corporativo</span>
+                    <input
+                      type="email"
+                      autoComplete="email"
+                      value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      placeholder="nombre@empresa.com"
+                    />
+                    <small>Usá el correo de tu empresa para continuar.</small>
+                  </label>
 
-          {step === 3 && (
-            <ResultView
-              result={result}
-              campaign={campaign}
-              leadId={leadId}
-              source={attribution.source}
-            />
+                  <label>
+                    <span>Empresa</span>
+                    <input
+                      autoComplete="organization"
+                      value={form.company}
+                      onChange={(e) => setForm({ ...form, company: e.target.value })}
+                      placeholder="Nombre de la empresa"
+                    />
+                  </label>
+
+                  {error && <div className="bono-error" role="alert">{error}</div>}
+
+                  <button className="bono-button bono-button--primary" type="submit" disabled={loading}>
+                    {loading ? 'Guardando…' : 'Reservar mi beneficio y continuar'}
+                  </button>
+                  <p className="bono-privacy">
+                    Tus datos se utilizan para gestionar el beneficio y continuar el contacto comercial.{' '}
+                    <a href="/privacidad">Ver privacidad</a>.
+                  </p>
+                </form>
+              )}
+
+              {step === 2 && (
+                <form onSubmit={handleComplete} className="bono-form bono-form--questions">
+                  <div className="bono-card__heading">
+                    <p className="bono-kicker">Paso 2 de 2</p>
+                    <h2>Contanos un poco más sobre tu empresa.</h2>
+                    <p>Completá el sitio web y cuatro preguntas rápidas para que podamos entender mejor tu contexto.</p>
+                  </div>
+
+                  <div className={`bono-autosave bono-autosave--${autosaveState}`} aria-live="polite">
+                    {autosaveState === 'saving' && 'Guardando avance…'}
+                    {autosaveState === 'saved' && 'Avance guardado'}
+                    {autosaveState === 'error' && 'Seguimos guardando tus cambios localmente. Reintentaremos con la próxima respuesta.'}
+                    {autosaveState === 'idle' && 'Tus respuestas se guardan automáticamente.'}
+                  </div>
+
+                  <label>
+                    <span>Sitio web</span>
+                    <input
+                      inputMode="url"
+                      autoComplete="url"
+                      value={form.website}
+                      onChange={(e) => handleWebsiteChange(e.target.value)}
+                      onBlur={handleWebsiteBlur}
+                      placeholder="empresa.com.ar"
+                    />
+                  </label>
+
+                  {QUESTIONS.map(({ key, eyebrow, question, options }, questionIndex) => (
+                    <fieldset className="bono-question" key={key}>
+                      <legend>
+                        <span>{String(questionIndex + 1).padStart(2, '0')} · {eyebrow}</span>
+                        {question}
+                      </legend>
+                      <div className="bono-options">
+                        {Object.entries(options).map(([optionKey, label]) => (
+                          <label className={`bono-option ${answers[key] === optionKey ? 'is-selected' : ''}`} key={optionKey}>
+                            <input
+                              type="radio"
+                              name={key}
+                              value={optionKey}
+                              checked={answers[key] === optionKey}
+                              onChange={() => handleAnswerChange(key, optionKey)}
+                            />
+                            <span className="bono-option__mark" aria-hidden="true">•</span>
+                            <span>{label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </fieldset>
+                  ))}
+
+                  {error && <div className="bono-error" role="alert">{error}</div>}
+
+                  <button className="bono-button bono-button--primary" type="submit" disabled={loading}>
+                    {loading ? 'Guardando…' : 'Completar mi registro'}
+                  </button>
+                </form>
+              )}
+
+              {step === 3 && (
+                <ResultView
+                  result={result}
+                  campaign={campaign}
+                  leadId={leadId}
+                  source={attribution.source}
+                />
+              )}
+            </>
           )}
         </section>
       </div>
