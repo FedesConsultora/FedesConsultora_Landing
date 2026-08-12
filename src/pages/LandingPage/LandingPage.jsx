@@ -1,11 +1,13 @@
-import Hero from '../../components/sections/Hero/Hero';
+import GaliciaCampaignBanner from '../../components/campaigns/GaliciaCampaignBanner/GaliciaCampaignBanner'
+import Hero from '../../components/sections/Hero/Hero'
 
 const LandingPage = () => {
-    return (
-        <main>
-            <Hero />
-        </main>
-    );
-};
+  return (
+    <main>
+      <GaliciaCampaignBanner />
+      <Hero />
+    </main>
+  )
+}
 
-export default LandingPage;
+export default LandingPage
