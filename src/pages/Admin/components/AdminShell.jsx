@@ -30,7 +30,7 @@ export default function AdminShell({ workspace, view, tableKey, title, subtitle,
       <input id="admin-sidebar-toggle" className="admin-sidebar-toggle" type="checkbox" />
       <aside className="admin-sidebar admin-glass">
         <div className="admin-brand">
-          <img className="admin-brand-logo" src={Logo} alt="Fedes" />
+          <img src={Logo} alt="Fedes" style={{ width: 72, height: 'auto', display: 'block', flex: '0 0 auto' }} />
           <div><strong>Backoffice</strong><span>Gestión integral</span></div>
           <label htmlFor="admin-sidebar-toggle" className="admin-sidebar-close"><X size={18} /></label>
         </div>
