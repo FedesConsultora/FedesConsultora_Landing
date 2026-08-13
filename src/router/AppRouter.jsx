@@ -18,6 +18,7 @@ import AdminDashboard from '../pages/Admin/AdminDashboard'
 import '../pages/Admin/AdminTheme.scss'
 import '../pages/Admin/AdminTableTheme.scss'
 import '../pages/Admin/AdminOverlayTheme.scss'
+import '../pages/Admin/AdminModulesTheme.scss'
 
 function LegacyGaliciaRedirect() {
   const location = useLocation()
