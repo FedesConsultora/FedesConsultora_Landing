@@ -4,6 +4,7 @@ const DEFAULT_TIMEOUT = 30000
 const POLL_INTERVAL = 900
 const POLL_ATTEMPTS = 10
 const LATE_CALLBACK_TTL = 60000
+const GALICIA_LANDING_PATH = '/bonificacion-galicia'
 
 function assertApiUrl() {
   if (!API_URL) {
@@ -65,6 +66,11 @@ function jsonp(params, timeout = DEFAULT_TIMEOUT) {
   })
 }
 
+function normalizeGaliciaPagePath(value) {
+  if (value === '/regalo-galicia' || value === '/bono' || value === GALICIA_LANDING_PATH) return GALICIA_LANDING_PATH
+  return value
+}
+
 async function postOpaque(action, payload) {
   assertApiUrl()
   const body = new URLSearchParams()
@@ -72,7 +78,8 @@ async function postOpaque(action, payload) {
 
   Object.entries(payload || {}).forEach(([key, value]) => {
     if (value === undefined || value === null) return
-    body.set(key, typeof value === 'object' ? JSON.stringify(value) : String(value))
+    const normalizedValue = key === 'pagePath' ? normalizeGaliciaPagePath(value) : value
+    body.set(key, typeof normalizedValue === 'object' ? JSON.stringify(normalizedValue) : String(normalizedValue))
   })
 
   await fetch(buildUrl(), {
@@ -147,7 +154,7 @@ export async function markGaliciaMeetingClick(leadId, source) {
     await postOpaque('galiciaMeetingClick', {
       leadId,
       source,
-      pagePath: '/regalo-galicia',
+      pagePath: GALICIA_LANDING_PATH,
     })
   } catch (error) {
     console.warn('[Galicia] No se pudo registrar meeting_click', error)
