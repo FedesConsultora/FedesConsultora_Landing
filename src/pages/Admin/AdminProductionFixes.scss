@@ -1,0 +1,127 @@
+@use '../../styles/_variables.scss' as *;
+
+/* Production isolation: the backoffice owns its layout and never inherits landing section rules. */
+.react-admin-shell,
+.admin-login-page,
+.admin-modal-layer {
+  line-height: 1.45;
+}
+
+.react-admin-shell section,
+.admin-modal-layer section,
+.admin-login-page section {
+  width: auto;
+  min-height: 0;
+  padding: 0;
+  display: block;
+}
+
+/* Tables stay inside their card instead of squeezing columns into the viewport. */
+.admin-content,
+.admin-filter-card,
+.admin-table-shell,
+.admin-data-table {
+  min-width: 0;
+}
+
+.admin-table-shell {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-data-table {
+  width: max-content;
+  min-width: 100%;
+}
+
+.admin-data-table th,
+.admin-data-table td {
+  white-space: nowrap;
+}
+
+.admin-data-table td .admin-cell-text {
+  display: block;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-filter-main,
+.admin-filter-grid {
+  min-width: 0;
+}
+
+.admin-filter-main > *,
+.admin-filter-grid > * {
+  min-width: 0;
+}
+
+/* CRUD dialogs get enough space and collapse cleanly on smaller screens. */
+.admin-modal {
+  width: min(1180px, calc(100vw - 40px));
+  max-height: calc(100vh - 40px);
+  padding: 28px;
+}
+
+.admin-form-grid,
+.admin-detail-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 18px;
+}
+
+.admin-modal .admin-field,
+.admin-modal .admin-detail-card,
+.admin-modal .admin-field input,
+.admin-modal .admin-field select,
+.admin-modal .admin-field textarea {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.admin-modal .admin-field input:not([type='checkbox']),
+.admin-modal .admin-field select,
+.admin-modal .admin-field textarea {
+  width: 100%;
+}
+
+.admin-modal-heading {
+  margin-bottom: 22px;
+}
+
+.admin-modal-actions {
+  position: sticky;
+  bottom: -28px;
+  z-index: 5;
+  margin: 24px -28px -28px;
+  padding: 16px 28px;
+  border-top: 1px solid #e5eaf0;
+  background: rgba(252, 253, 255, .97);
+  backdrop-filter: blur(14px);
+}
+
+.admin-field-hint {
+  color: #7a8798;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+@media (max-width: 900px) {
+  .admin-form-grid,
+  .admin-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-modal {
+    width: calc(100vw - 20px);
+    max-height: calc(100vh - 20px);
+    padding: 20px;
+  }
+
+  .admin-modal-actions {
+    bottom: -20px;
+    margin: 20px -20px -20px;
+    padding: 14px 20px;
+  }
+}
