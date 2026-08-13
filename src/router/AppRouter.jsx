@@ -14,7 +14,7 @@ import FerdersCard from '../pages/FerdersCard/FerdersCard'
 import BonificacionGaliciaRoute from '../pages/BonoLanding/BonificacionGaliciaRoute'
 import TerminosCondiciones from '../pages/Legal/TerminosCondiciones'
 import Privacidad from '../pages/Legal/Privacidad'
-import AdminDashboardStyled from '../pages/Admin/AdminDashboardStyled'
+import AdminDashboardTheme from '../pages/Admin/AdminDashboardTheme'
 
 function LegacyGaliciaRedirect() {
   const location = useLocation()
@@ -42,7 +42,7 @@ export default function AppRouter() {
         <Route path="/bono" element={<LegacyGaliciaRedirect />} />
         <Route path="/odoo" element={<OdooLanding />} />
         <Route path="/onboarding-empresas" element={<OnboardingEmpresas />} />
-        <Route path="/admin" element={<AdminDashboardStyled />} />
+        <Route path="/admin" element={<AdminDashboardTheme />} />
         <Route path="/ferders/cards/:slug" element={<FerdersCard />} />
         <Route path="/feders/cards/:slug" element={<FerdersCard />} />
         <Route path="*" element={<Navigate to="/" replace />} />
