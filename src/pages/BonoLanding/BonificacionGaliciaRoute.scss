@@ -1,0 +1,23 @@
+.bono-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 0 9px;
+  margin-bottom: 24px;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 107, 0, 0.28);
+  border-radius: 0;
+  background: transparent;
+  color: #8d3d04;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.bono-badge::before {
+  content: '';
+  width: 22px;
+  height: 2px;
+  background: #ff6b00;
+}
