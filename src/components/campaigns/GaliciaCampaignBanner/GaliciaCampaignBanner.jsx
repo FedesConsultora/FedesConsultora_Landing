@@ -3,7 +3,7 @@ import { getGaliciaCampaign } from '../../../services/galiciaApi'
 import './GaliciaCampaignBanner.scss'
 
 const MAX_BANNER_MS = 7 * 24 * 60 * 60 * 1000
-const GALICIA_BANNER_URL = '/regalo-galicia?source=home_banner&utm_source=fedesconsultora&utm_medium=website&utm_campaign=beneficio_galicia_2026'
+const GALICIA_BANNER_URL = '/bonificacion-galicia?source=home_banner&utm_source=fedesconsultora&utm_medium=website&utm_campaign=beneficio_galicia_2026'
 
 function isCampaignBannerActive(campaign) {
   if (!campaign) return false
