@@ -4,7 +4,7 @@ const DEFAULT_TIMEOUT = 30000
 const POLL_INTERVAL = 900
 const POLL_ATTEMPTS = 10
 const LATE_CALLBACK_TTL = 60000
-const GALICIA_LANDING_PATH = '/regalo-galicia'
+const GALICIA_LANDING_PATH = '/bonificacion-galicia'
 
 function assertApiUrl() {
   if (!API_URL) {
@@ -67,7 +67,7 @@ function jsonp(params, timeout = DEFAULT_TIMEOUT) {
 }
 
 function normalizeGaliciaPagePath(value) {
-  if (value === '/bonificacion-galicia' || value === '/bono' || value === GALICIA_LANDING_PATH) return GALICIA_LANDING_PATH
+  if (value === '/regalo-galicia' || value === '/bono' || value === GALICIA_LANDING_PATH) return GALICIA_LANDING_PATH
   return value
 }
 
