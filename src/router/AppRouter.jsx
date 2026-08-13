@@ -11,7 +11,7 @@ import Contacto from '../components/sections/Contacto/Contacto'
 import OdooLanding from '../pages/OdooLanding/OdooLanding'
 import OnboardingEmpresas from '../pages/Onboarding/OnboardingEmpresas'
 import FerdersCard from '../pages/FerdersCard/FerdersCard'
-import BonoLanding from '../pages/BonoLanding/BonoLanding'
+import BonificacionGaliciaRoute from '../pages/BonoLanding/BonificacionGaliciaRoute'
 import TerminosCondiciones from '../pages/Legal/TerminosCondiciones'
 import Privacidad from '../pages/Legal/Privacidad'
 import AdminDashboard from '../pages/Admin/AdminDashboard'
@@ -37,7 +37,7 @@ export default function AppRouter() {
           <Route path="/terminos-y-condiciones" element={<TerminosCondiciones />} />
           <Route path="/privacidad" element={<Privacidad />} />
         </Route>
-        <Route path="/bonificacion-galicia" element={<BonoLanding />} />
+        <Route path="/bonificacion-galicia" element={<BonificacionGaliciaRoute />} />
         <Route path="/regalo-galicia" element={<LegacyGaliciaRedirect />} />
         <Route path="/bono" element={<LegacyGaliciaRedirect />} />
         <Route path="/odoo" element={<OdooLanding />} />
