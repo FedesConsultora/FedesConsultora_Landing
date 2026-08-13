@@ -3,7 +3,7 @@ import BonoLanding from './BonoLanding'
 import './BonificacionGaliciaRoute.scss'
 
 const PRODUCTION_ORIGIN = 'https://fedesconsultora.com'
-const CANONICAL_PATH = '/regalo-galicia'
+const CANONICAL_PATH = '/bonificacion-galicia'
 
 export default function BonificacionGaliciaRoute() {
   useEffect(() => {
