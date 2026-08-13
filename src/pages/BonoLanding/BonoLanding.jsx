@@ -145,7 +145,7 @@ function highestAnsweredKey(answers) {
 }
 
 function setPageMetadata() {
-  document.title = 'Beneficio Banco Galicia 2026 | Fedes'
+  document.title = 'Galicia 2026 | Pymes que venden más: cómo arrancar de cero con publicidad, automatización e IA. | Fedes'
 
   let description = document.querySelector('meta[name="description"]')
   if (!description) {
@@ -155,7 +155,7 @@ function setPageMetadata() {
   }
   description.setAttribute(
     'content',
-    'Beneficio exclusivo Banco Galicia 2026: registrá tu empresa y accedé al Onboarding estratégico de Fedes.',
+    'Beneficio exclusivo Galicia 2026 para la charla Pymes que venden más: cómo arrancar de cero con publicidad, automatización e IA. Registrá tu empresa y accedé al Onboarding estratégico de Fedes.',
   )
 
   let canonical = document.querySelector('link[rel="canonical"]')
@@ -511,20 +511,20 @@ export default function BonoLanding() {
 
       <header className="bono-brand">
         <img src={Logo} alt="Fedes Consultora" />
-        <span>Banco Galicia · Beneficio 2026</span>
+        <span>Galicia · Beneficio 2026</span>
       </header>
 
       <div className="bono-shell">
         {step !== 3 && (
           <section className="bono-intro">
             <div className="bono-badge">Beneficio exclusivo · cupos limitados</div>
-            <p className="bono-kicker">Pymes que venden más</p>
+            <p className="bono-kicker">Charla | Pymes que venden más: cómo arrancar de cero con publicidad, automatización e IA.</p>
             <h1>
-              Gracias por compartir este espacio en Banco Galicia.
+              Gracias por compartir este espacio en Galicia.
               <strong> Activá tu beneficio con Fedes.</strong>
             </h1>
             <p className="bono-intro__copy">
-              Registrá tu empresa para acceder a un <strong>50% de bonificación en el primer mes</strong>
+              Registrá tu empresa para acceder a un <strong>50% de bonificación en el primer mes</strong>{' '}
               de nuestro Onboarding estratégico. Primero entendemos tu negocio; después diseñamos el camino.
             </p>
 
