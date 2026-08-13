@@ -1,0 +1,44 @@
+@use '../../styles/_variables.scss' as *;
+
+.admin-stats-grid { gap: 11px; }
+.admin-stat-card, .admin-panel { border-radius: 20px; }
+.admin-stat-card { min-height: 110px; padding: 17px; }
+.admin-stat-icon { color: $primary-color; background: rgba(27, 94, 191, .09); }
+.admin-stat-card span, .admin-panel-head span, .admin-mini-kpi span { color: #8390a1; }
+.admin-stat-card strong, .admin-mini-kpi strong { color: #20262e; }
+.admin-stat-card small, .admin-panel-head p { color: #7a8798; }
+.admin-panel-head button, .admin-link-button { color: $primary-color; }
+.admin-attention-list > button, .admin-quality-grid button, .admin-answer-list article, .admin-detail-card, .admin-mini-kpi {
+  color: #27313e;
+  border-color: #e2e7ed;
+  background: rgba(255, 255, 255, .84);
+}
+.admin-attention-list > button:hover, .admin-quality-grid button:hover { border-color: rgba(27, 94, 191, .18); background: #f7faff; }
+.admin-attention-list span, .admin-quality-grid span, .admin-detail-card label { color: #7d899a; }
+.admin-distribution-row > span { color: #697687; }
+.admin-distribution-row > div { background: #edf1f6; }
+.admin-distribution-row i { background: linear-gradient(90deg, $primary-color, #5771e8); }
+
+.admin-security-card { border-radius: 18px; }
+.admin-security-card > p { color: #778495; }
+.admin-security-icon { color: $primary-color; background: rgba(27, 94, 191, .09); }
+.admin-secret-box code { border: 1px solid #e1e6ed; background: #f6f8fb; color: #354153; }
+.admin-secret-box button { color: $primary-color; }
+
+.admin-upload-drop { color: #6e7d90; border-color: #cfd8e4; background: rgba(248,250,253,.88); }
+.admin-upload-drop strong { color: #2b3542; }
+.admin-resume-banner { color: #235b49; border-color: #c9e8da; background: #eff9f4; }
+.admin-resume-banner span { color: #5c7d70; }
+.admin-resume-banner button, .admin-resume-banner a { color: #176a4e; border-color: #c9e8da; background: #fff; }
+
+@media (max-width: 1220px) { .react-admin-shell { grid-template-columns: 238px minmax(0, 1fr); } }
+@media (max-width: 980px) {
+  .react-admin-shell { grid-template-columns: 1fr; padding: 10px; }
+  .admin-sidebar { left: 10px; top: 10px; bottom: 10px; width: min(310px, calc(100vw - 20px)); }
+  .admin-topbar { top: 10px; }
+}
+@media (max-width: 700px) {
+  .admin-topbar h1, .admin-login-card h1 { font-size: 27px !important; }
+  .admin-modal-heading h2 { font-size: 23px !important; }
+  .admin-topbar { min-height: 90px; }
+}
