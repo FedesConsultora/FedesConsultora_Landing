@@ -7,17 +7,16 @@ import FediWidget from '../ui/FediWidget/FediWidget';
 import useMediaPreloader from '../../hooks/useMediaPreloader';
 
 export default function MainLayout() {
-  // Start preloading gallery assets as soon as the layout mounts
   useMediaPreloader();
 
   return (
-    <>
+    <div className="site-layout">
       <ScrollToTop />
       <Header />
       <Outlet />
       <Contacto />
       <Footer />
       <FediWidget />
-    </>
+    </div>
   );
 }
