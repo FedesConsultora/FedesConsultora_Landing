@@ -1,0 +1,53 @@
+@use '../../styles/_variables.scss' as *;
+
+.admin-filter-card { margin-bottom: 12px; border-radius: 20px; padding: 13px; }
+.admin-filter-main { grid-template-columns: minmax(260px, 1fr) auto auto auto; align-items: center; }
+.admin-filter-grid { grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 9px; padding-top: 12px; margin-top: 12px; border-top-color: #e7ebf1; }
+.admin-filter-apply { color: #738298; }
+.admin-filter-apply button { min-height: 43px; color: #2e3948; border-color: #dce3ec; background: #f9fbfd; }
+
+.admin-table-shell {
+  width: 100%;
+  max-width: 100%;
+  overflow: auto;
+  border: 1px solid #e0e6ed;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .92);
+  box-shadow: 0 16px 45px rgba(45, 64, 91, .065);
+}
+
+.admin-data-table { width: 100%; min-width: 860px; border-collapse: separate; border-spacing: 0; color: #26303c; }
+.admin-data-table th, .admin-data-table td { padding: 12px 13px; border-bottom: 1px solid #edf0f4; font-size: 12px; background: transparent; vertical-align: middle; }
+.admin-data-table th { top: 0; z-index: 3; color: #798699; background: #f5f8fc; box-shadow: 0 1px 0 #e4e9ef; font-size: 9px; letter-spacing: .075em; }
+.admin-data-table tbody tr:hover { background: rgba(27, 94, 191, .035); }
+.admin-data-table td strong { color: #20262e; }
+.admin-subcell, .admin-empty-inline { color: #8995a5; }
+.admin-cell-text { max-width: 290px; color: #4d5968; }
+.admin-checkbox-cell { width: 42px; min-width: 42px; }
+.admin-checkbox-cell input { width: 15px; height: 15px; accent-color: $primary-color; }
+.admin-data-table th:last-child, .admin-data-table td:last-child { position: sticky; right: 0; z-index: 2; background: rgba(250, 252, 254, .97); box-shadow: -10px 0 22px rgba(42, 60, 86, .035); }
+.admin-data-table th:last-child { z-index: 4; background: #f5f8fc; }
+.admin-row-actions { justify-content: flex-end; }
+.admin-row-actions button { color: #667488; border-color: #e0e6ed; background: #fff; }
+.admin-row-actions button:hover { color: $primary-color; border-color: rgba(27, 94, 191, .2); background: #f2f7ff; }
+.admin-row-actions button.is-danger { color: #bd4b54; }
+
+.admin-status-pill { border-radius: 7px; padding: 4px 8px; color: #667383; border-color: #dce3eb; background: #f8fafc; }
+.status-published, .status-complete, .status-completed, .status-sent, .status-approved, .status-calificado, .status-sí { color: #176a4e; background: #eef9f4; border-color: #cae9db; }
+.status-incomplete, .status-pending, .status-scheduled, .status-in_progress, .status-en_evaluacion { color: #8a5a15; background: #fff8e9; border-color: #f1dfb7; }
+.status-archived, .status-failed, .status-rejected, .status-no_calificado, .status-no_calificado_ko { color: #a54149; background: #fff3f4; border-color: #efd0d3; }
+
+.admin-pagination { margin-top: 8px; padding: 10px 4px; color: #7a8798; }
+.admin-pagination button { color: #536174; border-color: #dfe5ec; background: #fff; }
+.admin-bulk-bar { border-color: rgba(27, 94, 191, .18); background: #eef5ff; color: #31445f; }
+.admin-empty-state { color: #7e8a9a; }
+.admin-empty-state strong { color: #3b4655; }
+
+@media (max-width: 700px) {
+  .admin-filter-main { grid-template-columns: 1fr 1fr; }
+  .admin-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-data-table { min-width: 760px; }
+}
+@media (max-width: 470px) {
+  .admin-filter-grid, .admin-filter-main { grid-template-columns: 1fr; }
+}
