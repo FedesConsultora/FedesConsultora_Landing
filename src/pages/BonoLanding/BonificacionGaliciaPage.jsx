@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import BonoLanding from './BonoLanding'
 import './BonoLandingOverrides.scss'
 
-const CANONICAL_PATH = '/bonificacion-galicia'
+const CANONICAL_PATH = '/regalo-galicia'
 
 export default function BonificacionGaliciaPage() {
   useEffect(() => {
