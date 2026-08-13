@@ -15,6 +15,9 @@ import BonificacionGaliciaRoute from '../pages/BonoLanding/BonificacionGaliciaRo
 import TerminosCondiciones from '../pages/Legal/TerminosCondiciones'
 import Privacidad from '../pages/Legal/Privacidad'
 import AdminDashboard from '../pages/Admin/AdminDashboard'
+import '../pages/Admin/AdminTheme.scss'
+import '../pages/Admin/AdminTableTheme.scss'
+import '../pages/Admin/AdminOverlayTheme.scss'
 
 function LegacyGaliciaRedirect() {
   const location = useLocation()
