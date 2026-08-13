@@ -3,7 +3,7 @@ import { getGaliciaCampaign } from '../../../services/galiciaApi'
 import './GaliciaCampaignBanner.scss'
 
 const MAX_BANNER_MS = 7 * 24 * 60 * 60 * 1000
-const GALICIA_BANNER_URL = '/bonificacion-galicia?source=home_banner&utm_source=fedesconsultora&utm_medium=website&utm_campaign=beneficio_galicia_2026'
+const GALICIA_BANNER_URL = '/regalo-galicia?source=home_banner&utm_source=fedesconsultora&utm_medium=website&utm_campaign=beneficio_galicia_2026'
 
 function isCampaignBannerActive(campaign) {
   if (!campaign) return false
@@ -33,11 +33,11 @@ export default function GaliciaCampaignBanner() {
   if (!campaign) return null
 
   return (
-    <aside className="galicia-campaign-banner" aria-label="Beneficio Banco Galicia">
+    <aside className="galicia-campaign-banner" aria-label="Beneficio Galicia">
       <div className="galicia-campaign-banner__inner">
         <div>
-          <span>Banco Galicia · Beneficio 2026</span>
-          <strong>¿Participaste de “Pymes que venden más”?</strong>
+          <span>Galicia · Beneficio 2026</span>
+          <strong>Charla: “Pymes que venden más: cómo arrancar de cero con publicidad, automatización e IA.”</strong>
           <p>Activá el beneficio exclusivo de Onboarding estratégico con Fedes.</p>
         </div>
         <a href={GALICIA_BANNER_URL}>Activar beneficio</a>
