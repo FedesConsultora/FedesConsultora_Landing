@@ -3,6 +3,7 @@ import {
   History, Home, Image, Images, ListChecks, LogOut, Mail, Megaphone, Menu, Newspaper,
   PanelsTopLeft, Quote, RefreshCw, Settings, ShieldCheck, UserRoundSearch, Users, X,
 } from 'lucide-react'
+import Logo from '../../../assets/img/Logo.svg'
 
 const ICONS = {
   Activity, BadgeCheck, Boxes, ChartNoAxesCombined, ClipboardCheck, ContactRound, Database,
@@ -29,8 +30,8 @@ export default function AdminShell({ workspace, view, tableKey, title, subtitle,
       <input id="admin-sidebar-toggle" className="admin-sidebar-toggle" type="checkbox" />
       <aside className="admin-sidebar admin-glass">
         <div className="admin-brand">
-          <div className="admin-brand-mark">F</div>
-          <div><strong>FEDES</strong><span>Backoffice</span></div>
+          <img className="admin-brand-logo" src={Logo} alt="Fedes" />
+          <div><strong>Backoffice</strong><span>Gestión integral</span></div>
           <label htmlFor="admin-sidebar-toggle" className="admin-sidebar-close"><X size={18} /></label>
         </div>
 
@@ -57,7 +58,7 @@ export default function AdminShell({ workspace, view, tableKey, title, subtitle,
         </nav>
 
         <div className="admin-sidebar-footer">
-          <button type="button" className="admin-nav-item" onClick={onSecurity}><ShieldCheck size={17} /><span>Seguridad</span></button>
+          <button type="button" className="admin-nav-item admin-security-entry" onClick={onSecurity}><ShieldCheck size={17} /><span>Seguridad y contraseña</span></button>
           <div className="admin-system-state"><i /> v{workspace?.app?.version || '—'} · DB {workspace?.app?.schemaVersion || '—'}</div>
           <button type="button" className="admin-nav-item is-danger" onClick={onLogout}><LogOut size={17} /><span>Salir</span></button>
         </div>
@@ -74,7 +75,8 @@ export default function AdminShell({ workspace, view, tableKey, title, subtitle,
             <p>{subtitle}</p>
           </div>
           <div className="admin-topbar-actions">
-            <button type="button" className="admin-button admin-button--ghost" onClick={onRefresh}><RefreshCw size={16} />Actualizar</button>
+            <button type="button" className="admin-button admin-button--ghost" onClick={onSecurity}><ShieldCheck size={16} /><span>Seguridad</span></button>
+            <button type="button" className="admin-button admin-button--ghost" onClick={onRefresh}><RefreshCw size={16} /><span>Actualizar</span></button>
           </div>
         </header>
         <section className="admin-content">{children}</section>
