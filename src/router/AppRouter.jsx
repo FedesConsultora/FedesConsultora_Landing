@@ -22,7 +22,7 @@ import '../pages/Admin/AdminModulesTheme.scss'
 
 function LegacyGaliciaRedirect() {
   const location = useLocation()
-  return <Navigate to={`/regalo-galicia${location.search}${location.hash}`} replace />
+  return <Navigate to={`/bonificacion-galicia${location.search}${location.hash}`} replace />
 }
 
 export default function AppRouter() {
@@ -41,8 +41,8 @@ export default function AppRouter() {
           <Route path="/terminos-y-condiciones" element={<TerminosCondiciones />} />
           <Route path="/privacidad" element={<Privacidad />} />
         </Route>
-        <Route path="/regalo-galicia" element={<BonificacionGaliciaRoute />} />
-        <Route path="/bonificacion-galicia" element={<LegacyGaliciaRedirect />} />
+        <Route path="/bonificacion-galicia" element={<BonificacionGaliciaRoute />} />
+        <Route path="/regalo-galicia" element={<LegacyGaliciaRedirect />} />
         <Route path="/bono" element={<LegacyGaliciaRedirect />} />
         <Route path="/odoo" element={<OdooLanding />} />
         <Route path="/onboarding-empresas" element={<OnboardingEmpresas />} />
