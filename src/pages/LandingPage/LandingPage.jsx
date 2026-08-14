@@ -1,11 +1,10 @@
-import GaliciaCampaignBanner from '../../components/campaigns/GaliciaCampaignBanner/GaliciaCampaignBanner'
 import Hero from '../../components/sections/Hero/Hero'
+import HeroCampaignSlider from '../../components/sections/Hero/HeroCampaignSlider'
 
 const LandingPage = () => {
   return (
     <main>
-      <GaliciaCampaignBanner />
-      <Hero />
+      <HeroCampaignSlider normalHero={<Hero />} />
     </main>
   )
 }

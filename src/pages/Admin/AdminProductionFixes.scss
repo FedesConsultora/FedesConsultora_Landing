@@ -63,6 +63,14 @@
   width: min(1180px, calc(100vw - 40px));
   max-height: calc(100vh - 40px);
   padding: 28px;
+
+  form {
+    padding-bottom: 90px; /* Previene que el footer sticky tape los inputs al hacer scroll al fondo */
+
+    @media (max-width: 900px) {
+      padding-bottom: 135px; /* Más espacio en mobile ya que los botones se apilan verticalmente */
+    }
+  }
 }
 
 .admin-form-grid,

@@ -1,0 +1,151 @@
+.hero-campaign-slider-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+
+  // Ocupar el mismo espacio que el Hero normal (min-height: 100vh del .hero-section)
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-campaign-slider-slide {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  flex: 1;
+
+  &.is-banner {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  &.is-normal-hero {
+    // El Hero normal no necesita restricción de altura adicional
+  }
+}
+
+// ===========================
+// Slide de banner promocional
+// ===========================
+.hero-campaign-slide {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  position: relative;
+
+  &__link {
+    flex: 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+    cursor: pointer;
+    position: relative;
+
+    &:focus-visible {
+      outline: 3px solid #5f7cff;
+      outline-offset: -3px;
+    }
+  }
+
+  &__picture {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 100vh;
+  }
+
+  &__img {
+    width: 100%;
+    height: 100%;
+    min-height: 100vh;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+
+    // Evitar que un header duplicado del arte interfiera visualmente
+    // se muestra solo la zona promocional del banner
+    @media (max-width: 768px) {
+      object-position: center center;
+    }
+  }
+}
+
+// ===========================
+// Botón "Continuar →"
+// ===========================
+.hero-campaign-skip-btn {
+  position: absolute;
+  bottom: clamp(20px, 4vh, 44px);
+  right: clamp(16px, 4vw, 56px);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px 9px 16px;
+  border-radius: 40px;
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+  z-index: 20;
+
+  &:hover {
+    opacity: 0.85;
+    transform: translateX(3px);
+    border-color: rgba(255, 255, 255, 0.7);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 768px) {
+    bottom: clamp(16px, 3vh, 28px);
+    right: clamp(12px, 5vw, 24px);
+    padding: 8px 14px 8px 12px;
+    font-size: 0.72rem;
+  }
+}
+
+// ===========================
+// Respetar prefers-reduced-motion
+// ===========================
+@media (prefers-reduced-motion: reduce) {
+  .hero-campaign-slider-wrapper * {
+    animation: none !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+// ===========================
+// Breakpoints para imágenes responsive
+// ===========================
+@media (max-width: 1024px) {
+  .hero-campaign-slide__img {
+    object-position: center center;
+  }
+}
+
+@media (max-width: 430px) {
+  .hero-campaign-slide__img {
+    min-height: calc(100svh);
+  }
+
+  .hero-campaign-slide__picture {
+    min-height: calc(100svh);
+  }
+
+  .hero-campaign-slider-slide.is-banner {
+    min-height: calc(100svh);
+  }
+}

@@ -174,6 +174,49 @@ export async function getGaliciaCampaign() {
   return campaignPromise
 }
 
+let campaignsPromise = null
+
+export async function getAllPublicCampaigns() {
+  if (!campaignsPromise) {
+    campaignsPromise = jsonp({ api: 'campaigns' })
+      .catch((error) => {
+        console.info('[Campaigns] Error cargando campañas públicas:', error.message)
+        return []
+      })
+  }
+  return campaignsPromise
+}
+
+export async function getActiveHeroCampaigns() {
+  const all = await getAllPublicCampaigns()
+  if (!Array.isArray(all)) return []
+  const now = Date.now()
+
+  return all.filter((c) => {
+    if (!c || c.status !== 'published') return false
+    const banner = c.hero_banner
+    if (!banner || !banner.enabled) return false
+    if (!banner.desktop_url || !banner.mobile_url) return false
+
+    const startsAt = Date.parse(c.starts_at || '')
+    if (!Number.isFinite(startsAt) || startsAt > now) return false
+
+    const endsAt = Date.parse(c.ends_at || '')
+    if (Number.isFinite(endsAt) && endsAt < now) return false
+
+    if (banner.show_once_per_session) {
+      try {
+        const seen = sessionStorage.getItem(`fedes_hero_banner_seen:${c.campaign_key}`)
+        if (seen === 'true') return false
+      } catch {
+        /* ignore storage access error */
+      }
+    }
+
+    return true
+  }).sort((a, b) => (Number(a.sort_order) || 0) - (Number(b.sort_order) || 0))
+}
+
 export function createLeadId() {
   if (window.crypto?.randomUUID) return window.crypto.randomUUID()
   return `lead_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`
