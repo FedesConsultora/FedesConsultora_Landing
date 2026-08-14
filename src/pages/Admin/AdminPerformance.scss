@@ -21,6 +21,15 @@
   transition: color .16s ease, background .16s ease;
 }
 
+.admin-login-input .admin-password-toggle svg {
+  position: static;
+  left: auto;
+  top: auto;
+  transform: none;
+  color: currentColor;
+  pointer-events: none;
+}
+
 .admin-password-toggle:hover,
 .admin-password-toggle:focus-visible {
   color: $primary-color;
