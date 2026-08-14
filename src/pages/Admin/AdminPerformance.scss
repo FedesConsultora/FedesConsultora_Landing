@@ -1,0 +1,180 @@
+@use '../../styles/_variables.scss' as *;
+
+.admin-login-input--password input {
+  padding-right: 46px !important;
+}
+
+.admin-password-toggle {
+  position: absolute;
+  right: 9px;
+  top: 50%;
+  width: 34px;
+  height: 34px;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 9px;
+  color: #718096;
+  background: transparent;
+  cursor: pointer;
+  transition: color .16s ease, background .16s ease;
+}
+
+.admin-password-toggle:hover,
+.admin-password-toggle:focus-visible {
+  color: $primary-color;
+  background: rgba(27, 94, 191, .08);
+  outline: none;
+}
+
+.admin-boot-page {
+  min-height: 100vh;
+}
+
+.admin-boot-card {
+  min-width: min(390px, calc(100vw - 36px));
+  padding: 22px 24px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #26303c;
+}
+
+.admin-boot-card svg { color: $primary-color; flex: 0 0 auto; }
+.admin-boot-card strong { display: block; font-size: 14px; }
+.admin-boot-card span { display: block; margin-top: 2px; color: #7b8797; font-size: 12px; }
+
+.admin-view-stack {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  animation: admin-view-enter .16s ease both;
+}
+
+@keyframes admin-view-enter {
+  from { opacity: .72; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.admin-sync-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: #718096;
+  background: rgba(255,255,255,.58);
+  border: 1px solid rgba(31,49,73,.08);
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.admin-sync-state > span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: $primary-color;
+  box-shadow: 0 0 0 4px rgba(27,94,191,.08);
+  animation: admin-sync-pulse 1.25s ease-in-out infinite;
+}
+
+@keyframes admin-sync-pulse {
+  0%, 100% { opacity: .42; transform: scale(.9); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+.admin-inline-loading {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 7px 10px;
+  border: 1px solid #e0e6ee;
+  border-radius: 10px;
+  color: #687688;
+  background: rgba(255,255,255,.9);
+  box-shadow: 0 8px 24px rgba(45,62,87,.07);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.admin-inline-loading svg { color: $primary-color; }
+
+.admin-table-skeleton {
+  min-height: 320px;
+  padding: 22px;
+  border-radius: 20px;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  overflow: hidden;
+}
+
+.admin-skeleton-line {
+  position: relative;
+  height: 48px;
+  width: 72%;
+  border-radius: 11px;
+  overflow: hidden;
+  background: #edf1f6;
+}
+.admin-skeleton-line.is-wide { width: 100%; height: 54px; }
+.admin-skeleton-line.is-short { width: 48%; }
+.admin-skeleton-line::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.72), transparent);
+  animation: admin-skeleton-shimmer 1.15s ease-in-out infinite;
+}
+
+@keyframes admin-skeleton-shimmer {
+  100% { transform: translateX(100%); }
+}
+
+.admin-action-progress {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 220;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 13px;
+  border-radius: 12px;
+  color: #2d3948;
+  background: rgba(255,255,255,.97);
+  border: 1px solid #dfe5ec;
+  box-shadow: 0 16px 48px rgba(40,57,82,.16);
+  font-size: 12px;
+  font-weight: 750;
+  pointer-events: none;
+}
+
+.admin-action-progress svg { color: $primary-color; }
+
+/* Data stays usable while Google Apps Script revalidates in the background. */
+.admin-data-table,
+.admin-filter-card,
+.admin-pagination {
+  transition: opacity .16s ease;
+}
+
+@media (max-width: 820px) {
+  .admin-sync-state { display: none; }
+  .admin-action-progress { right: 12px; bottom: 12px; }
+  .admin-inline-loading { justify-self: stretch; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-view-stack,
+  .admin-sync-state > span,
+  .admin-skeleton-line::after { animation: none !important; }
+}
