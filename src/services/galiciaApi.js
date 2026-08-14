@@ -196,7 +196,8 @@ export async function getActiveHeroCampaigns() {
     if (!c || c.status !== 'published') return false
     const banner = c.hero_banner
     if (!banner || !banner.enabled) return false
-    if (!banner.desktop_url || !banner.mobile_url) return false
+    if (!(banner.desktop_url || banner.desktop_file_id)) return false
+    if (!(banner.mobile_url || banner.mobile_file_id)) return false
 
     const startsAt = Date.parse(c.starts_at || '')
     if (!Number.isFinite(startsAt) || startsAt > now) return false
