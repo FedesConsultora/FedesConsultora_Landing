@@ -3,7 +3,6 @@ import Header from './Header';
 import Footer from '../sections/Footer/Footer';
 import Contacto from '../sections/Contacto/Contacto';
 import ScrollToTop from '../ui/ScrollToTop';
-import FediWidget from '../ui/FediWidget/FediWidget';
 import useMediaPreloader from '../../hooks/useMediaPreloader';
 
 export default function MainLayout() {
@@ -16,7 +15,6 @@ export default function MainLayout() {
       <Outlet />
       <Contacto />
       <Footer />
-      <FediWidget />
     </div>
   );
 }
