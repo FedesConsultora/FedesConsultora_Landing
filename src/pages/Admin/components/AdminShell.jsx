@@ -11,17 +11,23 @@ const ICONS = {
   Settings, UserRoundSearch, Users,
 }
 
-function NavItem({ active, icon, label, onClick }) {
+function NavItem({ active, icon, label, onClick, onPrefetch }) {
   const Icon = ICONS[icon] || Database
   return (
-    <button type="button" className={`admin-nav-item ${active ? 'is-active' : ''}`} onClick={onClick}>
+    <button
+      type="button"
+      className={`admin-nav-item ${active ? 'is-active' : ''}`}
+      onClick={onClick}
+      onMouseEnter={onPrefetch}
+      onFocus={onPrefetch}
+    >
       <Icon size={17} strokeWidth={1.8} />
       <span>{label}</span>
     </button>
   )
 }
 
-export default function AdminShell({ workspace, view, tableKey, title, subtitle, onDashboard, onTable, onRefresh, onLogout, onSecurity, children }) {
+export default function AdminShell({ workspace, view, tableKey, title, subtitle, onDashboard, onTable, onPrefetch, onRefresh, onLogout, onSecurity, refreshing = false, children }) {
   const groups = workspace?.groups || []
   const tables = workspace?.tables || {}
 
@@ -50,6 +56,7 @@ export default function AdminShell({ workspace, view, tableKey, title, subtitle,
                     icon={table.icon}
                     label={table.label}
                     onClick={() => onTable(table.key)}
+                    onPrefetch={() => onPrefetch?.(table.key)}
                   />
                 ))}
               </div>
@@ -75,8 +82,9 @@ export default function AdminShell({ workspace, view, tableKey, title, subtitle,
             <p>{subtitle}</p>
           </div>
           <div className="admin-topbar-actions">
+            {refreshing && <span className="admin-sync-state"><span /> Sincronizando</span>}
             <button type="button" className="admin-button admin-button--ghost" onClick={onSecurity}><ShieldCheck size={16} /><span>Seguridad</span></button>
-            <button type="button" className="admin-button admin-button--ghost" onClick={onRefresh}><RefreshCw size={16} /><span>Actualizar</span></button>
+            <button type="button" className="admin-button admin-button--ghost" onClick={onRefresh} aria-label="Actualizar datos"><RefreshCw className={refreshing ? 'is-spinning' : ''} size={16} /><span>Actualizar</span></button>
           </div>
         </header>
         <section className="admin-content">{children}</section>
