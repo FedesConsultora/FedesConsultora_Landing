@@ -1,5 +1,39 @@
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 import './HeroCampaignSlider.scss'
+
+function imageCandidates(url, fileId) {
+  const candidates = []
+  if (url) candidates.push(url)
+  if (fileId) {
+    candidates.push(`https://lh3.googleusercontent.com/d/${encodeURIComponent(fileId)}=w2000`)
+    candidates.push(`https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w2000`)
+    candidates.push(`https://drive.google.com/uc?export=view&id=${encodeURIComponent(fileId)}`)
+  }
+  return [...new Set(candidates.filter(Boolean))]
+}
+
+function CampaignImage({ desktopUrl, mobileUrl, desktopFileId, mobileFileId, alt }) {
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
+  const candidates = useMemo(
+    () => imageCandidates(isMobile ? mobileUrl : desktopUrl, isMobile ? mobileFileId : desktopFileId),
+    [isMobile, mobileUrl, desktopUrl, mobileFileId, desktopFileId],
+  )
+  const [index, setIndex] = useState(0)
+
+  if (!candidates.length || index >= candidates.length) return null
+
+  return (
+    <img
+      src={candidates[index]}
+      alt={alt}
+      className="hero-campaign-slide__img"
+      loading="eager"
+      decoding="async"
+      fetchPriority="high"
+      onError={() => setIndex((current) => current + 1)}
+    />
+  )
+}
 
 export default function HeroCampaignSlide({ campaign, onBannerClick }) {
   if (!campaign || !campaign.hero_banner) return null
@@ -20,19 +54,14 @@ export default function HeroCampaignSlide({ campaign, onBannerClick }) {
         onClick={() => onBannerClick(campaign, clickUrl)}
         aria-label={altText}
       >
-        <picture className="hero-campaign-slide__picture">
-          <source media="(max-width: 768px)" srcSet={banner.mobile_url} />
-          <img
-            src={banner.desktop_url}
-            alt={altText}
-            className="hero-campaign-slide__img"
-            loading="eager"
-            decoding="async"
-            fetchPriority="high"
-          />
-        </picture>
+        <CampaignImage
+          desktopUrl={banner.desktop_url}
+          mobileUrl={banner.mobile_url}
+          desktopFileId={banner.desktop_file_id}
+          mobileFileId={banner.mobile_file_id}
+          alt={altText}
+        />
       </a>
     </div>
   )
 }
-
