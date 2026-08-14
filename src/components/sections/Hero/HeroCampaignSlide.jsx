@@ -12,7 +12,7 @@ function imageCandidates(url, fileId) {
   return [...new Set(candidates.filter(Boolean))]
 }
 
-function CampaignImage({ desktopUrl, mobileUrl, desktopFileId, mobileFileId, alt, onUnavailable }) {
+function CampaignImage({ desktopUrl, mobileUrl, desktopFileId, mobileFileId, alt, onReady, onUnavailable }) {
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
   const candidates = useMemo(
     () => imageCandidates(isMobile ? mobileUrl : desktopUrl, isMobile ? mobileFileId : desktopFileId),
@@ -39,12 +39,13 @@ function CampaignImage({ desktopUrl, mobileUrl, desktopFileId, mobileFileId, alt
       loading="eager"
       decoding="async"
       fetchPriority="high"
+      onLoad={() => onReady?.()}
       onError={() => setIndex((current) => current + 1)}
     />
   )
 }
 
-export default function HeroCampaignSlide({ campaign, onBannerClick, onImageUnavailable }) {
+export default function HeroCampaignSlide({ campaign, onBannerClick, onImageReady, onImageUnavailable }) {
   if (!campaign || !campaign.hero_banner) return null
 
   const banner = campaign.hero_banner
@@ -69,6 +70,7 @@ export default function HeroCampaignSlide({ campaign, onBannerClick, onImageUnav
           desktopFileId={banner.desktop_file_id}
           mobileFileId={banner.mobile_file_id}
           alt={altText}
+          onReady={onImageReady}
           onUnavailable={onImageUnavailable}
         />
       </a>
