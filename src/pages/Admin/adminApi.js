@@ -1,6 +1,7 @@
 const API_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL
 const TOKEN_KEY = 'fedes_admin_token'
 const REQUIRED_BACKEND_MAJOR = 4
+const BACKEND_CHECK_TTL = 10 * 60 * 1000
 
 let backendCheck = null
 let backendCheckedAt = 0
@@ -41,7 +42,7 @@ function backendVersionError(version) {
 async function ensureAdminBackend() {
   if (!API_URL) throw new Error('Falta VITE_GOOGLE_SCRIPT_URL')
   const now = Date.now()
-  if (backendCheck && now - backendCheckedAt < 60000) return backendCheck
+  if (backendCheck && now - backendCheckedAt < BACKEND_CHECK_TTL) return backendCheck
 
   const url = new URL(API_URL)
   url.searchParams.set('api', 'health')
@@ -62,6 +63,7 @@ async function ensureAdminBackend() {
 
 async function pollResult(requestId, clientSecret) {
   const started = Date.now()
+  let waitMs = 140
   while (Date.now() - started < 30000) {
     const url = new URL(API_URL)
     url.searchParams.set('api', 'admin-result')
@@ -85,7 +87,9 @@ async function pollResult(requestId, clientSecret) {
       }
       return result
     }
-    await new Promise((resolve) => window.setTimeout(resolve, 280))
+
+    await new Promise((resolve) => window.setTimeout(resolve, waitMs))
+    waitMs = Math.min(420, waitMs + 60)
   }
   throw new Error('El backend tardó demasiado en responder')
 }
