@@ -8,6 +8,18 @@
   line-height: 1.45;
 }
 
+/* Portaled dialogs live outside .react-admin-shell, so they need their own design tokens. */
+.admin-modal-layer {
+  --admin-text: #26303c;
+  --admin-muted: #758295;
+  --admin-line: #dfe6ee;
+  --admin-line-strong: #cbd6e2;
+  --admin-primary: #1b5ebf;
+  --admin-primary-2: #3478dc;
+  --admin-accent: #1b5ebf;
+  --admin-glass-bg: rgba(255, 255, 255, .92);
+}
+
 /* Every admin dialog is centered against the viewport, independent from tables/sidebar/layout. */
 .admin-modal-layer {
   position: fixed;
@@ -18,7 +30,7 @@
   justify-content: center;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: clamp(16px, 3vw, 38px);
+  padding: clamp(18px, 3vw, 42px);
 }
 
 .admin-modal-layer > .admin-modal-backdrop {
@@ -31,15 +43,30 @@
   z-index: 1;
   flex: 0 1 auto;
   width: min(1180px, 100%);
-  max-height: calc(100dvh - clamp(32px, 6vw, 76px));
+  max-height: calc(100dvh - clamp(36px, 6vw, 84px));
   margin: auto;
-  padding: clamp(24px, 2.5vw, 34px);
+  padding: clamp(28px, 3vw, 40px);
   overflow: auto;
   overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .admin-modal-layer > .admin-modal.admin-modal--xl {
   width: min(1280px, 100%);
+}
+
+.admin-modal-layer .admin-modal-close {
+  top: clamp(18px, 2vw, 26px);
+  right: clamp(18px, 2vw, 26px);
+}
+
+.admin-modal-layer .admin-modal-heading {
+  padding-right: 64px;
+  margin-bottom: 26px;
+}
+
+.admin-modal-layer .admin-modal-heading h2 {
+  line-height: 1.15;
 }
 
 /* Tables stay inside their card instead of squeezing columns into the viewport. */
@@ -86,7 +113,8 @@
 
 /* CRUD dialogs get enough space and collapse cleanly on smaller screens. */
 .admin-modal form {
-  padding-bottom: 90px;
+  width: 100%;
+  padding-bottom: 96px;
 }
 
 .admin-form-grid,
@@ -117,13 +145,21 @@
 
 .admin-modal-actions {
   position: sticky;
-  bottom: calc(-1 * clamp(24px, 2.5vw, 34px));
+  bottom: calc(-1 * clamp(28px, 3vw, 40px));
   z-index: 5;
-  margin: 24px calc(-1 * clamp(24px, 2.5vw, 34px)) calc(-1 * clamp(24px, 2.5vw, 34px));
-  padding: 16px clamp(24px, 2.5vw, 34px);
+  margin: 28px calc(-1 * clamp(28px, 3vw, 40px)) calc(-1 * clamp(28px, 3vw, 40px));
+  padding: 16px clamp(28px, 3vw, 40px);
   border-top: 1px solid #e5eaf0;
-  background: rgba(252, 253, 255, .97);
+  background: rgba(252, 253, 255, .985);
   backdrop-filter: blur(14px);
+}
+
+.admin-save-error {
+  position: sticky;
+  bottom: 66px;
+  z-index: 6;
+  margin: 14px 0 0;
+  box-shadow: 0 10px 30px rgba(130, 50, 60, .08);
 }
 
 .admin-field-hint {
@@ -146,16 +182,20 @@
   .admin-modal-layer > .admin-modal {
     width: 100%;
     max-height: calc(100dvh - 20px);
-    padding: 20px;
+    padding: 22px;
   }
 
   .admin-modal form {
-    padding-bottom: 135px;
+    padding-bottom: 140px;
   }
 
   .admin-modal-actions {
-    bottom: -20px;
-    margin: 20px -20px -20px;
-    padding: 14px 20px;
+    bottom: -22px;
+    margin: 22px -22px -22px;
+    padding: 14px 22px;
+  }
+
+  .admin-save-error {
+    bottom: 112px;
   }
 }
