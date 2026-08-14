@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Copy, ExternalLink, KeyRound, Pencil, X } from 'lucide-react'
 import { StatusPill } from './DataTable'
+import AdminModalPortal from './AdminModalPortal'
 
 function asBoolean(value) {
   return value === true || value === 1 || String(value).toLowerCase() === 'true' || String(value) === '1'
@@ -23,7 +24,19 @@ function Distribution({ data }) {
 }
 
 function ModalFrame({ title, subtitle, onClose, children, actions }) {
-  return <div className="admin-modal-layer"><button type="button" aria-label="Cerrar" className="admin-modal-backdrop" onClick={onClose} /><section className="admin-modal admin-modal--xl admin-glass"><button type="button" className="admin-modal-close" onClick={onClose}><X size={19} /></button><div className="admin-modal-heading"><span>Vista 360°</span><h2>{title}</h2><p>{subtitle}</p></div>{children}{actions && <div className="admin-modal-actions">{actions}</div>}</section></div>
+  return (
+    <AdminModalPortal>
+      <div className="admin-modal-layer">
+        <button type="button" aria-label="Cerrar" className="admin-modal-backdrop" onClick={onClose} />
+        <section className="admin-modal admin-modal--xl admin-glass" role="dialog" aria-modal="true">
+          <button type="button" className="admin-modal-close" onClick={onClose}><X size={19} /></button>
+          <div className="admin-modal-heading"><span>Vista 360°</span><h2>{title}</h2><p>{subtitle}</p></div>
+          {children}
+          {actions && <div className="admin-modal-actions">{actions}</div>}
+        </section>
+      </div>
+    </AdminModalPortal>
+  )
 }
 
 export function Campaign360Modal({ data, onClose, onOpenLeads, onEditCampaign, onLead }) {
@@ -54,15 +67,9 @@ export function Lead360Modal({ data, onClose, onEdit, onIssueResume }) {
   const issueResume = async () => {
     setResumeError('')
     setResumeBusy(true)
-    try {
-      const result = await onIssueResume(lead.lead_id)
-      setResume(result)
-    } catch (error) {
-      setResumeError(error.message)
-    } finally {
-      setResumeBusy(false)
-    }
+    try { setResume(await onIssueResume(lead.lead_id)) } catch (error) { setResumeError(error.message) } finally { setResumeBusy(false) }
   }
+
   const copyResume = async () => {
     if (!resume?.relativeUrl) return
     const url = `${window.location.origin}${resume.relativeUrl}`
