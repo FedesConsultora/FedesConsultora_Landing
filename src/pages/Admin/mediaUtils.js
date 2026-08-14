@@ -6,16 +6,30 @@ function driveFileIdFromUrl(url = '') {
   return pathMatch?.[1] || ''
 }
 
-export function getMediaImageUrl(media, size = 'w2000') {
+export function getMediaFileId(media) {
   if (!media) return ''
-  if (media._preview_url) return media._preview_url
+  return media.file_id || driveFileIdFromUrl(media.public_url) || driveFileIdFromUrl(media.drive_url) || ''
+}
 
-  const fileId = media.file_id || driveFileIdFromUrl(media.public_url) || driveFileIdFromUrl(media.drive_url)
+export function getMediaImageCandidates(media, size = 'w2000') {
+  if (!media) return []
+  if (media._preview_url) return [media._preview_url]
+
+  const fileId = getMediaFileId(media)
+  const candidates = []
+
+  if (media.public_url) candidates.push(media.public_url)
   if (fileId) {
-    return `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=${encodeURIComponent(size)}`
+    candidates.push(`https://lh3.googleusercontent.com/d/${encodeURIComponent(fileId)}=${encodeURIComponent(size)}`)
+    candidates.push(`https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=${encodeURIComponent(size)}`)
+    candidates.push(`https://drive.google.com/uc?export=view&id=${encodeURIComponent(fileId)}`)
   }
 
-  return media.public_url || media.drive_url || ''
+  return [...new Set(candidates.filter(Boolean))]
+}
+
+export function getMediaImageUrl(media, size = 'w2000') {
+  return getMediaImageCandidates(media, size)[0] || ''
 }
 
 export function withLocalMediaPreview(media, previewUrl) {
