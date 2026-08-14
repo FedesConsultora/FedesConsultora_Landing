@@ -2,8 +2,6 @@
   position: relative;
   width: 100%;
   overflow: hidden;
-
-  // Ocupar el mismo espacio que el Hero normal (min-height: 100vh del .hero-section)
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -20,15 +18,8 @@
     flex-direction: column;
     align-items: stretch;
   }
-
-  &.is-normal-hero {
-    // El Hero normal no necesita restricción de altura adicional
-  }
 }
 
-// ===========================
-// Slide de banner promocional
-// ===========================
 .hero-campaign-slide {
   flex: 1;
   display: flex;
@@ -51,13 +42,6 @@
     }
   }
 
-  &__picture {
-    display: block;
-    width: 100%;
-    height: 100%;
-    min-height: 100vh;
-  }
-
   &__img {
     width: 100%;
     height: 100%;
@@ -66,17 +50,30 @@
     object-position: center top;
     display: block;
 
-    // Evitar que un header duplicado del arte interfiera visualmente
-    // se muestra solo la zona promocional del banner
     @media (max-width: 768px) {
       object-position: center center;
     }
   }
 }
 
-// ===========================
-// Botón "Continuar →"
-// ===========================
+.hero-campaign-preview-badge {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, .55);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, .72);
+  backdrop-filter: blur(12px);
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, .18);
+}
+
 .hero-campaign-skip-btn {
   position: absolute;
   bottom: clamp(20px, 4vh, 44px);
@@ -117,9 +114,6 @@
   }
 }
 
-// ===========================
-// Respetar prefers-reduced-motion
-// ===========================
 @media (prefers-reduced-motion: reduce) {
   .hero-campaign-slider-wrapper * {
     animation: none !important;
@@ -127,9 +121,6 @@
   }
 }
 
-// ===========================
-// Breakpoints para imágenes responsive
-// ===========================
 @media (max-width: 1024px) {
   .hero-campaign-slide__img {
     object-position: center center;
@@ -138,14 +129,10 @@
 
 @media (max-width: 430px) {
   .hero-campaign-slide__img {
-    min-height: calc(100svh);
-  }
-
-  .hero-campaign-slide__picture {
-    min-height: calc(100svh);
+    min-height: 100svh;
   }
 
   .hero-campaign-slider-slide.is-banner {
-    min-height: calc(100svh);
+    min-height: 100svh;
   }
 }
