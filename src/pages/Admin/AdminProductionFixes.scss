@@ -1,19 +1,11 @@
 @use '../../styles/_variables.scss' as *;
 
-/* Production isolation: the backoffice owns its layout and never inherits landing section rules.
-   Important: never target .admin-modal here. Dialogs are rendered in a portal and own their spacing. */
+/* The public landing now scopes its section rules under .site-layout.
+   Do not reset generic <section> elements here: dashboard cards and dialogs use them intentionally. */
 .react-admin-shell,
 .admin-login-page,
 .admin-modal-layer {
   line-height: 1.45;
-}
-
-.react-admin-shell section:not(.admin-modal),
-.admin-login-page section:not(.admin-modal) {
-  width: auto;
-  min-height: 0;
-  padding: 0;
-  display: block;
 }
 
 /* Every admin dialog is centered against the viewport, independent from tables/sidebar/layout. */
