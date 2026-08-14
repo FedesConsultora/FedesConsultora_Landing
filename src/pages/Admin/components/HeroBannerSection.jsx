@@ -53,6 +53,23 @@ function fileAsDataUrl(file) {
   })
 }
 
+function encodePreviewCampaign(value) {
+  const json = JSON.stringify(value)
+  const bytes = new TextEncoder().encode(json)
+  let binary = ''
+  bytes.forEach((byte) => { binary += String.fromCharCode(byte) })
+  return window.btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
+}
+
+function getPublicSiteBaseUrl() {
+  const configured = String(import.meta.env.VITE_PUBLIC_SITE_URL || '').trim().replace(/\/+$/, '')
+  if (configured) return configured
+  if (typeof window !== 'undefined' && !/^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname)) {
+    return window.location.origin
+  }
+  return 'https://fedesconsultora.com'
+}
+
 function MediaThumbPicker({ label, hint, mediaRecord, busy, error, onPickMedia, onClearMedia, onUploadFile }) {
   const inputRef = useRef(null)
   const [dragging, setDragging] = useState(false)
@@ -198,7 +215,10 @@ export default function HeroBannerSection({ campaign, bannerData = {}, desktopMe
     }
 
     const previewCampaign = {
-      ...campaign,
+      campaign_key: campaign?.campaign_key || 'preview',
+      name: campaign?.name || 'Vista previa',
+      landing_path: campaign?.landing_path || '/',
+      sort_order: campaign?.sort_order || 0,
       status: 'published',
       starts_at: new Date(Date.now() - 60000).toISOString(),
       ends_at: new Date(Date.now() + 3600000).toISOString(),
@@ -216,9 +236,12 @@ export default function HeroBannerSection({ campaign, bannerData = {}, desktopMe
 
     try {
       sessionStorage.setItem('fedes_hero_banner_preview', JSON.stringify(previewCampaign))
-      window.open('/?previewHero=1', '_blank')
+      const previewUrl = new URL('/', getPublicSiteBaseUrl())
+      previewUrl.searchParams.set('previewHero', '1')
+      previewUrl.searchParams.set('previewCampaign', encodePreviewCampaign(previewCampaign))
+      window.open(previewUrl.toString(), '_blank', 'noopener,noreferrer')
     } catch {
-      window.alert('No se pudo preparar la vista previa en esta sesión.')
+      window.alert('No se pudo preparar la vista previa de la Home.')
     }
   }
 
