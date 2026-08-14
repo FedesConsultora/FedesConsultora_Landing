@@ -6,14 +6,41 @@ import { getActiveHeroCampaigns } from '../../../services/galiciaApi'
 import { trackEvent } from '../../../services/googleApi'
 import './HeroCampaignSlider.scss'
 
+function hasRenderableHeroMedia(campaign) {
+  const banner = campaign?.hero_banner
+  return Boolean(
+    banner &&
+    (banner.desktop_url || banner.desktop_file_id) &&
+    (banner.mobile_url || banner.mobile_file_id),
+  )
+}
+
+function decodePreviewCampaign(value) {
+  if (!value) return null
+  try {
+    const normalized = value.replace(/-/g, '+').replace(/_/g, '/')
+    const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4)
+    const binary = window.atob(padded)
+    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0))
+    return JSON.parse(new TextDecoder().decode(bytes))
+  } catch {
+    return null
+  }
+}
+
 function readAdminPreviewCampaign() {
   try {
     const params = new URLSearchParams(window.location.search)
     if (params.get('previewHero') !== '1') return null
+
+    const encodedPreview = params.get('previewCampaign')
+    const queryPreview = decodePreviewCampaign(encodedPreview)
+    if (queryPreview && hasRenderableHeroMedia(queryPreview)) return queryPreview
+
     const raw = sessionStorage.getItem('fedes_hero_banner_preview')
     if (!raw) return null
     const parsed = JSON.parse(raw)
-    if (!parsed?.hero_banner?.desktop_url || !parsed?.hero_banner?.mobile_url) return null
+    if (!hasRenderableHeroMedia(parsed)) return null
     return parsed
   } catch {
     return null
