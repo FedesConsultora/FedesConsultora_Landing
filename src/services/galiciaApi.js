@@ -166,7 +166,8 @@ let campaignPromise = null
 
 export async function getGaliciaCampaign() {
   if (!campaignPromise) {
-    campaignPromise = jsonp({ api: 'campaign', key: 'galicia-2026' })
+    campaignPromise = jsonp({ api: 'campaign', key: 'galicia-2026', _ts: Date.now() })
+      .then((payload) => payload?.data || payload?.campaign || payload || null)
       .catch((error) => {
         console.info('[Galicia] Datos de campaña no disponibles todavía', error.message)
         return null
@@ -181,6 +182,13 @@ export async function getGaliciaCampaign() {
 let campaignsRequest = null
 let campaignsCache = { data: null, at: 0 }
 
+function normalizeCampaignCollection(payload) {
+  if (Array.isArray(payload)) return payload
+  if (Array.isArray(payload?.data)) return payload.data
+  if (Array.isArray(payload?.campaigns)) return payload.campaigns
+  return []
+}
+
 export async function getAllPublicCampaigns({ force = false } = {}) {
   const cacheFresh = campaignsCache.data && Date.now() - campaignsCache.at < PUBLIC_CAMPAIGNS_CACHE_TTL
   if (!force && cacheFresh) return campaignsCache.data
@@ -188,7 +196,7 @@ export async function getAllPublicCampaigns({ force = false } = {}) {
   if (!campaignsRequest) {
     campaignsRequest = jsonp({ api: 'campaigns', _ts: Date.now() })
       .then((payload) => {
-        const data = Array.isArray(payload) ? payload : []
+        const data = normalizeCampaignCollection(payload)
         campaignsCache = { data, at: Date.now() }
         return data
       })
@@ -217,14 +225,35 @@ export function getHeroCampaignSeenKey(campaign) {
   return `fedes_hero_banner_seen:${key}:${version}`
 }
 
+function mergeCampaigns(collection, directCampaign) {
+  const merged = normalizeCampaignCollection(collection).slice()
+  if (!directCampaign || typeof directCampaign !== 'object') return merged
+
+  const key = String(directCampaign.campaign_key || '').trim()
+  if (!key) return merged
+
+  const index = merged.findIndex((item) => String(item?.campaign_key || '').trim() === key)
+  if (index >= 0) merged[index] = directCampaign
+  else merged.push(directCampaign)
+  return merged
+}
+
 export async function getActiveHeroCampaigns() {
-  const all = await getAllPublicCampaigns({ force: true })
+  const [collectionResult, galiciaResult] = await Promise.allSettled([
+    getAllPublicCampaigns({ force: true }),
+    getGaliciaCampaign(),
+  ])
+
+  const collection = collectionResult.status === 'fulfilled' ? collectionResult.value : []
+  const galicia = galiciaResult.status === 'fulfilled' ? galiciaResult.value : null
+  const all = mergeCampaigns(collection, galicia)
+
   if (!Array.isArray(all)) return []
   const now = Date.now()
   const params = new URLSearchParams(window.location.search)
   const forceVisibility = params.get('forceHero') === '1'
 
-  return all.filter((c) => {
+  const active = all.filter((c) => {
     if (!c || c.status !== 'published') return false
     const banner = c.hero_banner
     if (!banner || !banner.enabled) return false
@@ -248,6 +277,23 @@ export async function getActiveHeroCampaigns() {
 
     return true
   }).sort((a, b) => (Number(a.sort_order) || 0) - (Number(b.sort_order) || 0))
+
+  if (forceVisibility) {
+    console.info('[Hero Campaigns] Diagnóstico forceHero', {
+      received: all.map((campaign) => ({
+        campaign_key: campaign?.campaign_key,
+        status: campaign?.status,
+        starts_at: campaign?.starts_at,
+        ends_at: campaign?.ends_at,
+        hero_enabled: campaign?.hero_banner?.enabled,
+        has_desktop: Boolean(campaign?.hero_banner?.desktop_url || campaign?.hero_banner?.desktop_file_id),
+        has_mobile: Boolean(campaign?.hero_banner?.mobile_url || campaign?.hero_banner?.mobile_file_id),
+      })),
+      active: active.map((campaign) => campaign?.campaign_key),
+    })
+  }
+
+  return active
 }
 
 export function createLeadId() {
