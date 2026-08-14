@@ -198,7 +198,7 @@ export default function HeroCampaignSlider({ normalHero }) {
               if (info.offset.x < -60) advanceNext(true)
             }}
           >
-            <HeroCampaignSlide campaign={currentCampaign} onBannerClick={handleBannerClick} />
+            <HeroCampaignSlide campaign={currentCampaign} onBannerClick={handleBannerClick} onImageUnavailable={() => advanceNext(false)} />
 
             {currentCampaign.__preview && <div className="hero-campaign-preview-badge">Vista previa del Backoffice</div>}
 
