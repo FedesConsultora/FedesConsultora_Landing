@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback, useEffect } from 'react'
-import { Save, X } from 'lucide-react'
+import { LoaderCircle, Save, X } from 'lucide-react'
 import { StatusPill } from './DataTable'
 import { adminCommand } from '../adminApi'
 import HeroBannerSection from './HeroBannerSection'
@@ -55,6 +55,7 @@ function serializeMetadataWithBanner(metadataRaw, bannerPatch) {
 export default function RecordModal({ def, mode, record, onClose, onSave, onUploadMedia }) {
   const [form, setForm] = useState(() => Object.fromEntries(def.fields.map((field) => [field.name, record?.[field.name] ?? ''])))
   const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
   const isView = mode === 'view'
   const isCampaign = def.key === 'campaigns'
   const title = mode === 'create' ? `Alta · ${def.label}` : mode === 'edit' ? `Modificar · ${def.label}` : `Consulta · ${def.label}`
@@ -98,17 +99,21 @@ export default function RecordModal({ def, mode, record, onClose, onSave, onUplo
     if (field === 'desktop_media_id') setDesktopMedia(mediaRecord)
     else setMobileMedia(mediaRecord)
 
-    const newBanner = { ...bannerData, [field]: mediaRecord?.media_id || '' }
-    setBannerData(newBanner)
-    setForm((current) => ({
-      ...current,
-      metadata_json: serializeMetadataWithBanner(current.metadata_json, newBanner),
-    }))
+    setBannerData((currentBanner) => {
+      const nextBanner = { ...currentBanner, [field]: mediaRecord?.media_id || '' }
+      setForm((current) => ({
+        ...current,
+        metadata_json: serializeMetadataWithBanner(current.metadata_json, nextBanner),
+      }))
+      return nextBanner
+    })
   }
 
   const submit = async (event) => {
     event.preventDefault()
+    if (saving) return
     setError('')
+    setSaving(true)
     try {
       const payload = {}
       editableFields.forEach((field) => {
@@ -118,9 +123,17 @@ export default function RecordModal({ def, mode, record, onClose, onSave, onUplo
         if (field.type === 'json' && value) JSON.parse(value)
         payload[field.name] = value
       })
+
+      // El banner es parte de metadata_json. Lo serializamos otra vez al guardar para no
+      // depender del timing de setState después de una subida o drag & drop.
+      if (isCampaign) {
+        payload.metadata_json = serializeMetadataWithBanner(form.metadata_json, bannerData)
+      }
+
       await onSave(payload)
     } catch (err) {
-      setError(err.message)
+      setError(err.message || 'No se pudieron guardar los cambios.')
+      setSaving(false)
     }
   }
 
@@ -131,19 +144,19 @@ export default function RecordModal({ def, mode, record, onClose, onSave, onUplo
   return (
     <AdminModalPortal>
       <div className="admin-modal-layer" role="presentation">
-        <button type="button" className="admin-modal-backdrop" aria-label="Cerrar" onClick={onClose} />
+        <button type="button" className="admin-modal-backdrop" aria-label="Cerrar" onClick={saving ? undefined : onClose} />
         <section className={`admin-modal ${isCampaign ? 'admin-modal--xl' : ''} admin-glass`} role="dialog" aria-modal="true">
-          <button type="button" className="admin-modal-close" onClick={onClose}><X size={19} /></button>
+          <button type="button" className="admin-modal-close" onClick={onClose} disabled={saving}><X size={19} /></button>
           <div className="admin-modal-heading"><span>{isView ? 'Consulta' : mode === 'create' ? 'Alta' : 'Modificación'}</span><h2>{title}</h2><p>{record?.[def.pk] || 'Nuevo registro'}</p></div>
           {isView ? (
             <div className="admin-detail-grid">{def.fields.map((field) => <article className={`admin-detail-card ${['textarea', 'json'].includes(field.type) ? 'is-wide' : ''}`} key={field.name}><label>{field.label}</label><DetailValue field={field} value={record?.[field.name]} /></article>)}</div>
           ) : (
-            <form onSubmit={submit}>
+            <form onSubmit={submit} noValidate>
               <div className="admin-form-grid">
                 {editableFields.map((field) => (
                   <label className={`admin-field ${['textarea', 'json'].includes(field.type) ? 'is-wide' : ''}`} key={field.name}>
                     <span>{field.label}</span>
-                    {field.type === 'boolean' ? <input type="checkbox" checked={asBoolean(form[field.name])} onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.checked }))} /> : field.type === 'select' ? <select value={formatInputValue(form[field.name], field.type)} onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.value }))}><option value="">Sin definir</option>{(field.options || []).filter(Boolean).map((option) => <option key={option} value={option}>{option}</option>)}</select> : ['textarea', 'json'].includes(field.type) ? <textarea className={field.type === 'json' ? 'is-code' : ''} value={formatInputValue(form[field.name], field.type)} onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.value }))} /> : <input type={field.type === 'datetime' ? 'datetime-local' : field.type} value={formatInputValue(form[field.name], field.type)} onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.value }))} />}
+                    {field.type === 'boolean' ? <input type="checkbox" checked={asBoolean(form[field.name])} onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.checked }))} /> : field.type === 'select' ? <select value={formatInputValue(form[field.name], field.type)} onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.value }))}><option value="">Sin definir</option>{(field.options || []).filter(Boolean).map((option) => <option key={option} value={option}>{option}</option>)}</select> : ['textarea', 'json'].includes(field.type) ? <textarea className={field.type === 'json' ? 'is-code' : ''} value={formatInputValue(form[field.name], field.type)} onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.value }))} /> : <input type={field.type === 'datetime' ? 'datetime-local' : field.type === 'url' ? 'text' : field.type} inputMode={field.type === 'url' ? 'url' : undefined} value={formatInputValue(form[field.name], field.type)} onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.value }))} />}
                   </label>
                 ))}
                 {mode === 'edit' && def.fields.filter((field) => field.readOnly).map((field) => <article className="admin-detail-card" key={field.name}><label>{field.label}</label><DetailValue field={field} value={record?.[field.name]} /></article>)}
@@ -163,8 +176,14 @@ export default function RecordModal({ def, mode, record, onClose, onSave, onUplo
                 </div>
               )}
 
-              {error && <div className="admin-form-error">{error}</div>}
-              <div className="admin-modal-actions"><button type="button" className="admin-button admin-button--ghost" onClick={onClose}>Cancelar</button><button type="submit" className="admin-button admin-button--primary"><Save size={16} />{mode === 'create' ? 'Crear registro' : 'Guardar cambios'}</button></div>
+              {error && <div className="admin-form-error admin-save-error">{error}</div>}
+              <div className="admin-modal-actions">
+                <button type="button" className="admin-button admin-button--ghost" onClick={onClose} disabled={saving}>Cancelar</button>
+                <button type="submit" className="admin-button admin-button--primary" disabled={saving}>
+                  {saving ? <LoaderCircle className="is-spinning" size={16} /> : <Save size={16} />}
+                  {saving ? 'Guardando…' : mode === 'create' ? 'Crear registro' : 'Guardar cambios'}
+                </button>
+              </div>
             </form>
           )}
         </section>
