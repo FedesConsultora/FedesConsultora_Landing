@@ -1,7 +1,8 @@
 import { useMemo, useRef, useState } from 'react'
-import { ExternalLink, FolderOpen, ImagePlus, LoaderCircle, Monitor, RefreshCw, Smartphone, ToggleLeft, ToggleRight, UploadCloud } from 'lucide-react'
+import { ExternalLink, Eye, FolderOpen, ImagePlus, LoaderCircle, Monitor, Smartphone, ToggleLeft, ToggleRight, UploadCloud } from 'lucide-react'
 import MediaSelectorModal from './MediaSelectorModal'
-import { getMediaImageUrl, withLocalMediaPreview } from '../mediaUtils'
+import ResilientMediaImage from './ResilientMediaImage'
+import { getMediaFileId, getMediaImageUrl, withLocalMediaPreview } from '../mediaUtils'
 
 function safeBool(value) {
   return value === true || value === 1 || String(value).toLowerCase() === 'true' || String(value) === '1'
@@ -53,14 +54,13 @@ function fileAsDataUrl(file) {
 }
 
 function MediaThumbPicker({ label, hint, mediaRecord, busy, error, onPickMedia, onClearMedia, onUploadFile }) {
-  const previewUrl = getMediaImageUrl(mediaRecord)
   const inputRef = useRef(null)
   const [dragging, setDragging] = useState(false)
-  const [previewFailed, setPreviewFailed] = useState(false)
+  const [previewUnavailable, setPreviewUnavailable] = useState(false)
 
   const acceptFile = async (file) => {
     setDragging(false)
-    setPreviewFailed(false)
+    setPreviewUnavailable(false)
     if (!file) return
     await onUploadFile(file)
   }
@@ -89,9 +89,9 @@ function MediaThumbPicker({ label, hint, mediaRecord, busy, error, onPickMedia, 
           onChange={(event) => acceptFile(event.target.files?.[0]).finally(() => { event.target.value = '' }).catch(() => {})}
         />
 
-        {previewUrl && !previewFailed ? (
+        {mediaRecord && !previewUnavailable ? (
           <>
-            <img src={previewUrl} alt={mediaRecord?.alt_text || label} className="hero-banner-thumb" onError={() => setPreviewFailed(true)} />
+            <ResilientMediaImage media={mediaRecord} alt={mediaRecord?.alt_text || label} className="hero-banner-thumb" onUnavailable={() => setPreviewUnavailable(true)} />
             <div className="hero-banner-media-info"><strong>{mediaRecord?.file_name || 'Imagen cargada'}</strong><span>Arrastrá otra imagen acá para reemplazarla.</span></div>
             <div className="hero-banner-media-actions">
               <button type="button" className="admin-button admin-button--ghost admin-button--sm" onClick={() => inputRef.current?.click()} disabled={busy}><UploadCloud size={13} />Subir otra</button>
@@ -99,11 +99,11 @@ function MediaThumbPicker({ label, hint, mediaRecord, busy, error, onPickMedia, 
               <button type="button" className="admin-button admin-button--ghost admin-button--sm" onClick={onClearMedia} disabled={busy}>Quitar</button>
             </div>
           </>
-        ) : mediaRecord && previewFailed ? (
+        ) : mediaRecord && previewUnavailable ? (
           <div className="hero-banner-drop-content">
             <ImagePlus size={30} />
-            <strong>La imagen está guardada, pero la vista previa no respondió</strong>
-            <span>{mediaRecord.file_name || 'Archivo de Media'}</span>
+            <strong>La imagen está guardada, pero Drive no permite mostrarla</strong>
+            <span>{mediaRecord.file_name || 'Archivo de Media'} · podés reemplazarla o revisar permisos.</span>
             <button type="button" className="admin-button admin-button--primary admin-button--sm" onClick={() => inputRef.current?.click()} disabled={busy}><UploadCloud size={13} />Reemplazar</button>
             <button type="button" className="hero-banner-library-link" onClick={onPickMedia} disabled={busy}><FolderOpen size={13} />Seleccionar desde Media</button>
           </div>
@@ -117,7 +117,7 @@ function MediaThumbPicker({ label, hint, mediaRecord, busy, error, onPickMedia, 
           </div>
         )}
 
-        {busy && previewUrl && <div className="hero-banner-upload-overlay"><LoaderCircle className="is-spinning" size={22} /><span>Subiendo…</span></div>}
+        {busy && mediaRecord && <div className="hero-banner-upload-overlay"><LoaderCircle className="is-spinning" size={22} /><span>Subiendo…</span></div>}
       </div>
       {error && <div className="hero-banner-upload-error">{error}</div>}
     </div>
@@ -126,10 +126,9 @@ function MediaThumbPicker({ label, hint, mediaRecord, busy, error, onPickMedia, 
 
 function BannerPreview({ desktopRecord, mobileRecord, mode }) {
   const record = mode === 'mobile' ? mobileRecord : desktopRecord
-  const url = getMediaImageUrl(record)
   const [failed, setFailed] = useState(false)
-  if (!url || failed) return <div className="hero-banner-preview-empty">Sin vista previa {mode === 'mobile' ? 'mobile' : 'desktop'} disponible</div>
-  return <div className={`hero-banner-preview-frame is-${mode}`}><img src={url} alt={`Preview ${mode}`} onError={() => setFailed(true)} /></div>
+  if (!record || failed) return <div className="hero-banner-preview-empty">Sin vista previa {mode === 'mobile' ? 'mobile' : 'desktop'} disponible</div>
+  return <div className={`hero-banner-preview-frame is-${mode}`}><ResilientMediaImage media={record} alt={`Preview ${mode}`} onUnavailable={() => setFailed(true)} /></div>
 }
 
 export default function HeroBannerSection({ campaign, bannerData = {}, desktopMedia, mobileMedia, onChange, onMediaChange, onUpload }) {
@@ -192,17 +191,52 @@ export default function HeroBannerSection({ campaign, bannerData = {}, desktopMe
     return result
   }
 
+  const previewInHome = () => {
+    if (!desktopMedia || !mobileMedia) {
+      setUploadErrors((current) => ({ ...current, desktop: !desktopMedia ? 'Cargá la imagen Desktop para previsualizar.' : current.desktop, mobile: !mobileMedia ? 'Cargá la imagen Mobile para previsualizar.' : current.mobile }))
+      return
+    }
+
+    const previewCampaign = {
+      ...campaign,
+      status: 'published',
+      starts_at: new Date(Date.now() - 60000).toISOString(),
+      ends_at: new Date(Date.now() + 3600000).toISOString(),
+      hero_banner: {
+        ...banner,
+        enabled: true,
+        desktop_url: getMediaImageUrl(desktopMedia),
+        mobile_url: getMediaImageUrl(mobileMedia),
+        desktop_file_id: getMediaFileId(desktopMedia),
+        mobile_file_id: getMediaFileId(mobileMedia),
+        click_url: banner.click_url || defaultClickUrl,
+      },
+      __preview: true,
+    }
+
+    try {
+      sessionStorage.setItem('fedes_hero_banner_preview', JSON.stringify(previewCampaign))
+      window.open('/?previewHero=1', '_blank')
+    } catch {
+      window.alert('No se pudo preparar la vista previa en esta sesión.')
+    }
+  }
+
   return (
     <div className="hero-banner-section">
       <div className="hero-banner-section-header">
-        <div className="hero-banner-section-title"><h3>Banner del Hero</h3><p>Se guarda con la campaña y sólo aparece cuando está activo, publicado y dentro de sus fechas.</p></div>
+        <div className="hero-banner-section-title"><h3>Banner del Hero</h3><p>Se guarda con la campaña y sólo aparece en producción cuando está activo, publicado y dentro de sus fechas.</p></div>
         <div className="hero-banner-header-actions">
           <BannerStatusChip status={bannerStatus} />
+          <button type="button" className="admin-button admin-button--ghost admin-button--sm" onClick={previewInHome}><Eye size={14} />Probar en Home</button>
           <button type="button" className={`hero-banner-toggle ${enabled ? 'is-on' : ''}`} onClick={() => handleChange('enabled', !enabled)} aria-pressed={enabled} aria-label={enabled ? 'Desactivar banner' : 'Activar banner'}>
             {enabled ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}<span>{enabled ? 'Mostrar en el Hero' : 'Ocultar del Hero'}</span>
           </button>
         </div>
       </div>
+
+      {bannerStatus === 'draft' && <div className="hero-banner-runtime-note"><strong>Está en borrador.</strong> No aparecerá en la Home pública hasta cambiar la campaña a <code>published</code>. Usá “Probar en Home” para verla sin publicarla.</div>}
+      {bannerStatus === 'missing_config' && <div className="hero-banner-runtime-note is-warning"><strong>Falta configuración.</strong> Para mostrarse necesita ambas imágenes y una fecha de inicio.</div>}
 
       <div className="hero-banner-media-row">
         <MediaThumbPicker
