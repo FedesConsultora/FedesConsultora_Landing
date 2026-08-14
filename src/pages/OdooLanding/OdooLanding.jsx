@@ -10,12 +10,17 @@ import {
     FaYoutube
 } from "react-icons/fa";
 import { Player } from "@lottiefiles/react-lottie-player";
-import { enviarConsultaContacto } from "../../services/googleApi";
+import { enviarConsultaContacto, trackEvent } from "../../services/googleApi";
 import lottieSuccess from "../../assets/lotties/coheteThankYou.json";
 import "./OdooLanding.scss";
 import CampoImg from '../../assets/img/campo/campo.webp'
 
 const OdooLanding = () => {
+    /* ---------- tracking de visitas ---------- */
+    React.useEffect(() => {
+        trackEvent('Visita Página', 'Landing Odoo', '/odoo');
+    }, []);
+
     /* ---------- state ---------- */
     const [formData, setFormData] = useState({
         nombre: "",
