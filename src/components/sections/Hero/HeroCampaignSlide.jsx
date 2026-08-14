@@ -12,7 +12,7 @@ function imageCandidates(url, fileId) {
   return [...new Set(candidates.filter(Boolean))]
 }
 
-function CampaignImage({ desktopUrl, mobileUrl, desktopFileId, mobileFileId, alt }) {
+function CampaignImage({ desktopUrl, mobileUrl, desktopFileId, mobileFileId, alt, onUnavailable }) {
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
   const candidates = useMemo(
     () => imageCandidates(isMobile ? mobileUrl : desktopUrl, isMobile ? mobileFileId : desktopFileId),
@@ -20,7 +20,10 @@ function CampaignImage({ desktopUrl, mobileUrl, desktopFileId, mobileFileId, alt
   )
   const [index, setIndex] = useState(0)
 
-  if (!candidates.length || index >= candidates.length) return null
+  if (!candidates.length || index >= candidates.length) {
+    onUnavailable?.()
+    return null
+  }
 
   return (
     <img
@@ -35,7 +38,7 @@ function CampaignImage({ desktopUrl, mobileUrl, desktopFileId, mobileFileId, alt
   )
 }
 
-export default function HeroCampaignSlide({ campaign, onBannerClick }) {
+export default function HeroCampaignSlide({ campaign, onBannerClick, onImageUnavailable }) {
   if (!campaign || !campaign.hero_banner) return null
 
   const banner = campaign.hero_banner
@@ -60,6 +63,7 @@ export default function HeroCampaignSlide({ campaign, onBannerClick }) {
           desktopFileId={banner.desktop_file_id}
           mobileFileId={banner.mobile_file_id}
           alt={altText}
+          onUnavailable={onImageUnavailable}
         />
       </a>
     </div>
