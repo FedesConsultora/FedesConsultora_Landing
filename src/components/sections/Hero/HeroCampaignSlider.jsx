@@ -6,6 +6,20 @@ import { getActiveHeroCampaigns } from '../../../services/galiciaApi'
 import { trackEvent } from '../../../services/googleApi'
 import './HeroCampaignSlider.scss'
 
+function readAdminPreviewCampaign() {
+  try {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('previewHero') !== '1') return null
+    const raw = sessionStorage.getItem('fedes_hero_banner_preview')
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    if (!parsed?.hero_banner?.desktop_url || !parsed?.hero_banner?.mobile_url) return null
+    return parsed
+  } catch {
+    return null
+  }
+}
+
 export default function HeroCampaignSlider({ normalHero }) {
   const [campaigns, setCampaigns] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -20,8 +34,8 @@ export default function HeroCampaignSlider({ normalHero }) {
     }
   }, [])
 
-  const markBannerAsSeen = useCallback((campaignKey) => {
-    if (!campaignKey) return
+  const markBannerAsSeen = useCallback((campaignKey, isPreview = false) => {
+    if (!campaignKey || isPreview) return
     try {
       sessionStorage.setItem(`fedes_hero_banner_seen:${campaignKey}`, 'true')
     } catch {
@@ -35,21 +49,23 @@ export default function HeroCampaignSlider({ normalHero }) {
       setCurrentIndex((prevIndex) => {
         const currentCampaign = currentCampaigns[prevIndex]
         if (currentCampaign) {
-          markBannerAsSeen(currentCampaign.campaign_key)
-          trackEvent(
-            'Hero Campaign Banner',
-            isManual ? 'hero_banner_manual_advance' : 'hero_banner_auto_advance',
-            currentCampaign.campaign_key,
-            {
-              campaign_key: currentCampaign.campaign_key,
-              source: 'home_banner',
-              utm_source: 'fedesconsultora',
-              utm_medium: 'website',
-              utm_campaign: currentCampaign.campaign_key,
-              device_type: window.innerWidth <= 768 ? 'mobile' : 'desktop',
-              page_path: window.location.pathname,
-            }
-          )
+          markBannerAsSeen(currentCampaign.campaign_key, currentCampaign.__preview)
+          if (!currentCampaign.__preview) {
+            trackEvent(
+              'Hero Campaign Banner',
+              isManual ? 'hero_banner_manual_advance' : 'hero_banner_auto_advance',
+              currentCampaign.campaign_key,
+              {
+                campaign_key: currentCampaign.campaign_key,
+                source: 'home_banner',
+                utm_source: 'fedesconsultora',
+                utm_medium: 'website',
+                utm_campaign: currentCampaign.campaign_key,
+                device_type: window.innerWidth <= 768 ? 'mobile' : 'desktop',
+                page_path: window.location.pathname,
+              }
+            )
+          }
         }
         return prevIndex + 1
       })
@@ -57,13 +73,18 @@ export default function HeroCampaignSlider({ normalHero }) {
     })
   }, [clearCurrentTimer, markBannerAsSeen])
 
-  // Cargar campañas activas vigentes
   useEffect(() => {
     let active = true
+    const previewCampaign = readAdminPreviewCampaign()
+
+    if (previewCampaign) {
+      setCampaigns([previewCampaign])
+      setLoaded(true)
+      return () => { active = false }
+    }
+
     const timeoutId = setTimeout(() => {
-      if (active && !loaded) {
-        setLoaded(true)
-      }
+      if (active) setLoaded(true)
     }, 2500)
 
     getActiveHeroCampaigns()
@@ -81,9 +102,8 @@ export default function HeroCampaignSlider({ normalHero }) {
       active = false
       clearTimeout(timeoutId)
     }
-  }, [loaded])
+  }, [])
 
-  // Manejo de temporizador por slide activo
   useEffect(() => {
     if (!loaded) return
     clearCurrentTimer()
@@ -91,21 +111,22 @@ export default function HeroCampaignSlider({ normalHero }) {
     if (currentIndex < campaigns.length) {
       const activeCampaign = campaigns[currentIndex]
       if (activeCampaign) {
-        // Registrar impresión del banner
-        trackEvent(
-          'Hero Campaign Banner',
-          'hero_banner_impression',
-          activeCampaign.campaign_key,
-          {
-            campaign_key: activeCampaign.campaign_key,
-            source: 'home_banner',
-            utm_source: 'fedesconsultora',
-            utm_medium: 'website',
-            utm_campaign: activeCampaign.campaign_key,
-            device_type: window.innerWidth <= 768 ? 'mobile' : 'desktop',
-            page_path: window.location.pathname,
-          }
-        )
+        if (!activeCampaign.__preview) {
+          trackEvent(
+            'Hero Campaign Banner',
+            'hero_banner_impression',
+            activeCampaign.campaign_key,
+            {
+              campaign_key: activeCampaign.campaign_key,
+              source: 'home_banner',
+              utm_source: 'fedesconsultora',
+              utm_medium: 'website',
+              utm_campaign: activeCampaign.campaign_key,
+              device_type: window.innerWidth <= 768 ? 'mobile' : 'desktop',
+              page_path: window.location.pathname,
+            }
+          )
+        }
 
         const seconds = Number(activeCampaign.hero_banner?.display_seconds) || 6
         timerRef.current = setTimeout(() => {
@@ -118,7 +139,8 @@ export default function HeroCampaignSlider({ normalHero }) {
   }, [loaded, currentIndex, campaigns, clearCurrentTimer, advanceNext])
 
   const handleBannerClick = (campaign, clickUrl) => {
-    markBannerAsSeen(campaign.campaign_key)
+    markBannerAsSeen(campaign.campaign_key, campaign.__preview)
+    if (campaign.__preview) return
     trackEvent(
       'Hero Campaign Banner',
       'hero_banner_click',
@@ -136,7 +158,6 @@ export default function HeroCampaignSlider({ normalHero }) {
     )
   }
 
-  // Si no hay campañas o ya pasó por todas, mostrar directamente el Hero normal
   const isShowingBanner = loaded && campaigns.length > 0 && currentIndex < campaigns.length
   const currentCampaign = isShowingBanner ? campaigns[currentIndex] : null
 
@@ -174,15 +195,12 @@ export default function HeroCampaignSlider({ normalHero }) {
             drag={window.innerWidth <= 768 ? 'x' : false}
             dragConstraints={{ left: 0, right: 0 }}
             onDragEnd={(e, info) => {
-              if (info.offset.x < -60) {
-                advanceNext(true)
-              }
+              if (info.offset.x < -60) advanceNext(true)
             }}
           >
-            <HeroCampaignSlide
-              campaign={currentCampaign}
-              onBannerClick={handleBannerClick}
-            />
+            <HeroCampaignSlide campaign={currentCampaign} onBannerClick={handleBannerClick} />
+
+            {currentCampaign.__preview && <div className="hero-campaign-preview-badge">Vista previa del Backoffice</div>}
 
             <button
               type="button"
@@ -198,20 +216,8 @@ export default function HeroCampaignSlider({ normalHero }) {
           <motion.div
             key="normal-hero"
             className="hero-campaign-slider-slide is-normal-hero"
-            initial={
-              campaigns.length > 0 && !shouldReduceMotion
-                ? slideVariants.initialHero
-                : shouldReduceMotion && campaigns.length > 0
-                ? slideVariants.initial
-                : false
-            }
-            animate={
-              campaigns.length > 0 && !shouldReduceMotion
-                ? slideVariants.animateHero
-                : shouldReduceMotion && campaigns.length > 0
-                ? slideVariants.animate
-                : { x: 0, opacity: 1 }
-            }
+            initial={campaigns.length > 0 && !shouldReduceMotion ? slideVariants.initialHero : shouldReduceMotion && campaigns.length > 0 ? slideVariants.initial : false}
+            animate={campaigns.length > 0 && !shouldReduceMotion ? slideVariants.animateHero : shouldReduceMotion && campaigns.length > 0 ? slideVariants.animate : { x: 0, opacity: 1 }}
           >
             {normalHero}
           </motion.div>
@@ -220,4 +226,3 @@ export default function HeroCampaignSlider({ normalHero }) {
     </div>
   )
 }
-
