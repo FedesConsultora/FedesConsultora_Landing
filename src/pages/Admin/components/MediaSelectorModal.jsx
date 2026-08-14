@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Image, Search, Upload, X } from 'lucide-react'
 import { adminCommand } from '../adminApi'
-import { getMediaImageUrl, withLocalMediaPreview } from '../mediaUtils'
+import { withLocalMediaPreview } from '../mediaUtils'
 import AdminModalPortal from './AdminModalPortal'
+import ResilientMediaImage from './ResilientMediaImage'
 
 function validateImage(file) {
   if (!file) throw new Error('Seleccioná una imagen.')
@@ -41,7 +42,6 @@ export default function MediaSelectorModal({ onClose, onSelect, onUpload, entity
 
   useEffect(() => {
     fetchMedia().catch(() => {})
-    // only on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -105,7 +105,7 @@ export default function MediaSelectorModal({ onClose, onSelect, onUpload, entity
             <button type="button" className={`admin-tab-btn ${tab === 'upload' ? 'is-active' : ''}`} onClick={() => setTab('upload')}><Upload size={14} />Subir nueva</button>
           </div>
 
-          {tab === 'browse' && <div className="admin-media-selector-browse"><div className="admin-media-selector-search"><Search size={15} /><input type="search" placeholder="Buscar por nombre o texto alternativo…" value={search} onChange={(event) => setSearch(event.target.value)} /></div>{loading && <div className="admin-empty-inline">Cargando imágenes…</div>}{error && <div className="admin-form-error">{error}</div>}{!loading && !error && <div className="admin-media-grid">{filteredMedia.length === 0 ? <div className="admin-empty-inline">No hay imágenes disponibles.</div> : filteredMedia.map((media) => <button type="button" key={media.media_id} className="admin-media-thumb" onClick={() => { onSelect(media); onClose() }} title={media.file_name}><img src={getMediaImageUrl(media, 'w640')} alt={media.alt_text || media.file_name} loading="lazy" /><span>{media.file_name?.slice(0, 32) || media.media_id}</span></button>)}</div>}</div>}
+          {tab === 'browse' && <div className="admin-media-selector-browse"><div className="admin-media-selector-search"><Search size={15} /><input type="search" placeholder="Buscar por nombre o texto alternativo…" value={search} onChange={(event) => setSearch(event.target.value)} /></div>{loading && <div className="admin-empty-inline">Cargando imágenes…</div>}{error && <div className="admin-form-error">{error}</div>}{!loading && !error && <div className="admin-media-grid">{filteredMedia.length === 0 ? <div className="admin-empty-inline">No hay imágenes disponibles.</div> : filteredMedia.map((media) => <button type="button" key={media.media_id} className="admin-media-thumb" onClick={() => { onSelect(media); onClose() }} title={media.file_name}><ResilientMediaImage media={media} alt={media.alt_text || media.file_name} size="w640" /><span>{media.file_name?.slice(0, 32) || media.media_id}</span></button>)}</div>}</div>}
 
           {tab === 'upload' && <form onSubmit={handleUpload} className="admin-media-selector-upload"><div className={`admin-upload-drop ${dragging ? 'is-dragging' : ''}`} onDragEnter={(event) => { event.preventDefault(); setDragging(true) }} onDragOver={(event) => { event.preventDefault(); setDragging(true) }} onDragLeave={() => setDragging(false)} onDrop={(event) => { event.preventDefault(); setDragging(false); handleFile(event.dataTransfer.files?.[0]) }}><Upload size={30} /><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={(event) => handleFile(event.target.files?.[0])} /><strong>{uploadFile?.name || 'Arrastrá una imagen o hacé click'}</strong><span>{uploadFile ? `${Math.round(uploadFile.size / 1024)} KB` : 'PNG, JPG, WEBP · máximo 8 MB'}</span></div>{uploadFile && <div className="admin-upload-preview"><img src={URL.createObjectURL(uploadFile)} alt="Vista previa" /></div>}<div className="admin-form-grid"><label className="admin-field is-wide"><span>Texto alternativo</span><input value={uploadAlt} onChange={(event) => setUploadAlt(event.target.value)} placeholder="Descripción accesible de la imagen" /></label></div>{uploadError && <div className="admin-form-error">{uploadError}</div>}<div className="admin-modal-actions"><button type="button" className="admin-button admin-button--ghost" onClick={onClose}>Cancelar</button><button type="submit" className="admin-button admin-button--primary" disabled={uploadBusy}><Upload size={15} />{uploadBusy ? 'Subiendo…' : 'Subir y seleccionar'}</button></div></form>}
         </section>
