@@ -68,13 +68,10 @@ export default function RecordModal({ def, mode, record, onClose, onSave, onUplo
   const loadMedia = useCallback(async (field, mediaId) => {
     if (!mediaId) return
     try {
-      const result = await adminCommand('queryTable', {
-        tableKey: 'media',
-        query: { filters: {}, search: mediaId, pageSize: 10 },
-      })
-      const match = (result.rows || []).find((row) => row.media_id === mediaId)
-      if (field === 'desktop_media_id') setDesktopMedia(match || null)
-      else setMobileMedia(match || null)
+      const result = await adminCommand('record', { tableKey: 'media', id: mediaId })
+      const media = result?.record || null
+      if (field === 'desktop_media_id') setDesktopMedia(media)
+      else setMobileMedia(media)
     } catch {
       // El editor sigue usable aunque falle una miniatura existente.
     }
@@ -124,8 +121,6 @@ export default function RecordModal({ def, mode, record, onClose, onSave, onUplo
         payload[field.name] = value
       })
 
-      // El banner es parte de metadata_json. Lo serializamos otra vez al guardar para no
-      // depender del timing de setState después de una subida o drag & drop.
       if (isCampaign) {
         payload.metadata_json = serializeMetadataWithBanner(form.metadata_json, bannerData)
       }
