@@ -1,19 +1,53 @@
 @use '../../styles/_variables.scss' as *;
 
-/* Production isolation: the backoffice owns its layout and never inherits landing section rules. */
+/* Production isolation: the backoffice owns its layout and never inherits landing section rules.
+   Important: never target .admin-modal here. Dialogs are rendered in a portal and own their spacing. */
 .react-admin-shell,
 .admin-login-page,
 .admin-modal-layer {
   line-height: 1.45;
 }
 
-.react-admin-shell section,
-.admin-modal-layer section,
-.admin-login-page section {
+.react-admin-shell section:not(.admin-modal),
+.admin-login-page section:not(.admin-modal) {
   width: auto;
   min-height: 0;
   padding: 0;
   display: block;
+}
+
+/* Every admin dialog is centered against the viewport, independent from tables/sidebar/layout. */
+.admin-modal-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: clamp(16px, 3vw, 38px);
+}
+
+.admin-modal-layer > .admin-modal-backdrop {
+  position: fixed;
+  inset: 0;
+}
+
+.admin-modal-layer > .admin-modal {
+  position: relative;
+  z-index: 1;
+  flex: 0 1 auto;
+  width: min(1180px, 100%);
+  max-height: calc(100dvh - clamp(32px, 6vw, 76px));
+  margin: auto;
+  padding: clamp(24px, 2.5vw, 34px);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.admin-modal-layer > .admin-modal.admin-modal--xl {
+  width: min(1280px, 100%);
 }
 
 /* Tables stay inside their card instead of squeezing columns into the viewport. */
@@ -59,18 +93,8 @@
 }
 
 /* CRUD dialogs get enough space and collapse cleanly on smaller screens. */
-.admin-modal {
-  width: min(1180px, calc(100vw - 40px));
-  max-height: calc(100vh - 40px);
-  padding: 28px;
-
-  form {
-    padding-bottom: 90px; /* Previene que el footer sticky tape los inputs al hacer scroll al fondo */
-
-    @media (max-width: 900px) {
-      padding-bottom: 135px; /* Más espacio en mobile ya que los botones se apilan verticalmente */
-    }
-  }
+.admin-modal form {
+  padding-bottom: 90px;
 }
 
 .admin-form-grid,
@@ -96,14 +120,15 @@
 
 .admin-modal-heading {
   margin-bottom: 22px;
+  padding-right: 52px;
 }
 
 .admin-modal-actions {
   position: sticky;
-  bottom: -28px;
+  bottom: calc(-1 * clamp(24px, 2.5vw, 34px));
   z-index: 5;
-  margin: 24px -28px -28px;
-  padding: 16px 28px;
+  margin: 24px calc(-1 * clamp(24px, 2.5vw, 34px)) calc(-1 * clamp(24px, 2.5vw, 34px));
+  padding: 16px clamp(24px, 2.5vw, 34px);
   border-top: 1px solid #e5eaf0;
   background: rgba(252, 253, 255, .97);
   backdrop-filter: blur(14px);
@@ -121,10 +146,19 @@
     grid-template-columns: 1fr;
   }
 
-  .admin-modal {
-    width: calc(100vw - 20px);
-    max-height: calc(100vh - 20px);
+  .admin-modal-layer {
+    align-items: flex-start;
+    padding: 10px;
+  }
+
+  .admin-modal-layer > .admin-modal {
+    width: 100%;
+    max-height: calc(100dvh - 20px);
     padding: 20px;
+  }
+
+  .admin-modal form {
+    padding-bottom: 135px;
   }
 
   .admin-modal-actions {
