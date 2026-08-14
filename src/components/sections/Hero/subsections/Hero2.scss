@@ -52,16 +52,8 @@
                 font-weight: 600;
                 max-width: 650px;
                 width: 100%;
-                cursor: pointer;
-                transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+                cursor: default;
                 border: 1px solid rgba(0, 0, 0, 0.03);
-
-                &:hover {
-                    transform: translateY(-5px) scale(1.02);
-                    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
-                    color: #19222B;
-                    border-color: rgba(58, 84, 255, 0.1);
-                }
 
                 @media (max-width: 768px) {
                     padding: 10px 26px;
