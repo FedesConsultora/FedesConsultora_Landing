@@ -5,6 +5,7 @@ const POLL_INTERVAL = 900
 const POLL_ATTEMPTS = 10
 const LATE_CALLBACK_TTL = 60000
 const GALICIA_LANDING_PATH = '/bonificacion-galicia'
+const PUBLIC_CAMPAIGNS_CACHE_TTL = 30000
 
 function assertApiUrl() {
   if (!API_URL) {
@@ -170,27 +171,58 @@ export async function getGaliciaCampaign() {
         console.info('[Galicia] Datos de campaña no disponibles todavía', error.message)
         return null
       })
+      .finally(() => {
+        campaignPromise = null
+      })
   }
   return campaignPromise
 }
 
-let campaignsPromise = null
+let campaignsRequest = null
+let campaignsCache = { data: null, at: 0 }
 
-export async function getAllPublicCampaigns() {
-  if (!campaignsPromise) {
-    campaignsPromise = jsonp({ api: 'campaigns' })
+export async function getAllPublicCampaigns({ force = false } = {}) {
+  const cacheFresh = campaignsCache.data && Date.now() - campaignsCache.at < PUBLIC_CAMPAIGNS_CACHE_TTL
+  if (!force && cacheFresh) return campaignsCache.data
+
+  if (!campaignsRequest) {
+    campaignsRequest = jsonp({ api: 'campaigns', _ts: Date.now() })
+      .then((payload) => {
+        const data = Array.isArray(payload) ? payload : []
+        campaignsCache = { data, at: Date.now() }
+        return data
+      })
       .catch((error) => {
         console.info('[Campaigns] Error cargando campañas públicas:', error.message)
-        return []
+        return Array.isArray(campaignsCache.data) ? campaignsCache.data : []
+      })
+      .finally(() => {
+        campaignsRequest = null
       })
   }
-  return campaignsPromise
+
+  return campaignsRequest
+}
+
+export function getHeroCampaignSeenKey(campaign) {
+  const key = String(campaign?.campaign_key || '').trim()
+  if (!key) return ''
+  const version = String(
+    campaign?.updated_at ||
+    campaign?.starts_at ||
+    campaign?.hero_banner?.desktop_media_id ||
+    campaign?.hero_banner?.mobile_media_id ||
+    'v1',
+  ).trim()
+  return `fedes_hero_banner_seen:${key}:${version}`
 }
 
 export async function getActiveHeroCampaigns() {
-  const all = await getAllPublicCampaigns()
+  const all = await getAllPublicCampaigns({ force: true })
   if (!Array.isArray(all)) return []
   const now = Date.now()
+  const params = new URLSearchParams(window.location.search)
+  const forceVisibility = params.get('forceHero') === '1'
 
   return all.filter((c) => {
     if (!c || c.status !== 'published') return false
@@ -205,10 +237,10 @@ export async function getActiveHeroCampaigns() {
     const endsAt = Date.parse(c.ends_at || '')
     if (Number.isFinite(endsAt) && endsAt < now) return false
 
-    if (banner.show_once_per_session) {
+    if (banner.show_once_per_session && !forceVisibility) {
       try {
-        const seen = sessionStorage.getItem(`fedes_hero_banner_seen:${c.campaign_key}`)
-        if (seen === 'true') return false
+        const seenKey = getHeroCampaignSeenKey(c)
+        if (seenKey && sessionStorage.getItem(seenKey) === 'true') return false
       } catch {
         /* ignore storage access error */
       }
