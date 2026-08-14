@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { ExternalLink, FolderOpen, ImagePlus, LoaderCircle, Monitor, RefreshCw, Smartphone, ToggleLeft, ToggleRight, UploadCloud } from 'lucide-react'
 import MediaSelectorModal from './MediaSelectorModal'
+import { getMediaImageUrl, withLocalMediaPreview } from '../mediaUtils'
 
 function safeBool(value) {
   return value === true || value === 1 || String(value).toLowerCase() === 'true' || String(value) === '1'
@@ -52,12 +53,14 @@ function fileAsDataUrl(file) {
 }
 
 function MediaThumbPicker({ label, hint, mediaRecord, busy, error, onPickMedia, onClearMedia, onUploadFile }) {
-  const previewUrl = mediaRecord?.public_url || mediaRecord?.drive_url || ''
+  const previewUrl = getMediaImageUrl(mediaRecord)
   const inputRef = useRef(null)
   const [dragging, setDragging] = useState(false)
+  const [previewFailed, setPreviewFailed] = useState(false)
 
   const acceptFile = async (file) => {
     setDragging(false)
+    setPreviewFailed(false)
     if (!file) return
     await onUploadFile(file)
   }
@@ -86,16 +89,24 @@ function MediaThumbPicker({ label, hint, mediaRecord, busy, error, onPickMedia, 
           onChange={(event) => acceptFile(event.target.files?.[0]).finally(() => { event.target.value = '' }).catch(() => {})}
         />
 
-        {previewUrl ? (
+        {previewUrl && !previewFailed ? (
           <>
-            <img src={previewUrl} alt={mediaRecord.alt_text || label} className="hero-banner-thumb" />
-            <div className="hero-banner-media-info"><strong>{mediaRecord.file_name || 'Imagen cargada'}</strong><span>Arrastrá otra imagen acá para reemplazarla.</span></div>
+            <img src={previewUrl} alt={mediaRecord?.alt_text || label} className="hero-banner-thumb" onError={() => setPreviewFailed(true)} />
+            <div className="hero-banner-media-info"><strong>{mediaRecord?.file_name || 'Imagen cargada'}</strong><span>Arrastrá otra imagen acá para reemplazarla.</span></div>
             <div className="hero-banner-media-actions">
               <button type="button" className="admin-button admin-button--ghost admin-button--sm" onClick={() => inputRef.current?.click()} disabled={busy}><UploadCloud size={13} />Subir otra</button>
               <button type="button" className="admin-button admin-button--ghost admin-button--sm" onClick={onPickMedia} disabled={busy}><FolderOpen size={13} />Biblioteca</button>
               <button type="button" className="admin-button admin-button--ghost admin-button--sm" onClick={onClearMedia} disabled={busy}>Quitar</button>
             </div>
           </>
+        ) : mediaRecord && previewFailed ? (
+          <div className="hero-banner-drop-content">
+            <ImagePlus size={30} />
+            <strong>La imagen está guardada, pero la vista previa no respondió</strong>
+            <span>{mediaRecord.file_name || 'Archivo de Media'}</span>
+            <button type="button" className="admin-button admin-button--primary admin-button--sm" onClick={() => inputRef.current?.click()} disabled={busy}><UploadCloud size={13} />Reemplazar</button>
+            <button type="button" className="hero-banner-library-link" onClick={onPickMedia} disabled={busy}><FolderOpen size={13} />Seleccionar desde Media</button>
+          </div>
         ) : (
           <div className="hero-banner-drop-content">
             {busy ? <LoaderCircle className="is-spinning" size={30} /> : <ImagePlus size={30} />}
@@ -114,11 +125,11 @@ function MediaThumbPicker({ label, hint, mediaRecord, busy, error, onPickMedia, 
 }
 
 function BannerPreview({ desktopRecord, mobileRecord, mode }) {
-  const url = mode === 'mobile'
-    ? (mobileRecord?.public_url || mobileRecord?.drive_url)
-    : (desktopRecord?.public_url || desktopRecord?.drive_url)
-  if (!url) return <div className="hero-banner-preview-empty">Sin imagen {mode === 'mobile' ? 'mobile' : 'desktop'}</div>
-  return <div className={`hero-banner-preview-frame is-${mode}`}><img src={url} alt={`Preview ${mode}`} /></div>
+  const record = mode === 'mobile' ? mobileRecord : desktopRecord
+  const url = getMediaImageUrl(record)
+  const [failed, setFailed] = useState(false)
+  if (!url || failed) return <div className="hero-banner-preview-empty">Sin vista previa {mode === 'mobile' ? 'mobile' : 'desktop'} disponible</div>
+  return <div className={`hero-banner-preview-frame is-${mode}`}><img src={url} alt={`Preview ${mode}`} onError={() => setFailed(true)} /></div>
 }
 
 export default function HeroBannerSection({ campaign, bannerData = {}, desktopMedia, mobileMedia, onChange, onMediaChange, onUpload }) {
@@ -161,7 +172,8 @@ export default function HeroBannerSection({ campaign, bannerData = {}, desktopMe
         entityId: campaign?.campaign_id || campaign?.campaign_key || '',
       })
       if (!result?.media?.media_id) throw new Error('La subida terminó pero no se recibió el registro de Media.')
-      onMediaChange(kind === 'desktop' ? 'desktop_media_id' : 'mobile_media_id', result.media)
+      const media = withLocalMediaPreview(result.media, base64)
+      onMediaChange(kind === 'desktop' ? 'desktop_media_id' : 'mobile_media_id', media)
     } catch (error) {
       setUploadErrors((current) => ({ ...current, [kind]: error.message || 'No se pudo subir la imagen.' }))
       throw error
@@ -173,7 +185,8 @@ export default function HeroBannerSection({ campaign, bannerData = {}, desktopMe
   const handleUploadAndSelect = async (payload) => {
     const result = await onUpload(payload)
     if (mediaPicker && result?.media) {
-      onMediaChange(mediaPicker === 'desktop' ? 'desktop_media_id' : 'mobile_media_id', result.media)
+      const media = withLocalMediaPreview(result.media, payload.base64)
+      onMediaChange(mediaPicker === 'desktop' ? 'desktop_media_id' : 'mobile_media_id', media)
       setMediaPicker(null)
     }
     return result
@@ -218,7 +231,7 @@ export default function HeroBannerSection({ campaign, bannerData = {}, desktopMe
         <label className="admin-field is-wide"><span>Texto alternativo</span><input type="text" value={banner.alt || ''} onChange={(event) => handleChange('alt', event.target.value)} placeholder="Beneficio exclusivo Galicia para participantes de la charla" /></label>
         <label className="admin-field"><span>Tiempo visible (segundos)</span><input type="number" min={2} max={30} value={banner.display_seconds ?? 6} onChange={(event) => handleChange('display_seconds', Number(event.target.value))} /></label>
         <label className="admin-check-field"><input type="checkbox" checked={banner.show_once_per_session !== false} onChange={(event) => handleChange('show_once_per_session', event.target.checked)} /><span>Mostrar sólo una vez por sesión</span></label>
-        <label className="admin-field is-wide"><span>URL de destino (opcional)</span><div className="hero-banner-url-row"><input type="url" value={banner.click_url || ''} onChange={(event) => handleChange('click_url', event.target.value)} placeholder={defaultClickUrl || '/bonificacion-galicia?source=home_banner…'} />{(banner.click_url || defaultClickUrl) && <a href={banner.click_url || defaultClickUrl} target="_blank" rel="noopener noreferrer" className="admin-button admin-button--ghost" title="Abrir URL"><ExternalLink size={14} /></a>}</div>{!banner.click_url && defaultClickUrl && <small className="admin-field-hint">Se usará: {defaultClickUrl}</small>}</label>
+        <label className="admin-field is-wide"><span>URL de destino (opcional)</span><div className="hero-banner-url-row"><input type="text" inputMode="url" value={banner.click_url || ''} onChange={(event) => handleChange('click_url', event.target.value)} placeholder={defaultClickUrl || '/bonificacion-galicia?source=home_banner…'} />{(banner.click_url || defaultClickUrl) && <a href={banner.click_url || defaultClickUrl} target="_blank" rel="noopener noreferrer" className="admin-button admin-button--ghost" title="Abrir URL"><ExternalLink size={14} /></a>}</div>{!banner.click_url && defaultClickUrl && <small className="admin-field-hint">Se usará: {defaultClickUrl}</small>}</label>
         <label className="admin-check-field"><input type="checkbox" checked={safeBool(banner.open_in_new_tab)} onChange={(event) => handleChange('open_in_new_tab', event.target.checked)} /><span>Abrir en nueva pestaña</span></label>
       </div>
 
