@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import './HeroCampaignSlider.scss'
 
 function imageCandidates(url, fileId) {
@@ -19,11 +19,17 @@ function CampaignImage({ desktopUrl, mobileUrl, desktopFileId, mobileFileId, alt
     [isMobile, mobileUrl, desktopUrl, mobileFileId, desktopFileId],
   )
   const [index, setIndex] = useState(0)
+  const exhausted = !candidates.length || index >= candidates.length
 
-  if (!candidates.length || index >= candidates.length) {
-    onUnavailable?.()
-    return null
-  }
+  useEffect(() => {
+    setIndex(0)
+  }, [candidates])
+
+  useEffect(() => {
+    if (exhausted) onUnavailable?.()
+  }, [exhausted, onUnavailable])
+
+  if (exhausted) return null
 
   return (
     <img
