@@ -29,7 +29,13 @@ export function getMediaImageCandidates(media, size = 'w2000') {
 }
 
 export function getMediaImageUrl(media, size = 'w2000') {
-  return getMediaImageCandidates(media, size)[0] || ''
+  if (!media) return ''
+  if (media.public_url) return media.public_url
+
+  const fileId = getMediaFileId(media)
+  if (fileId) return `https://lh3.googleusercontent.com/d/${encodeURIComponent(fileId)}=${encodeURIComponent(size)}`
+
+  return media._preview_url || ''
 }
 
 export function withLocalMediaPreview(media, previewUrl) {
