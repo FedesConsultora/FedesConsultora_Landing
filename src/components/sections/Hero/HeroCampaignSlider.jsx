@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import HeroCampaignSlide from './HeroCampaignSlide'
-import { getActiveHeroCampaigns } from '../../../services/galiciaApi'
+import { getActiveHeroCampaigns, getHeroCampaignSeenKey } from '../../../services/galiciaApi'
 import { trackEvent } from '../../../services/googleApi'
 import './HeroCampaignSlider.scss'
 
@@ -51,6 +51,7 @@ export default function HeroCampaignSlider({ normalHero }) {
   const [campaigns, setCampaigns] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [loaded, setLoaded] = useState(false)
+  const [bannerReady, setBannerReady] = useState(false)
   const timerRef = useRef(null)
   const shouldReduceMotion = useReducedMotion()
 
@@ -61,23 +62,25 @@ export default function HeroCampaignSlider({ normalHero }) {
     }
   }, [])
 
-  const markBannerAsSeen = useCallback((campaignKey, isPreview = false) => {
-    if (!campaignKey || isPreview) return
+  const markBannerAsSeen = useCallback((campaign) => {
+    if (!campaign || campaign.__preview) return
     try {
-      sessionStorage.setItem(`fedes_hero_banner_seen:${campaignKey}`, 'true')
+      const key = getHeroCampaignSeenKey(campaign)
+      if (key) sessionStorage.setItem(key, 'true')
     } catch {
       /* ignore */
     }
   }, [])
 
-  const advanceNext = useCallback((isManual = false) => {
+  const advanceNext = useCallback((isManual = false, options = {}) => {
+    const { markSeen = true, trackAdvance = true } = options
     clearCurrentTimer()
     setCampaigns((currentCampaigns) => {
       setCurrentIndex((prevIndex) => {
         const currentCampaign = currentCampaigns[prevIndex]
         if (currentCampaign) {
-          markBannerAsSeen(currentCampaign.campaign_key, currentCampaign.__preview)
-          if (!currentCampaign.__preview) {
+          if (markSeen) markBannerAsSeen(currentCampaign)
+          if (trackAdvance && !currentCampaign.__preview) {
             trackEvent(
               'Hero Campaign Banner',
               isManual ? 'hero_banner_manual_advance' : 'hero_banner_auto_advance',
@@ -132,7 +135,11 @@ export default function HeroCampaignSlider({ normalHero }) {
   }, [])
 
   useEffect(() => {
-    if (!loaded) return
+    setBannerReady(false)
+  }, [currentIndex])
+
+  useEffect(() => {
+    if (!loaded || !bannerReady) return
     clearCurrentTimer()
 
     if (currentIndex < campaigns.length) {
@@ -163,10 +170,10 @@ export default function HeroCampaignSlider({ normalHero }) {
     }
 
     return () => clearCurrentTimer()
-  }, [loaded, currentIndex, campaigns, clearCurrentTimer, advanceNext])
+  }, [loaded, bannerReady, currentIndex, campaigns, clearCurrentTimer, advanceNext])
 
   const handleBannerClick = (campaign, clickUrl) => {
-    markBannerAsSeen(campaign.campaign_key, campaign.__preview)
+    markBannerAsSeen(campaign)
     if (campaign.__preview) return
     trackEvent(
       'Hero Campaign Banner',
@@ -225,7 +232,12 @@ export default function HeroCampaignSlider({ normalHero }) {
               if (info.offset.x < -60) advanceNext(true)
             }}
           >
-            <HeroCampaignSlide campaign={currentCampaign} onBannerClick={handleBannerClick} onImageUnavailable={() => advanceNext(false)} />
+            <HeroCampaignSlide
+              campaign={currentCampaign}
+              onBannerClick={handleBannerClick}
+              onImageReady={() => setBannerReady(true)}
+              onImageUnavailable={() => advanceNext(false, { markSeen: false, trackAdvance: false })}
+            />
 
             {currentCampaign.__preview && <div className="hero-campaign-preview-badge">Vista previa del Backoffice</div>}
 
