@@ -53,6 +53,20 @@
   background: rgba(255,255,255,.68);
 }
 
+.hero-banner-runtime-note {
+  padding: 11px 13px;
+  border: 1px solid #ead7b6;
+  border-radius: 12px;
+  background: #fff9ef;
+  color: #745628;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.hero-banner-runtime-note strong { color: #5f441d; }
+.hero-banner-runtime-note code { padding: 2px 5px; border-radius: 5px; background: rgba(116,86,40,.08); font-size: 10px; }
+.hero-banner-runtime-note.is-warning { border-color: #efd0d3; background: #fff5f6; color: #93424a; }
+
 .hero-banner-toggle {
   display: inline-flex;
   align-items: center;
@@ -309,7 +323,7 @@
 @media (max-width: 760px) {
   .hero-banner-media-row { grid-template-columns: 1fr; }
   .hero-banner-section-header { flex-direction: column; }
-  .hero-banner-header-actions { width: 100%; justify-content: space-between; }
+  .hero-banner-header-actions { width: 100%; justify-content: flex-start; }
   .hero-banner-media-slot, .hero-banner-drop-content { min-height: 200px; }
   .hero-banner-url-row { grid-template-columns: 1fr; }
 }
