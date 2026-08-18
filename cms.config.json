@@ -1,0 +1,10 @@
+{
+  "projectName": "Fedes Consultora CMS",
+  "rootDir": "apps-script",
+  "deploymentId": "AKfycbwAMgLxrStgHeTKyidxjAPLxCcmBlFGkLs7YJrMw6pK087Bakg4SaMGBgQWyTTc519V4Q",
+  "webAppUrl": "https://script.google.com/macros/s/AKfycbwAMgLxrStgHeTKyidxjAPLxCcmBlFGkLs7YJrMw6pK087Bakg4SaMGBgQWyTTc519V4Q/exec",
+  "smoke": {
+    "api": "campaign",
+    "key": "galicia-2026"
+  }
+}
