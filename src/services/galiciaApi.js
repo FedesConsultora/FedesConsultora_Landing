@@ -266,15 +266,9 @@ export async function getActiveHeroCampaigns() {
     const endsAt = Date.parse(c.ends_at || '')
     if (Number.isFinite(endsAt) && endsAt < now) return false
 
-    if (banner.show_once_per_session && !forceVisibility) {
-      try {
-        const seenKey = getHeroCampaignSeenKey(c)
-        if (seenKey && sessionStorage.getItem(seenKey) === 'true') return false
-      } catch {
-        /* ignore storage access error */
-      }
-    }
-
+    // El banner puede ocultarse durante la navegación actual, pero un reload
+    // siempre vuelve a empezar desde la primera campaña activa. No persistimos
+    // el descarte en sessionStorage porque el usuario pidió que F5 la muestre.
     return true
   }).sort((a, b) => (Number(a.sort_order) || 0) - (Number(b.sort_order) || 0))
 
