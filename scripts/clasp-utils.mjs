@@ -51,7 +51,9 @@ export function extractScriptId(value) {
   const input = String(value || '').trim()
   if (!input) return ''
 
-  const projectUrlMatch = input.match(/script\.google\.com\/[^\s]*?\/projects\/([A-Za-z0-9_-]{20,})/i)
+  const projectUrlMatch = input.match(
+    /script\.google\.com\/(?:[^\s]*?\/projects|d)\/([A-Za-z0-9_-]{20,})(?:\/|$)/i,
+  )
   if (projectUrlMatch) return projectUrlMatch[1]
 
   const rawMatch = input.match(/^([A-Za-z0-9_-]{20,})$/)
