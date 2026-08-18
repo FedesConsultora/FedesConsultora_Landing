@@ -1,22 +1,31 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import './HeroCampaignSlider.scss'
 
-function imageCandidates(url, fileId) {
+function imageCandidates(url, fileId, size) {
   const candidates = []
-  if (url) candidates.push(url)
+
+  // Para el Hero priorizamos la entrega directa de Google Images antes que la
+  // URL pública de Drive, que suele agregar redirects y tarda más en arrancar.
   if (fileId) {
-    candidates.push(`https://lh3.googleusercontent.com/d/${encodeURIComponent(fileId)}=w2000`)
-    candidates.push(`https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w2000`)
-    candidates.push(`https://drive.google.com/uc?export=view&id=${encodeURIComponent(fileId)}`)
+    candidates.push(`https://lh3.googleusercontent.com/d/${encodeURIComponent(fileId)}=${encodeURIComponent(size)}`)
+    candidates.push(`https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=${encodeURIComponent(size)}`)
   }
+  if (url) candidates.push(url)
+  if (fileId) candidates.push(`https://drive.google.com/uc?export=view&id=${encodeURIComponent(fileId)}`)
+
   return [...new Set(candidates.filter(Boolean))]
 }
 
 function CampaignImage({ desktopUrl, mobileUrl, desktopFileId, mobileFileId, alt, onReady, onUnavailable }) {
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
+  const preferredSize = isMobile ? 'w900' : 'w1600'
   const candidates = useMemo(
-    () => imageCandidates(isMobile ? mobileUrl : desktopUrl, isMobile ? mobileFileId : desktopFileId),
-    [isMobile, mobileUrl, desktopUrl, mobileFileId, desktopFileId],
+    () => imageCandidates(
+      isMobile ? mobileUrl : desktopUrl,
+      isMobile ? mobileFileId : desktopFileId,
+      preferredSize,
+    ),
+    [isMobile, mobileUrl, desktopUrl, mobileFileId, desktopFileId, preferredSize],
   )
   const [index, setIndex] = useState(0)
   const exhausted = !candidates.length || index >= candidates.length
@@ -39,6 +48,7 @@ function CampaignImage({ desktopUrl, mobileUrl, desktopFileId, mobileFileId, alt
       loading="eager"
       decoding="async"
       fetchPriority="high"
+      draggable="false"
       onLoad={() => onReady?.()}
       onError={() => setIndex((current) => current + 1)}
     />
