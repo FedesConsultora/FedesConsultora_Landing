@@ -2,39 +2,37 @@
   position: relative;
   width: 100%;
   overflow: hidden;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
 }
 
 .hero-campaign-slider-slide {
   width: 100%;
-  min-height: 100vh;
   position: relative;
-  flex: 1;
+
+  &.is-normal-hero {
+    min-height: 100vh;
+  }
 
   &.is-banner {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
+    display: block;
+    min-height: 0;
+    background: #0b0f14;
   }
 }
 
 .hero-campaign-slide {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+  width: 100%;
   position: relative;
+  background: #0b0f14;
+  line-height: 0;
 
   &__link {
-    flex: 1;
     display: block;
     width: 100%;
-    height: 100%;
+    aspect-ratio: 2048 / 886;
     text-decoration: none;
     cursor: pointer;
     position: relative;
+    overflow: hidden;
 
     &:focus-visible {
       outline: 3px solid #5f7cff;
@@ -45,14 +43,9 @@
   &__img {
     width: 100%;
     height: 100%;
-    min-height: 100vh;
-    object-fit: cover;
-    object-position: center top;
+    object-fit: contain;
+    object-position: center;
     display: block;
-
-    @media (max-width: 768px) {
-      object-position: center center;
-    }
   }
 }
 
@@ -76,8 +69,8 @@
 
 .hero-campaign-skip-btn {
   position: absolute;
-  bottom: clamp(20px, 4vh, 44px);
-  right: clamp(16px, 4vw, 56px);
+  bottom: clamp(16px, 2.5vw, 32px);
+  right: clamp(16px, 3vw, 44px);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -90,6 +83,7 @@
   color: rgba(255, 255, 255, 0.92);
   font-size: 0.78rem;
   font-weight: 600;
+  line-height: 1;
   letter-spacing: 0.025em;
   cursor: pointer;
   transition: opacity 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
@@ -105,10 +99,16 @@
     outline: 2px solid #fff;
     outline-offset: 3px;
   }
+}
 
-  @media (max-width: 768px) {
-    bottom: clamp(16px, 3vh, 28px);
-    right: clamp(12px, 5vw, 24px);
+@media (max-width: 768px) {
+  .hero-campaign-slide__link {
+    aspect-ratio: 985 / 1699;
+  }
+
+  .hero-campaign-skip-btn {
+    bottom: clamp(12px, 3vw, 20px);
+    right: clamp(12px, 4vw, 20px);
     padding: 8px 14px 8px 12px;
     font-size: 0.72rem;
   }
@@ -118,21 +118,5 @@
   .hero-campaign-slider-wrapper * {
     animation: none !important;
     transition-duration: 0.001ms !important;
-  }
-}
-
-@media (max-width: 1024px) {
-  .hero-campaign-slide__img {
-    object-position: center center;
-  }
-}
-
-@media (max-width: 430px) {
-  .hero-campaign-slide__img {
-    min-height: 100svh;
-  }
-
-  .hero-campaign-slider-slide.is-banner {
-    min-height: 100svh;
   }
 }
