@@ -10,3 +10,4 @@ coverage/
 .clasp.json
 .clasprc.json
 .cms-deployment.local.json
+src/generated/heroCampaignBootstrap.js
