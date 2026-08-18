@@ -5,13 +5,12 @@ import HeroCampaignSlide from './HeroCampaignSlide'
 import {
   getActiveHeroCampaigns,
   getGaliciaCampaign,
-  getHeroCampaignSeenKey,
 } from '../../../services/galiciaApi'
 import { trackEvent } from '../../../services/googleApi'
 import './HeroCampaignSlider.scss'
 
 const HERO_CAMPAIGNS_CACHE_KEY = 'fedes_hero_campaigns_cache:v1'
-const HERO_CAMPAIGNS_CACHE_TTL = 6 * 60 * 60 * 1000
+const HERO_CAMPAIGNS_CACHE_TTL = 12 * 60 * 60 * 1000
 
 function hasRenderableHeroMedia(campaign) {
   const banner = campaign?.hero_banner
@@ -22,16 +21,10 @@ function hasRenderableHeroMedia(campaign) {
   )
 }
 
-function isForceHeroVisible() {
-  if (typeof window === 'undefined') return false
-  return new URLSearchParams(window.location.search).get('forceHero') === '1'
-}
-
 function filterImmediatelyRenderableCampaigns(campaigns) {
   if (!Array.isArray(campaigns)) return []
 
   const now = Date.now()
-  const forceVisibility = isForceHeroVisible()
 
   return campaigns
     .filter((campaign) => {
@@ -46,15 +39,6 @@ function filterImmediatelyRenderableCampaigns(campaigns) {
 
       const endsAt = Date.parse(campaign.ends_at || '')
       if (Number.isFinite(endsAt) && endsAt < now) return false
-
-      if (banner.show_once_per_session && !forceVisibility && typeof window !== 'undefined') {
-        try {
-          const seenKey = getHeroCampaignSeenKey(campaign)
-          if (seenKey && window.sessionStorage.getItem(seenKey) === 'true') return false
-        } catch {
-          /* ignore storage access error */
-        }
-      }
 
       return true
     })
@@ -165,46 +149,33 @@ export default function HeroCampaignSlider({ normalHero }) {
     }
   }, [])
 
-  const markBannerAsSeen = useCallback((campaign) => {
-    if (!campaign || campaign.__preview) return
-    try {
-      const key = getHeroCampaignSeenKey(campaign)
-      if (key) sessionStorage.setItem(key, 'true')
-    } catch {
-      /* ignore */
-    }
-  }, [])
-
   const advanceNext = useCallback((isManual = false, options = {}) => {
-    const { markSeen = true, trackAdvance = true } = options
+    const { trackAdvance = true } = options
     clearCurrentTimer()
     setCampaigns((currentCampaigns) => {
       setCurrentIndex((prevIndex) => {
         const currentCampaign = currentCampaigns[prevIndex]
-        if (currentCampaign) {
-          if (markSeen) markBannerAsSeen(currentCampaign)
-          if (trackAdvance && !currentCampaign.__preview) {
-            trackEvent(
-              'Hero Campaign Banner',
-              isManual ? 'hero_banner_manual_advance' : 'hero_banner_auto_advance',
-              currentCampaign.campaign_key,
-              {
-                campaign_key: currentCampaign.campaign_key,
-                source: 'home_banner',
-                utm_source: 'fedesconsultora',
-                utm_medium: 'website',
-                utm_campaign: currentCampaign.campaign_key,
-                device_type: window.innerWidth <= 768 ? 'mobile' : 'desktop',
-                page_path: window.location.pathname,
-              }
-            )
-          }
+        if (currentCampaign && trackAdvance && !currentCampaign.__preview) {
+          trackEvent(
+            'Hero Campaign Banner',
+            isManual ? 'hero_banner_manual_advance' : 'hero_banner_auto_advance',
+            currentCampaign.campaign_key,
+            {
+              campaign_key: currentCampaign.campaign_key,
+              source: 'home_banner',
+              utm_source: 'fedesconsultora',
+              utm_medium: 'website',
+              utm_campaign: currentCampaign.campaign_key,
+              device_type: window.innerWidth <= 768 ? 'mobile' : 'desktop',
+              page_path: window.location.pathname,
+            }
+          )
         }
         return prevIndex + 1
       })
       return currentCampaigns
     })
-  }, [clearCurrentTimer, markBannerAsSeen])
+  }, [clearCurrentTimer])
 
   useEffect(() => {
     let active = true
@@ -296,7 +267,6 @@ export default function HeroCampaignSlider({ normalHero }) {
   }, [loaded, bannerReady, currentIndex, campaigns, clearCurrentTimer, advanceNext])
 
   const handleBannerClick = (campaign, clickUrl) => {
-    markBannerAsSeen(campaign)
     if (campaign.__preview) return
     trackEvent(
       'Hero Campaign Banner',
@@ -321,33 +291,40 @@ export default function HeroCampaignSlider({ normalHero }) {
   const slideVariants = shouldReduceMotion
     ? {
         initial: { opacity: 0 },
-        animate: { opacity: 1, transition: { duration: 0.6, ease: 'easeInOut' } },
-        exit: { opacity: 0, transition: { duration: 0.6, ease: 'easeInOut' } },
+        animate: { opacity: 1, transition: { duration: 0.4, ease: 'easeInOut' } },
+        exit: { opacity: 0, transition: { duration: 0.4, ease: 'easeInOut' } },
       }
     : {
-        initialBanner: { x: 0, opacity: 1 },
-        exitBanner: {
-          x: '-100%',
-          opacity: 0,
-          transition: { duration: 0.8, ease: [0.25, 1, 0.5, 1] },
-        },
-        initialHero: { x: '100%', opacity: 0.6 },
-        animateHero: {
-          x: 0,
+        initialBanner: { opacity: 0, y: 8, scale: 0.997 },
+        animateBanner: {
           opacity: 1,
-          transition: { duration: 0.85, ease: [0.25, 1, 0.5, 1] },
+          y: 0,
+          scale: 1,
+          transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+        },
+        exitBanner: {
+          opacity: 0,
+          y: -14,
+          scale: 0.995,
+          transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] },
+        },
+        initialHero: { opacity: 0, y: 16 },
+        animateHero: {
+          opacity: 1,
+          y: 0,
+          transition: { duration: 0.58, ease: [0.22, 1, 0.36, 1], delay: 0.06 },
         },
       }
 
   return (
     <div className="hero-campaign-slider-wrapper">
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="popLayout" initial={false}>
         {isShowingBanner && currentCampaign ? (
           <motion.div
             key={`banner-${currentCampaign.campaign_key}-${currentIndex}`}
             className="hero-campaign-slider-slide is-banner"
             initial={shouldReduceMotion ? slideVariants.initial : slideVariants.initialBanner}
-            animate={shouldReduceMotion ? slideVariants.animate : { x: 0, opacity: 1 }}
+            animate={shouldReduceMotion ? slideVariants.animate : slideVariants.animateBanner}
             exit={shouldReduceMotion ? slideVariants.exit : slideVariants.exitBanner}
             drag={window.innerWidth <= 768 ? 'x' : false}
             dragConstraints={{ left: 0, right: 0 }}
@@ -359,7 +336,7 @@ export default function HeroCampaignSlider({ normalHero }) {
               campaign={currentCampaign}
               onBannerClick={handleBannerClick}
               onImageReady={() => setBannerReady(true)}
-              onImageUnavailable={() => advanceNext(false, { markSeen: false, trackAdvance: false })}
+              onImageUnavailable={() => advanceNext(false, { trackAdvance: false })}
             />
 
             {currentCampaign.__preview && <div className="hero-campaign-preview-badge">Vista previa del Backoffice</div>}
@@ -379,7 +356,7 @@ export default function HeroCampaignSlider({ normalHero }) {
             key="normal-hero"
             className="hero-campaign-slider-slide is-normal-hero"
             initial={campaigns.length > 0 && !shouldReduceMotion ? slideVariants.initialHero : shouldReduceMotion && campaigns.length > 0 ? slideVariants.initial : false}
-            animate={campaigns.length > 0 && !shouldReduceMotion ? slideVariants.animateHero : shouldReduceMotion && campaigns.length > 0 ? slideVariants.animate : { x: 0, opacity: 1 }}
+            animate={campaigns.length > 0 && !shouldReduceMotion ? slideVariants.animateHero : shouldReduceMotion && campaigns.length > 0 ? slideVariants.animate : { opacity: 1, y: 0 }}
           >
             {normalHero}
           </motion.div>
