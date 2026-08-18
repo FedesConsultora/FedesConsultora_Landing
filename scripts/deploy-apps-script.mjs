@@ -36,26 +36,19 @@ runClasp(['show-file-status'])
 console.log('\n2/4 Subiendo código local a Apps Script...')
 runClasp(['push', '--force'])
 
-console.log('\n3/4 Creando una versión inmutable...')
-const versionResult = runClasp(['version', description], { capture: true })
-const versionOutput = `${versionResult.stdout || ''}\n${versionResult.stderr || ''}`
-const versionMatch = versionOutput.match(/Created version\s+(\d+)/i)
+console.log(`\n3/4 Actualizando el deployment fijo ${config.deploymentId}...`)
+runClasp([
+  'create-deployment',
+  '--deploymentId',
+  config.deploymentId,
+  '--description',
+  description,
+])
 
-if (!versionMatch) {
-  console.error('❌ clasp creó la versión, pero no pude detectar automáticamente su número.')
-  console.error('Ejecutá npm run cms:versions para inspeccionarla antes de volver a publicar.')
-  process.exit(1)
-}
-
-const version = versionMatch[1]
-console.log(`\n4/4 Actualizando el deployment existente ${config.deploymentId} a la versión ${version}...`)
-runClasp(['redeploy', config.deploymentId, version, description])
-
-console.log('\nVerificando la URL pública...')
+console.log('\n4/4 Verificando la URL pública...')
 runNodeScript('scripts/smoke-apps-script.mjs')
 
 console.log('\n✅ Apps Script publicado correctamente.')
-console.log(`Versión: ${version}`)
-console.log(`Deployment: ${config.deploymentId}`)
+console.log(`Deployment fijo: ${config.deploymentId}`)
 console.log(`URL estable: ${config.webAppUrl}`)
-console.log('VITE_GOOGLE_SCRIPT_URL no cambia porque reutilizamos siempre el mismo deployment.')
+console.log('VITE_GOOGLE_SCRIPT_URL no cambia porque siempre se actualiza el mismo deployment.')
