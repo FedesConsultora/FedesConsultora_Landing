@@ -7,6 +7,7 @@ import {
   getGaliciaCampaign,
 } from '../../../services/galiciaApi'
 import { trackEvent } from '../../../services/googleApi'
+import { HERO_CAMPAIGN_BOOTSTRAP } from '../../../generated/heroCampaignBootstrap.js'
 import './HeroCampaignSlider.scss'
 
 const HERO_CAMPAIGNS_CACHE_KEY = 'fedes_hero_campaigns_cache:v1'
@@ -63,6 +64,18 @@ function readHeroCampaignCache() {
   } catch {
     return []
   }
+}
+
+function readBuildBootstrapCampaigns() {
+  const campaign = HERO_CAMPAIGN_BOOTSTRAP?.campaign
+  if (!campaign) return []
+  return filterImmediatelyRenderableCampaigns([campaign])
+}
+
+function readInitialHeroCampaigns() {
+  const cachedCampaigns = readHeroCampaignCache()
+  if (cachedCampaigns.length) return cachedCampaigns
+  return readBuildBootstrapCampaigns()
 }
 
 function writeHeroCampaignCache(campaigns) {
@@ -134,7 +147,7 @@ function readAdminPreviewCampaign() {
 }
 
 export default function HeroCampaignSlider({ normalHero }) {
-  const [initialCampaigns] = useState(() => readHeroCampaignCache())
+  const [initialCampaigns] = useState(() => readInitialHeroCampaigns())
   const [campaigns, setCampaigns] = useState(initialCampaigns)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [loaded, setLoaded] = useState(initialCampaigns.length > 0)
@@ -208,8 +221,8 @@ export default function HeroCampaignSlider({ normalHero }) {
         /* La carga completa de campañas sigue corriendo en segundo plano. */
       })
 
-    // Revalidación completa en background. Si el Backoffice cambió estado,
-    // fechas, orden o imágenes, esta respuesta reemplaza la caché local.
+    // Revalidación completa en background. El snapshot generado en build solo
+    // sirve para pintar rápido; Apps Script sigue siendo la fuente de verdad.
     getActiveHeroCampaigns()
       .then((activeCampaigns) => {
         if (!active) return
@@ -328,7 +341,7 @@ export default function HeroCampaignSlider({ normalHero }) {
             exit={shouldReduceMotion ? slideVariants.exit : slideVariants.exitBanner}
             drag={window.innerWidth <= 768 ? 'x' : false}
             dragConstraints={{ left: 0, right: 0 }}
-            onDragEnd={(e, info) => {
+            onDragEnd={(_, info) => {
               if (info.offset.x < -60) advanceNext(true)
             }}
           >
