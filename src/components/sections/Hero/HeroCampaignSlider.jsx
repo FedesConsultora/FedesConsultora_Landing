@@ -2,9 +2,16 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import HeroCampaignSlide from './HeroCampaignSlide'
-import { getActiveHeroCampaigns, getHeroCampaignSeenKey } from '../../../services/galiciaApi'
+import {
+  getActiveHeroCampaigns,
+  getGaliciaCampaign,
+  getHeroCampaignSeenKey,
+} from '../../../services/galiciaApi'
 import { trackEvent } from '../../../services/googleApi'
 import './HeroCampaignSlider.scss'
+
+const HERO_CAMPAIGNS_CACHE_KEY = 'fedes_hero_campaigns_cache:v1'
+const HERO_CAMPAIGNS_CACHE_TTL = 6 * 60 * 60 * 1000
 
 function hasRenderableHeroMedia(campaign) {
   const banner = campaign?.hero_banner
@@ -13,6 +20,101 @@ function hasRenderableHeroMedia(campaign) {
     (banner.desktop_url || banner.desktop_file_id) &&
     (banner.mobile_url || banner.mobile_file_id),
   )
+}
+
+function isForceHeroVisible() {
+  if (typeof window === 'undefined') return false
+  return new URLSearchParams(window.location.search).get('forceHero') === '1'
+}
+
+function filterImmediatelyRenderableCampaigns(campaigns) {
+  if (!Array.isArray(campaigns)) return []
+
+  const now = Date.now()
+  const forceVisibility = isForceHeroVisible()
+
+  return campaigns
+    .filter((campaign) => {
+      if (!campaign || campaign.status !== 'published') return false
+      if (!hasRenderableHeroMedia(campaign)) return false
+
+      const banner = campaign.hero_banner
+      if (!banner?.enabled) return false
+
+      const startsAt = Date.parse(campaign.starts_at || '')
+      if (!Number.isFinite(startsAt) || startsAt > now) return false
+
+      const endsAt = Date.parse(campaign.ends_at || '')
+      if (Number.isFinite(endsAt) && endsAt < now) return false
+
+      if (banner.show_once_per_session && !forceVisibility && typeof window !== 'undefined') {
+        try {
+          const seenKey = getHeroCampaignSeenKey(campaign)
+          if (seenKey && window.sessionStorage.getItem(seenKey) === 'true') return false
+        } catch {
+          /* ignore storage access error */
+        }
+      }
+
+      return true
+    })
+    .sort((a, b) => (Number(a.sort_order) || 0) - (Number(b.sort_order) || 0))
+}
+
+function readHeroCampaignCache() {
+  if (typeof window === 'undefined') return []
+
+  try {
+    const raw = window.localStorage.getItem(HERO_CAMPAIGNS_CACHE_KEY)
+    if (!raw) return []
+
+    const parsed = JSON.parse(raw)
+    const savedAt = Number(parsed?.saved_at)
+    if (!savedAt || Date.now() - savedAt > HERO_CAMPAIGNS_CACHE_TTL) {
+      window.localStorage.removeItem(HERO_CAMPAIGNS_CACHE_KEY)
+      return []
+    }
+
+    return filterImmediatelyRenderableCampaigns(parsed?.campaigns)
+  } catch {
+    return []
+  }
+}
+
+function writeHeroCampaignCache(campaigns) {
+  if (typeof window === 'undefined') return
+
+  try {
+    const normalized = Array.isArray(campaigns) ? campaigns : []
+    if (!normalized.length) {
+      window.localStorage.removeItem(HERO_CAMPAIGNS_CACHE_KEY)
+      return
+    }
+
+    window.localStorage.setItem(
+      HERO_CAMPAIGNS_CACHE_KEY,
+      JSON.stringify({
+        saved_at: Date.now(),
+        campaigns: normalized,
+      }),
+    )
+  } catch {
+    /* localStorage puede estar deshabilitado; el Hero sigue funcionando sin caché */
+  }
+}
+
+function mergeCampaignByKey(campaigns, campaign) {
+  if (!campaign || typeof campaign !== 'object') return Array.isArray(campaigns) ? campaigns : []
+
+  const current = Array.isArray(campaigns) ? campaigns.slice() : []
+  const key = String(campaign.campaign_key || '').trim()
+  if (!key) return current
+
+  const index = current.findIndex((item) => String(item?.campaign_key || '').trim() === key)
+  if (index >= 0) current[index] = campaign
+  else current.push(campaign)
+
+  return current
 }
 
 function decodePreviewCampaign(value) {
@@ -48,9 +150,10 @@ function readAdminPreviewCampaign() {
 }
 
 export default function HeroCampaignSlider({ normalHero }) {
-  const [campaigns, setCampaigns] = useState([])
+  const [initialCampaigns] = useState(() => readHeroCampaignCache())
+  const [campaigns, setCampaigns] = useState(initialCampaigns)
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [loaded, setLoaded] = useState(false)
+  const [loaded, setLoaded] = useState(initialCampaigns.length > 0)
   const [bannerReady, setBannerReady] = useState(false)
   const timerRef = useRef(null)
   const shouldReduceMotion = useReducedMotion()
@@ -109,20 +212,41 @@ export default function HeroCampaignSlider({ normalHero }) {
 
     if (previewCampaign) {
       setCampaigns([previewCampaign])
+      setCurrentIndex(0)
       setLoaded(true)
       return () => { active = false }
     }
 
-    const timeoutId = setTimeout(() => {
-      if (active) setLoaded(true)
-    }, 2500)
+    // Fast path: Galicia se consulta directamente y puede montar la imagen sin
+    // esperar a que termine la consulta de toda la colección de campañas.
+    getGaliciaCampaign()
+      .then((galiciaCampaign) => {
+        if (!active || !galiciaCampaign) return
 
+        setCampaigns((currentCampaigns) => {
+          const nextCampaigns = filterImmediatelyRenderableCampaigns(
+            mergeCampaignByKey(currentCampaigns, galiciaCampaign),
+          )
+          writeHeroCampaignCache(nextCampaigns)
+          return nextCampaigns
+        })
+        setCurrentIndex(0)
+        setLoaded(true)
+      })
+      .catch(() => {
+        /* La carga completa de campañas sigue corriendo en segundo plano. */
+      })
+
+    // Revalidación completa en background. Si el Backoffice cambió estado,
+    // fechas, orden o imágenes, esta respuesta reemplaza la caché local.
     getActiveHeroCampaigns()
       .then((activeCampaigns) => {
-        if (active) {
-          setCampaigns(Array.isArray(activeCampaigns) ? activeCampaigns : [])
-          setLoaded(true)
-        }
+        if (!active) return
+        const freshCampaigns = Array.isArray(activeCampaigns) ? activeCampaigns : []
+        setCampaigns(freshCampaigns)
+        setCurrentIndex(0)
+        setLoaded(true)
+        writeHeroCampaignCache(freshCampaigns)
       })
       .catch(() => {
         if (active) setLoaded(true)
@@ -130,7 +254,6 @@ export default function HeroCampaignSlider({ normalHero }) {
 
     return () => {
       active = false
-      clearTimeout(timeoutId)
     }
   }, [])
 
