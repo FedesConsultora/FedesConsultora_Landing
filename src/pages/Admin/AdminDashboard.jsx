@@ -5,6 +5,7 @@ import DashboardView from './components/DashboardView'
 import DataTable, { FilterBar } from './components/DataTable'
 import RecordModal from './components/RecordModal'
 import { Campaign360Modal, Lead360Modal, Onboarding360Modal } from './components/SpecialModal'
+import CampaignLandingEditModal from './components/CampaignLandingEditModal'
 import SecurityModal from './components/SecurityModal'
 import MediaUploadModal from './components/MediaUploadModal'
 import { adminCommand, downloadCsv, getAdminToken, loginAdmin, logoutAdmin, setAdminToken } from './adminApi'
@@ -495,6 +496,36 @@ export default function AdminDashboard() {
     }
   }
 
+  const openCampaignLandingEditor = (campaignKey, landing) => {
+    setModal({ type: 'campaignLandingEdit', campaignKey, landing })
+  }
+
+  const saveCampaignLanding = async (campaignKey, landing, patch) => {
+    setActionBusy(true)
+    try {
+      await adminCommand('updateCampaignLanding', { landingId: landing.landing_id, patch })
+      notify('Landing actualizada.')
+      await refreshCampaign360(campaignKey)
+    } catch (error) {
+      handleCommandError(error)
+      throw error
+    } finally {
+      setActionBusy(false)
+    }
+  }
+
+  const closeCampaignLandingEditor = async (campaignKey) => {
+    setActionBusy(true)
+    try {
+      await refreshCampaign360(campaignKey)
+    } catch (error) {
+      handleCommandError(error)
+      setModal(null)
+    } finally {
+      setActionBusy(false)
+    }
+  }
+
   const openLead360 = async (leadId) => {
     setActionBusy(true)
     try { setModal({ type: 'lead360', data: await adminCommand('lead360', { leadId }) }) } catch (error) { handleCommandError(error) } finally { setActionBusy(false) }
@@ -599,6 +630,13 @@ export default function AdminDashboard() {
         onEditCampaign={() => { const row = modal.data.campaign; setTableKey('campaigns'); setModal({ type: 'record', mode: 'edit', record: row }) }}
         onSetCampaignPublic={(enabled) => setCampaignPublic(modal.data.campaign.campaign_key, enabled)}
         onSetLandingStatus={(landing, status) => setCampaignLandingStatus(modal.data.campaign.campaign_key, landing, status)}
+        onEditLanding={(landing) => openCampaignLandingEditor(modal.data.campaign.campaign_key, landing)}
+      />}
+      {modal?.type === 'campaignLandingEdit' && <CampaignLandingEditModal
+        landing={modal.landing}
+        busy={actionBusy}
+        onClose={() => closeCampaignLandingEditor(modal.campaignKey)}
+        onSave={(patch) => saveCampaignLanding(modal.campaignKey, modal.landing, patch)}
       />}
       {modal?.type === 'lead360' && <Lead360Modal data={modal.data} onClose={() => setModal(null)} onEdit={() => { setTableKey('leads'); setModal({ type: 'record', mode: 'edit', record: modal.data.lead }) }} onIssueResume={issueResume} />}
       {modal?.type === 'onboarding360' && <Onboarding360Modal data={modal.data} onClose={() => setModal(null)} onEdit={() => { setTableKey('onboarding'); setModal({ type: 'record', mode: 'edit', record: modal.data.onboarding }) }} />}
