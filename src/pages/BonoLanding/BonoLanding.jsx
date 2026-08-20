@@ -4,7 +4,6 @@ import {
   completeGaliciaLead,
   createLeadId,
   getAttribution,
-  getGaliciaCampaign,
   getGaliciaResume,
   getLeadProgress,
   getLeadStatus,
@@ -13,10 +12,6 @@ import {
   startGaliciaLead,
 } from '../../services/galiciaApi'
 import './BonoLanding.scss'
-
-const SESSION_STORAGE_KEY = 'fedes_galicia_2026_session'
-const LOCAL_STORAGE_KEY = 'fedes_galicia_2026_lead'
-const CANONICAL_PATH = '/regalo-galicia'
 
 const EMPTY_FORM = { fullName: '', email: '', company: '', website: '' }
 const EMPTY_ANSWERS = { q1: '', q2: '', q3: '', q4: '' }
@@ -69,6 +64,14 @@ const FREE_EMAIL_DOMAINS = new Set([
   'live.com', 'yahoo.com', 'yahoo.com.ar', 'icloud.com', 'me.com', 'aol.com',
 ])
 
+function storageKeys(landingKey) {
+  const key = String(landingKey || 'default').replace(/[^a-z0-9_-]/gi, '_')
+  return {
+    session: `fedes_galicia_2026_session:${key}`,
+    local: `fedes_galicia_2026_lead:${key}`,
+  }
+}
+
 function normalizeWebsite(value) {
   const clean = value.trim()
   if (!clean) return ''
@@ -100,34 +103,33 @@ function readStorage(storage, key) {
   }
 }
 
-function readStoredLead() {
-  const local = readStorage(window.localStorage, LOCAL_STORAGE_KEY)
-  const session = readStorage(window.sessionStorage, SESSION_STORAGE_KEY)
-
-  // Migra cualquier formato anterior: localStorage conserva solamente el ID opaco.
+function readStoredLead(landingKey) {
+  const keys = storageKeys(landingKey)
+  const local = readStorage(window.localStorage, keys.local)
+  const session = readStorage(window.sessionStorage, keys.session)
   const leadId = session?.leadId || local?.leadId || ''
-  if (leadId) {
-    window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ leadId }))
-  }
-
+  if (leadId) window.localStorage.setItem(keys.local, JSON.stringify({ leadId }))
   return { leadId, session }
 }
 
-function persistLead(leadId, form, answers) {
+function persistLead(landingKey, leadId, form, answers) {
   if (!leadId) return
-  window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ leadId }))
-  window.sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({ leadId, form, answers }))
+  const keys = storageKeys(landingKey)
+  window.localStorage.setItem(keys.local, JSON.stringify({ leadId }))
+  window.sessionStorage.setItem(keys.session, JSON.stringify({ leadId, form, answers }))
 }
 
-function persistLeadIdOnly(leadId) {
+function persistLeadIdOnly(landingKey, leadId) {
   if (!leadId) return
-  window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ leadId }))
-  window.sessionStorage.removeItem(SESSION_STORAGE_KEY)
+  const keys = storageKeys(landingKey)
+  window.localStorage.setItem(keys.local, JSON.stringify({ leadId }))
+  window.sessionStorage.removeItem(keys.session)
 }
 
-function clearStoredLead() {
-  window.localStorage.removeItem(LOCAL_STORAGE_KEY)
-  window.sessionStorage.removeItem(SESSION_STORAGE_KEY)
+function clearStoredLead(landingKey) {
+  const keys = storageKeys(landingKey)
+  window.localStorage.removeItem(keys.local)
+  window.sessionStorage.removeItem(keys.session)
 }
 
 function stripResumeTokenFromUrl() {
@@ -144,8 +146,8 @@ function highestAnsweredKey(answers) {
   return ''
 }
 
-function setPageMetadata() {
-  document.title = 'Galicia 2026 | Pymes que venden más: cómo arrancar de cero con publicidad, automatización e IA. | Fedes'
+function setPageMetadata(landing) {
+  document.title = landing?.seo_title || 'Beneficio Galicia | Fedes'
 
   let description = document.querySelector('meta[name="description"]')
   if (!description) {
@@ -153,10 +155,7 @@ function setPageMetadata() {
     description.setAttribute('name', 'description')
     document.head.appendChild(description)
   }
-  description.setAttribute(
-    'content',
-    'Beneficio exclusivo Galicia 2026 para la charla Pymes que venden más: cómo arrancar de cero con publicidad, automatización e IA. Registrá tu empresa y accedé al Onboarding estratégico de Fedes.',
-  )
+  description.setAttribute('content', landing?.seo_description || landing?.description || 'Beneficio Galicia con Fedes.')
 
   let canonical = document.querySelector('link[rel="canonical"]')
   if (!canonical) {
@@ -164,12 +163,22 @@ function setPageMetadata() {
     canonical.setAttribute('rel', 'canonical')
     document.head.appendChild(canonical)
   }
-  canonical.setAttribute('href', `${window.location.origin}${CANONICAL_PATH}`)
+  canonical.setAttribute('href', `${window.location.origin}${landing?.path || window.location.pathname}`)
 }
 
-function ResultView({ result, campaign, leadId, source }) {
+function LandingDescription({ landing }) {
+  const text = landing?.description || ''
+  const benefit = landing?.benefit_label || ''
+  if (!benefit || !text.includes(benefit)) return <>{text}</>
+  const [before, ...afterParts] = text.split(benefit)
+  return <>{before}<strong>{benefit}</strong>{afterParts.join(benefit)}</>
+}
+
+function ResultView({ result, landing, leadId, source }) {
   const classification = result?.classification
-  const meetingUrl = campaign?.meeting_url || result?.meetingUrl || ''
+  const meetingUrl = landing?.campaign?.meeting_url || result?.meetingUrl || ''
+  const benefitLabel = result?.benefitLabel || landing?.benefit_label || 'tu beneficio Galicia'
+  const resultNote = landing?.meta?.resultNote || 'La bonificación queda sujeta a validación final del alcance y a las condiciones vigentes del beneficio.'
 
   if (classification === 'CALIFICADO') {
     return (
@@ -178,12 +187,10 @@ function ResultView({ result, campaign, leadId, source }) {
         <p className="bono-kicker">Registro completado</p>
         <h1>¡Listo! Podés avanzar con <strong>tu beneficio.</strong></h1>
         <p>
-          Tu empresa puede continuar con uno de los cupos del beneficio de
-          <strong> 50% de bonificación en el primer mes</strong> del Onboarding estratégico.
+          Tu empresa puede continuar con el beneficio de <strong>{benefitLabel}</strong> del Onboarding estratégico.
         </p>
         <div className="bono-result__note">
-          El proceso comienza con una auditoría integral y se integra a un roadmap de crecimiento anual.
-          La bonificación queda sujeta a disponibilidad de cupo y validación final del alcance.
+          El proceso comienza con una auditoría integral y se integra a un roadmap de crecimiento anual. {resultNote}
         </div>
         {meetingUrl ? (
           <a
@@ -191,7 +198,7 @@ function ResultView({ result, campaign, leadId, source }) {
             href={meetingUrl}
             target="_blank"
             rel="noreferrer"
-            onClick={() => markGaliciaMeetingClick(leadId, source)}
+            onClick={() => markGaliciaMeetingClick(leadId, source, { landingKey: landing?.landing_key, pagePath: landing?.path })}
           >
             Agendar diagnóstico de 15 minutos
           </a>
@@ -233,12 +240,13 @@ function ResultView({ result, campaign, leadId, source }) {
   )
 }
 
-export default function BonoLanding() {
-  const attribution = useMemo(() => getAttribution(), [])
+export default function BonoLanding({ landing }) {
+  const landingKey = landing?.landing_key || 'charla-pymes'
+  const pagePath = landing?.path || window.location.pathname
+  const attribution = useMemo(() => getAttribution(landing), [landing])
   const autosaveSequence = useRef(0)
   const [step, setStep] = useState(1)
   const [leadId, setLeadId] = useState('')
-  const [campaign, setCampaign] = useState(null)
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [restoring, setRestoring] = useState(true)
@@ -250,10 +258,7 @@ export default function BonoLanding() {
 
   useEffect(() => {
     let cancelled = false
-    setPageMetadata()
-    getGaliciaCampaign().then((data) => {
-      if (!cancelled) setCampaign(data)
-    })
+    setPageMetadata(landing)
 
     async function restore() {
       const params = new URLSearchParams(window.location.search)
@@ -279,10 +284,10 @@ export default function BonoLanding() {
             if (state.status === 'complete') {
               setResult(state)
               setStep(3)
-              persistLeadIdOnly(state.leadId)
+              persistLeadIdOnly(landingKey, state.leadId)
             } else {
               setStep(2)
-              persistLead(state.leadId, restoredForm, restoredAnswers)
+              persistLead(landingKey, state.leadId, restoredForm, restoredAnswers)
               setNotice('Recuperamos tu registro. Podés continuar desde donde lo dejaste.')
             }
             return
@@ -293,7 +298,7 @@ export default function BonoLanding() {
           }
         }
 
-        const stored = readStoredLead()
+        const stored = readStoredLead(landingKey)
         if (!stored.leadId) return
 
         setLeadId(stored.leadId)
@@ -303,7 +308,7 @@ export default function BonoLanding() {
         try {
           const state = await getLeadProgress(stored.leadId)
           if (!state?.found) {
-            clearStoredLead()
+            clearStoredLead(landingKey)
             setLeadId('')
             return
           }
@@ -326,21 +331,21 @@ export default function BonoLanding() {
           if (state.status === 'complete') {
             setResult(state)
             setStep(3)
-            persistLeadIdOnly(stored.leadId)
+            persistLeadIdOnly(landingKey, stored.leadId)
           } else {
             setStep(2)
-            persistLead(stored.leadId, restoredForm, restoredAnswers)
+            persistLead(landingKey, stored.leadId, restoredForm, restoredAnswers)
           }
         } catch {
           try {
             const status = await getLeadStatus(stored.leadId)
             if (!status?.found) {
-              clearStoredLead()
+              clearStoredLead(landingKey)
               setLeadId('')
             } else if (status.status === 'complete') {
               setResult(status)
               setStep(3)
-              persistLeadIdOnly(stored.leadId)
+              persistLeadIdOnly(landingKey, stored.leadId)
             } else {
               setStep(2)
             }
@@ -355,7 +360,7 @@ export default function BonoLanding() {
 
     restore()
     return () => { cancelled = true }
-  }, [])
+  }, [landing, landingKey])
 
   const autosave = (nextAnswers, nextWebsite, lastQuestionKey) => {
     if (!leadId) return
@@ -366,11 +371,12 @@ export default function BonoLanding() {
 
     saveGaliciaProgress({
       leadId,
+      landingKey,
       website: validateWebsite(nextWebsite) ? normalizeWebsite(nextWebsite) : '',
       ...nextAnswers,
       lastQuestionKey: lastQuestionKey || highestAnsweredKey(nextAnswers),
       source: attribution.source,
-      pagePath: CANONICAL_PATH,
+      pagePath,
     })
       .then(() => {
         if (autosaveSequence.current === sequence) setAutosaveState('saved')
@@ -403,25 +409,25 @@ export default function BonoLanding() {
     try {
       await startGaliciaLead({
         leadId: id,
+        landingKey,
         ...cleanForm,
         website: '',
         source: attribution.source,
         utmSource: attribution.utmSource,
         utmMedium: attribution.utmMedium,
         utmCampaign: attribution.utmCampaign,
+        utmContent: attribution.utmContent,
         referrer: attribution.referrer,
-        pagePath: CANONICAL_PATH,
+        pagePath,
         userAgent: navigator.userAgent,
-        client: 'fedes_landing_galicia',
+        client: landing?.meta?.client || `fedes_landing_${landingKey}`,
       })
 
-      persistLead(id, cleanForm, answers)
+      persistLead(landingKey, id, cleanForm, answers)
       setForm(cleanForm)
       setStep(2)
       window.scrollTo({ top: 0, behavior: 'smooth' })
 
-      // Si el email ya tenía un registro, el backend lo reutiliza. Recuperamos su
-      // progreso en segundo plano sin hacer esperar al usuario en el Paso 1.
       getLeadProgress(id)
         .then((state) => {
           if (!state?.found) return
@@ -433,9 +439,9 @@ export default function BonoLanding() {
           if (state.status === 'complete') {
             setResult(state)
             setStep(3)
-            persistLeadIdOnly(id)
+            persistLeadIdOnly(landingKey, id)
           } else {
-            persistLead(id, restoredForm, restoredAnswers)
+            persistLead(landingKey, id, restoredForm, restoredAnswers)
             if (Object.values(restoredAnswers).some(Boolean)) {
               setNotice('Encontramos un registro anterior y recuperamos tus respuestas guardadas.')
             }
@@ -452,14 +458,14 @@ export default function BonoLanding() {
   const handleAnswerChange = (questionKey, optionKey) => {
     const nextAnswers = { ...answers, [questionKey]: optionKey }
     setAnswers(nextAnswers)
-    persistLead(leadId, form, nextAnswers)
+    persistLead(landingKey, leadId, form, nextAnswers)
     autosave(nextAnswers, form.website, questionKey)
   }
 
   const handleWebsiteChange = (value) => {
     const nextForm = { ...form, website: value }
     setForm(nextForm)
-    persistLead(leadId, nextForm, answers)
+    persistLead(landingKey, leadId, nextForm, answers)
   }
 
   const handleWebsiteBlur = () => {
@@ -467,7 +473,7 @@ export default function BonoLanding() {
     const normalized = normalizeWebsite(form.website)
     const nextForm = { ...form, website: normalized }
     setForm(nextForm)
-    persistLead(leadId, nextForm, answers)
+    persistLead(landingKey, leadId, nextForm, answers)
     autosave(answers, normalized, highestAnsweredKey(answers))
   }
 
@@ -483,19 +489,20 @@ export default function BonoLanding() {
     const cleanForm = { ...form, website: normalizeWebsite(form.website) }
     setLoading(true)
     setForm(cleanForm)
-    persistLead(leadId, cleanForm, answers)
+    persistLead(landingKey, leadId, cleanForm, answers)
 
     try {
       const status = await completeGaliciaLead({
         leadId,
+        landingKey,
         website: cleanForm.website,
         ...answers,
         source: attribution.source,
-        pagePath: CANONICAL_PATH,
+        pagePath,
       })
       setResult(status)
       setStep(3)
-      persistLeadIdOnly(leadId)
+      persistLeadIdOnly(landingKey, leadId)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (requestError) {
       setError(requestError.message || 'No pudimos completar el registro. Intentá nuevamente.')
@@ -517,16 +524,13 @@ export default function BonoLanding() {
       <div className="bono-shell">
         {step !== 3 && (
           <section className="bono-intro">
-            <div className="bono-badge">Beneficio exclusivo · cupos limitados</div>
-            <p className="bono-kicker">Charla | Pymes que venden más: cómo arrancar de cero con publicidad, automatización e IA.</p>
+            <div className="bono-badge">{landing?.badge || 'Beneficio exclusivo Galicia'}</div>
+            {landing?.kicker && <p className="bono-kicker">{landing.kicker}</p>}
             <h1>
-              Gracias por compartir este espacio en Galicia.
-              <strong> Activá tu beneficio con Fedes.</strong>
+              {landing?.headline || 'Potenciá la estructura de tu empresa.'}
+              <strong> {landing?.headline_accent || 'Activá tu beneficio con Fedes.'}</strong>
             </h1>
-            <p className="bono-intro__copy">
-              Registrá tu empresa para acceder a un <strong>50% de bonificación en el primer mes</strong>{' '}
-              de nuestro Onboarding estratégico. Primero entendemos tu negocio; después diseñamos el camino.
-            </p>
+            <p className="bono-intro__copy"><LandingDescription landing={landing} /></p>
 
             <div className="bono-value-grid">
               <div><b>01</b><span>Auditoría integral</span></div>
@@ -536,8 +540,7 @@ export default function BonoLanding() {
             </div>
 
             <p className="bono-method-note">
-              El Onboarding comienza con una etapa de diagnóstico y auditoría profunda que puede extenderse
-              hasta 60 días y se integra a un roadmap de crecimiento anual.
+              {landing?.meta?.methodNote || 'El Onboarding comienza con una etapa de diagnóstico y auditoría profunda y se integra a un roadmap de crecimiento anual.'}
             </p>
           </section>
         )}
@@ -570,34 +573,18 @@ export default function BonoLanding() {
 
                   <label>
                     <span>Nombre completo</span>
-                    <input
-                      autoComplete="name"
-                      value={form.fullName}
-                      onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-                      placeholder="Tu nombre y apellido"
-                    />
+                    <input autoComplete="name" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} placeholder="Tu nombre y apellido" />
                   </label>
 
                   <label>
                     <span>Correo corporativo</span>
-                    <input
-                      type="email"
-                      autoComplete="email"
-                      value={form.email}
-                      onChange={(e) => setForm({ ...form, email: e.target.value })}
-                      placeholder="nombre@empresa.com"
-                    />
+                    <input type="email" autoComplete="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="nombre@empresa.com" />
                     <small>Usá el correo de tu empresa para continuar.</small>
                   </label>
 
                   <label>
                     <span>Empresa</span>
-                    <input
-                      autoComplete="organization"
-                      value={form.company}
-                      onChange={(e) => setForm({ ...form, company: e.target.value })}
-                      placeholder="Nombre de la empresa"
-                    />
+                    <input autoComplete="organization" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} placeholder="Nombre de la empresa" />
                   </label>
 
                   {error && <div className="bono-error" role="alert">{error}</div>}
@@ -629,14 +616,7 @@ export default function BonoLanding() {
 
                   <label>
                     <span>Sitio web</span>
-                    <input
-                      inputMode="url"
-                      autoComplete="url"
-                      value={form.website}
-                      onChange={(e) => handleWebsiteChange(e.target.value)}
-                      onBlur={handleWebsiteBlur}
-                      placeholder="empresa.com.ar"
-                    />
+                    <input inputMode="url" autoComplete="url" value={form.website} onChange={(e) => handleWebsiteChange(e.target.value)} onBlur={handleWebsiteBlur} placeholder="empresa.com.ar" />
                   </label>
 
                   {QUESTIONS.map(({ key, eyebrow, question, options }, questionIndex) => (
@@ -648,13 +628,7 @@ export default function BonoLanding() {
                       <div className="bono-options">
                         {Object.entries(options).map(([optionKey, label]) => (
                           <label className={`bono-option ${answers[key] === optionKey ? 'is-selected' : ''}`} key={optionKey}>
-                            <input
-                              type="radio"
-                              name={key}
-                              value={optionKey}
-                              checked={answers[key] === optionKey}
-                              onChange={() => handleAnswerChange(key, optionKey)}
-                            />
+                            <input type="radio" name={key} value={optionKey} checked={answers[key] === optionKey} onChange={() => handleAnswerChange(key, optionKey)} />
                             <span className="bono-option__mark" aria-hidden="true">•</span>
                             <span>{label}</span>
                           </label>
@@ -672,12 +646,7 @@ export default function BonoLanding() {
               )}
 
               {step === 3 && (
-                <ResultView
-                  result={result}
-                  campaign={campaign}
-                  leadId={leadId}
-                  source={attribution.source}
-                />
+                <ResultView result={result} landing={landing} leadId={leadId} source={attribution.source} />
               )}
             </>
           )}
