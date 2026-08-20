@@ -1,12 +1,11 @@
 var GALICIA_PRIMARY_LANDING_KEY = 'charla-pymes';
 var GALICIA_OFFICE_BANKING_LANDING_KEY = 'office-banking';
+var CAMPAIGN_LANDING_BACKFILL_KEY = 'campaign_landings_v1_backfill';
 
 function normalizeCampaignLandingPath_(value) {
   var raw=safeString_(value).trim();
   if (!raw) return '';
-  try {
-    if (/^https?:\/\//i.test(raw)) raw=new URL(raw).pathname;
-  } catch (err) {}
+  raw=raw.replace(/^https?:\/\/[^/]+/i,'');
   raw=raw.split('?')[0].split('#')[0];
   if (raw.charAt(0)!=='/') raw='/'+raw;
   return raw.replace(/\/{2,}/g,'/').replace(/\/$/,'')||'/';
@@ -72,6 +71,29 @@ function campaignLandingSeedRows_() {
   ];
 }
 
+function inferLegacyLandingKey_(row) {
+  var source=(safeString_(row&&row.source)+' '+safeString_(row&&row.utm_medium)+' '+safeString_(row&&row.utm_campaign)+' '+safeString_(row&&row.page_path)).toLowerCase();
+  return source.indexOf('office_banking')>=0 || source.indexOf('/bono-galicia')>=0
+    ? GALICIA_OFFICE_BANKING_LANDING_KEY
+    : GALICIA_PRIMARY_LANDING_KEY;
+}
+
+function backfillCampaignLandingKeys_() {
+  if (systemGet_(CAMPAIGN_LANDING_BACKFILL_KEY)==='done') return;
+
+  dbReadAll_(APP.SHEETS.LEADS,{includeArchived:true}).forEach(function(row){
+    if (safeString_(row.campaign_key)!==GALICIA.CAMPAIGN_KEY || safeString_(row.landing_key)) return;
+    dbUpdateById_(APP.SHEETS.LEADS,row.lead_id,{landing_key:inferLegacyLandingKey_(row)});
+  });
+
+  dbReadAll_(APP.SHEETS.LEAD_EVENTS,{includeArchived:true}).forEach(function(row){
+    if (safeString_(row.campaign_key)!==GALICIA.CAMPAIGN_KEY || safeString_(row.landing_key)) return;
+    dbUpdateById_(APP.SHEETS.LEAD_EVENTS,row.event_id,{landing_key:inferLegacyLandingKey_(row)});
+  });
+
+  systemSet_(CAMPAIGN_LANDING_BACKFILL_KEY,'done');
+}
+
 function ensureCampaignLandingFoundation_() {
   ensureSheet_(APP.SHEETS.CAMPAIGN_LANDINGS,SCHEMA[APP.SHEETS.CAMPAIGN_LANDINGS]);
   ensureSheet_(APP.SHEETS.LEADS,SCHEMA[APP.SHEETS.LEADS]);
@@ -83,6 +105,8 @@ function ensureCampaignLandingFoundation_() {
     },{includeArchived:true});
     if (!existing) dbInsert_(APP.SHEETS.CAMPAIGN_LANDINGS,seed);
   });
+
+  backfillCampaignLandingKeys_();
 }
 
 function campaignIsPublicNow_(campaign) {
