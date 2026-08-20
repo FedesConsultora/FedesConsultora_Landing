@@ -51,8 +51,8 @@ function writeWorkspaceCache(workspace) {
 
 function subtitleFor(def) {
   if (!def) return ''
-  if (def.key === 'campaigns') return 'Alta, baja, modificación y consulta de campañas. Galicia es una campaña dentro del ecosistema.'
-  if (def.key === 'leads') return 'CRM consolidado con scoring, atribución, seguimiento, reuniones y mailings.'
+  if (def.key === 'campaigns') return 'Alta, baja, modificación y consulta de campañas. Cada campaña puede tener varias landings y un switch público maestro.'
+  if (def.key === 'leads') return 'CRM consolidado con scoring, atribución, landing de adquisición, seguimiento, reuniones y mailings.'
   if (def.key === 'onboarding') return 'Legajos completos de onboarding de clientes y prospectos.'
   if (def.readOnly) return 'Consulta integral. Esta entidad permanece de solo lectura para preservar integridad.'
   return 'Alta, baja, modificación y consulta con filtros avanzados.'
@@ -260,7 +260,6 @@ export default function AdminDashboard() {
     if (!getAdminToken()) return
     setBooting(true)
     try {
-      // Las tres lecturas arrancan juntas. El shell puede usar el workspace cacheado mientras llegan.
       const [workspaceData, dashboardData, insightData] = await Promise.all([
         adminCommand('workspace'),
         adminCommand('dashboard'),
@@ -331,8 +330,6 @@ export default function AdminDashboard() {
     setSelected(new Set())
     setResult(cached?.data || null)
     setTableLoading(!cached)
-
-    // La navegación ya ocurrió. Los datos llegan después o se revalidan en segundo plano.
     fetchTable(key, nextQuery, { updateView: true }).catch(() => {})
   }
 
@@ -442,9 +439,60 @@ export default function AdminDashboard() {
     return openRecord(row, 'view')
   }
 
+  const loadCampaign360Data = async (campaignKey) => {
+    const [campaignData, landingData] = await Promise.all([
+      adminCommand('campaign360', { campaignKey }),
+      adminCommand('campaignLandings', { campaignKey }),
+    ])
+    return { ...campaignData, landings: landingData?.landings || [] }
+  }
+
   const openCampaign360 = async (campaignKey) => {
     setActionBusy(true)
-    try { setModal({ type: 'campaign360', data: await adminCommand('campaign360', { campaignKey }) }) } catch (error) { handleCommandError(error) } finally { setActionBusy(false) }
+    try {
+      setModal({ type: 'campaign360', data: await loadCampaign360Data(campaignKey) })
+    } catch (error) {
+      handleCommandError(error)
+    } finally {
+      setActionBusy(false)
+    }
+  }
+
+  const refreshCampaign360 = async (campaignKey) => {
+    const data = await loadCampaign360Data(campaignKey)
+    setModal({ type: 'campaign360', data })
+    return data
+  }
+
+  const setCampaignPublic = async (campaignKey, enabled) => {
+    if (!enabled && !window.confirm('¿Desactivar la campaña pública? El banner y todas sus landings dejarán de estar disponibles. Los leads y datos históricos se conservan.')) return
+    setActionBusy(true)
+    try {
+      await adminCommand('setCampaignPublicState', { campaignKey, enabled })
+      invalidateTableCache('campaigns')
+      dashboardFetchedAtRef.current = 0
+      notify(enabled ? 'Campaña publicada.' : 'Campaña pública desactivada.')
+      await refreshCampaign360(campaignKey)
+      if (tableKey === 'campaigns') fetchTable('campaigns', query, { updateView: false, force: true }).catch(() => {})
+    } catch (error) {
+      handleCommandError(error)
+    } finally {
+      setActionBusy(false)
+    }
+  }
+
+  const setCampaignLandingStatus = async (campaignKey, landing, status) => {
+    if (status === 'hidden' && !window.confirm(`¿Ocultar ${landing.path}? Esa URL dejará de estar disponible públicamente.`)) return
+    setActionBusy(true)
+    try {
+      await adminCommand('setCampaignLandingStatus', { landingId: landing.landing_id, status })
+      notify(status === 'published' ? 'Landing publicada.' : 'Landing ocultada.')
+      await refreshCampaign360(campaignKey)
+    } catch (error) {
+      handleCommandError(error)
+    } finally {
+      setActionBusy(false)
+    }
   }
 
   const openLead360 = async (leadId) => {
@@ -544,7 +592,14 @@ export default function AdminDashboard() {
       )}
 
       {modal?.type === 'record' && activeDef && <RecordModal def={activeDef} mode={modal.mode} record={modal.record} onClose={() => setModal(null)} onSave={(payload) => saveRecord(modal.mode, modal.record, payload)} onUploadMedia={uploadMedia} />}
-      {modal?.type === 'campaign360' && <Campaign360Modal data={modal.data} onClose={() => setModal(null)} onOpenLeads={() => openTable('leads', { filters: { campaign_key: modal.data.campaign.campaign_key } })} onEditCampaign={() => { const row = modal.data.campaign; setTableKey('campaigns'); setModal({ type: 'record', mode: 'edit', record: row }) }} />}
+      {modal?.type === 'campaign360' && <Campaign360Modal
+        data={modal.data}
+        onClose={() => setModal(null)}
+        onOpenLeads={() => openTable('leads', { filters: { campaign_key: modal.data.campaign.campaign_key } })}
+        onEditCampaign={() => { const row = modal.data.campaign; setTableKey('campaigns'); setModal({ type: 'record', mode: 'edit', record: row }) }}
+        onSetCampaignPublic={(enabled) => setCampaignPublic(modal.data.campaign.campaign_key, enabled)}
+        onSetLandingStatus={(landing, status) => setCampaignLandingStatus(modal.data.campaign.campaign_key, landing, status)}
+      />}
       {modal?.type === 'lead360' && <Lead360Modal data={modal.data} onClose={() => setModal(null)} onEdit={() => { setTableKey('leads'); setModal({ type: 'record', mode: 'edit', record: modal.data.lead }) }} onIssueResume={issueResume} />}
       {modal?.type === 'onboarding360' && <Onboarding360Modal data={modal.data} onClose={() => setModal(null)} onEdit={() => { setTableKey('onboarding'); setModal({ type: 'record', mode: 'edit', record: modal.data.onboarding }) }} />}
       {modal?.type === 'security' && <SecurityModal onClose={() => setModal(null)} onChangePassword={changePassword} onRotateKey={rotateKey} />}
