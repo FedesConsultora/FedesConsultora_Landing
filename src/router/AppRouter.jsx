@@ -11,7 +11,7 @@ import Contacto from '../components/sections/Contacto/Contacto'
 import OdooLanding from '../pages/OdooLanding/OdooLanding'
 import OnboardingEmpresas from '../pages/Onboarding/OnboardingEmpresas'
 import FerdersCard from '../pages/FerdersCard/FerdersCard'
-import BonificacionGaliciaRoute from '../pages/BonoLanding/BonificacionGaliciaRoute'
+import CampaignLandingRoute from '../pages/BonoLanding/CampaignLandingRoute'
 import TerminosCondiciones from '../pages/Legal/TerminosCondiciones'
 import Privacidad from '../pages/Legal/Privacidad'
 import AdminDashboard from '../pages/Admin/AdminDashboard'
@@ -38,7 +38,8 @@ export default function AppRouter() {
           <Route path="/terminos-y-condiciones" element={<TerminosCondiciones />} />
           <Route path="/privacidad" element={<Privacidad />} />
         </Route>
-        <Route path="/bonificacion-galicia" element={<BonificacionGaliciaRoute />} />
+        <Route path="/bonificacion-galicia" element={<CampaignLandingRoute />} />
+        <Route path="/bono-galicia" element={<CampaignLandingRoute />} />
         <Route path="/regalo-galicia" element={<LegacyGaliciaRedirect />} />
         <Route path="/bono" element={<LegacyGaliciaRedirect />} />
         <Route path="/odoo" element={<OdooLanding />} />
@@ -46,7 +47,7 @@ export default function AppRouter() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/ferders/cards/:slug" element={<FerdersCard />} />
         <Route path="/feders/cards/:slug" element={<FerdersCard />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<CampaignLandingRoute />} />
       </Routes>
     </BrowserRouter>
   )
