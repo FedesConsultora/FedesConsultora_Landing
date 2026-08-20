@@ -7,7 +7,7 @@
     "hero:sync": "node scripts/sync-hero-bootstrap.mjs",
     "dev": "npm run hero:sync && vite",
     "build": "npm run hero:sync && vite build",
-    "lint": "eslint .",
+    "lint": "eslint . && npm run cms:check",
     "preview": "vite preview",
     "cms:login": "npx --yes @google/clasp@3.3.0 login",
     "cms:whoami": "npx --yes @google/clasp@3.3.0 show-authorized-user",
