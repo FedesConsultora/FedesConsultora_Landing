@@ -38,9 +38,7 @@
   gap: 16px;
   margin-bottom: 16px;
 
-  h3 {
-    margin-bottom: 5px;
-  }
+  h3 { margin-bottom: 5px; }
 
   p {
     max-width: 760px;
@@ -81,19 +79,9 @@
   justify-content: space-between;
   gap: 12px;
 
-  > div {
-    display: grid;
-    gap: 3px;
-  }
-
-  strong {
-    font-size: 0.94rem;
-  }
-
-  span {
-    color: #64748b;
-    font-size: 0.8rem;
-  }
+  > div { display: grid; gap: 3px; }
+  strong { font-size: 0.94rem; }
+  span { color: #64748b; font-size: 0.8rem; }
 }
 
 .admin-campaign-landing-card__meta {
@@ -141,13 +129,92 @@
   color: #b91c1c !important;
 }
 
+.admin-landing-editor {
+  width: min(1080px, calc(100vw - 32px));
+  max-height: min(88vh, 940px);
+  overflow-y: auto;
+}
+
+.admin-landing-editor__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+
+  .admin-field {
+    min-width: 0;
+  }
+
+  .admin-field--wide {
+    grid-column: 1 / -1;
+  }
+
+  input,
+  textarea {
+    width: 100%;
+  }
+
+  textarea {
+    resize: vertical;
+  }
+}
+
+.admin-landing-editor__preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 13px 14px;
+  border-radius: 14px;
+
+  > div {
+    display: grid;
+    min-width: 0;
+    gap: 5px;
+  }
+
+  span {
+    color: #94a3b8;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  code {
+    color: #334155;
+    font-size: 0.76rem;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: 6px;
+    color: #2563eb;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+}
+
 @media (max-width: 860px) {
   .admin-campaign-landing-grid,
-  .admin-campaign-landing-card__meta {
+  .admin-campaign-landing-card__meta,
+  .admin-landing-editor__grid {
     grid-template-columns: 1fr;
   }
 
-  .admin-panel-heading-row {
+  .admin-landing-editor__grid .admin-field--wide {
+    grid-column: auto;
+  }
+
+  .admin-panel-heading-row,
+  .admin-landing-editor__preview {
     flex-direction: column;
+    align-items: stretch;
   }
 }
