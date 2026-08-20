@@ -68,6 +68,7 @@ Los leads guardan:
 - `utm_source`
 - `utm_medium`
 - `utm_campaign`
+- `utm_content`
 - `referrer`
 
 La URL tiene prioridad sobre los valores por defecto de la landing. Si Galicia abre `/bono-galicia` sin parámetros, la landing Office Banking completa automáticamente sus defaults.
@@ -80,11 +81,17 @@ En `Campañas > Galicia 2026 > Vista 360°` se puede:
 
 - desactivar/publicar toda la campaña;
 - ver todas las landings hijas;
+- crear una nueva landing sin tocar código;
 - editar path, beneficio, copy, SEO y defaults UTM;
+- editar `utm_content`, nota metodológica y nota de resultado;
 - copiar la URL de tracking lista para usar;
 - publicar u ocultar cada landing individual;
 - abrir una landing pública;
 - ver `landing_key` en los leads recientes y en la Vista 360° del lead.
+
+Las nuevas landings se crean siempre como `draft`. La `landing_key` queda estable y la ruta pública puede cambiar después desde el editor.
+
+Las rutas públicas no necesitan agregarse manualmente al router: cualquier URL no reconocida pasa por el resolver de landings y solamente se renderiza si existe una landing publicada cuya campaña padre también está publicada.
 
 ## Migración
 
@@ -94,18 +101,28 @@ En el primer acceso a los endpoints de landings o al panel de landings:
 
 - crea `CRM_CampaignLandings` si no existe;
 - agrega `landing_key` a `CRM_Leads` y `CRM_LeadEvents` si falta;
+- agrega `utm_content` a `CRM_Leads` si falta;
 - crea las dos landings Galicia si no existen;
 - hace un backfill único de leads/eventos históricos sin `landing_key`.
 
 Los registros preexistentes de Galicia se asignan a `charla-pymes`, salvo que su origen/path indique explícitamente Office Banking.
 
-## Deploy
+## Deploy seguro
+
+Antes de cualquier publicación de Apps Script:
+
+```bash
+npm run cms:check
+```
+
+El mismo chequeo se ejecuta automáticamente al comienzo de `npm run cms:deploy`, de modo que un error de sintaxis no llega al deployment de producción.
 
 Orden recomendado para esta migración:
 
 ```bash
-# 1. Traer la rama/merge ya validado
+# 1. Validar frontend y Apps Script
 npm run build
+npm run cms:check
 
 # 2. Publicar primero el backend nuevo
 npm run cms:deploy -- "Agrega múltiples landings por campaña"
@@ -118,3 +135,5 @@ npm run build
 ```
 
 Después del deploy de Apps Script, `npm run cms:smoke` valida health/schema y la landing principal cuando Galicia está pública.
+
+No publicar `office-banking` hasta haber probado `/bonificacion-galicia`, el Backoffice y el master switch. Una vez validado, la landing de Office Banking se activa desde la Vista 360° sin crear otro deployment ni cambiar la URL de Apps Script.
