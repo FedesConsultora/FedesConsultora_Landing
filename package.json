@@ -8,6 +8,7 @@
     "dev": "npm run hero:sync && vite",
     "build": "npm run hero:sync && vite build",
     "lint": "eslint . && npm run cms:check",
+    "lint:strict": "eslint . --max-warnings=0 && npm run cms:check",
     "preview": "vite preview",
     "cms:login": "npx --yes @google/clasp@3.3.0 login",
     "cms:whoami": "npx --yes @google/clasp@3.3.0 show-authorized-user",
