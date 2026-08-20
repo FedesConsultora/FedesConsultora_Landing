@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Copy, ExternalLink, Eye, EyeOff, KeyRound, Pencil, Power, X } from 'lucide-react'
+import { Copy, ExternalLink, Eye, EyeOff, KeyRound, Pencil, Plus, Power, X } from 'lucide-react'
 import { StatusPill } from './DataTable'
 import AdminModalPortal from './AdminModalPortal'
 
@@ -83,12 +83,27 @@ function CampaignLandingsPanel({ campaign, landings, onSetLandingStatus, onEditL
     if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(`${window.location.origin}${relative}`)
   }
 
+  const createLanding = () => onEditLanding?.({
+    campaign_key: campaign.campaign_key,
+    landing_key: '',
+    name: '',
+    path: '',
+    benefit_label: '',
+    benefit_percent: '',
+    sort_order: (landings.length + 1) * 10,
+    status: 'draft',
+    meta: {},
+  })
+
   return (
     <section className="admin-panel admin-glass-soft admin-panel--span-4 admin-campaign-landings">
       <div className="admin-panel-heading-row">
         <div>
           <h3>Landings de la campaña</h3>
           <p>Cada landing tiene su propio beneficio, copy, SEO y atribución. El estado de la campaña funciona como interruptor maestro.</p>
+          <button type="button" className="admin-button admin-button--ghost admin-campaign-landings__add" onClick={createLanding}>
+            <Plus size={14} />Agregar landing
+          </button>
         </div>
         <span>{landings.length} configurada{landings.length === 1 ? '' : 's'}</span>
       </div>
