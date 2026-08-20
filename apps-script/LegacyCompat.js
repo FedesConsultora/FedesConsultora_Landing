@@ -21,7 +21,7 @@ function handleLegacyPost_(action,data){
   if(action==='onboardingStep1') return {success:true,data:saveOnboardingStep1_(data)};
   if(action==='saveProgress') return {success:true,data:saveOnboardingProgress_(data)};
   if(action==='track') return {success:true,data:saveTracking_(data)};
-  if(action==='galiciaStart') return saveGaliciaLead_(data);
+  if(action==='galiciaStart') return saveGaliciaLeadWithAttribution_(data);
   if(action==='galiciaProgress') return saveGaliciaProgressSafe_(data);
   if(action==='galiciaComplete') return completeGaliciaLead_(data);
   if(action==='galiciaMeetingClick') return markGaliciaMeetingClick_(data);
