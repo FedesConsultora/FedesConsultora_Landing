@@ -17,6 +17,7 @@
     "cms:open": "npx --yes @google/clasp@3.3.0 open-script",
     "cms:versions": "npx --yes @google/clasp@3.3.0 list-versions",
     "cms:deployments": "npx --yes @google/clasp@3.3.0 list-deployments",
+    "cms:check": "node scripts/check-apps-script.mjs",
     "cms:smoke": "node scripts/smoke-apps-script.mjs",
     "cms:deploy": "node scripts/deploy-apps-script.mjs"
   },
