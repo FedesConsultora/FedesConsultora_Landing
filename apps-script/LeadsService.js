@@ -52,9 +52,19 @@ function saveContact_(data) {
   });
 }
 
+function resolveIncomingLandingKey_(value) {
+  ensureCampaignLandingFoundation_();
+  var key=safeString_(value)||GALICIA_PRIMARY_LANDING_KEY;
+  var landing=getCampaignLandingInternalByKey_(GALICIA.CAMPAIGN_KEY,key);
+  if (!landing || safeString_(landing.archived_at)) return GALICIA_PRIMARY_LANDING_KEY;
+  return key;
+}
+
 function saveGaliciaLead_(data) {
   data=data||{};
+  ensureCampaignLandingFoundation_();
   var incomingLeadId=safeString_(data.leadId)||uuid_();
+  var incomingLandingKey=resolveIncomingLandingKey_(data.landingKey);
   var email=sanitizeEmail_(data.email);
   if (!email || email.indexOf('@')<1) throw new Error('Email inválido');
   if (!safeString_(data.company)) throw new Error('Empresa obligatoria');
@@ -78,8 +88,17 @@ function saveGaliciaLead_(data) {
     ));
     metadata.client=safeString_(data.client)||safeString_(metadata.client)||'landing';
     metadata.lastSource=safeString_(data.source)||safeString_(metadata.lastSource)||safeString_(existing.source);
+    metadata.lastLandingKey=incomingLandingKey;
+    metadata.lastAttribution={
+      source:safeString_(data.source),
+      utmSource:safeString_(data.utm_source||data.utmSource),
+      utmMedium:safeString_(data.utm_medium||data.utmMedium),
+      utmCampaign:safeString_(data.utm_campaign||data.utmCampaign),
+      at:nowIso_()
+    };
 
     var patch={
+      landing_key:safeString_(existing.landing_key)||incomingLandingKey,
       full_name:safeString_(data.fullName)||safeString_(existing.full_name),
       email:email,
       company:safeString_(data.company)||safeString_(existing.company),
@@ -102,24 +121,25 @@ function saveGaliciaLead_(data) {
     recordLeadEvent_(canonicalId,'lead_revisited',{
       source:data.source,
       pagePath:data.pagePath,
+      landingKey:incomingLandingKey,
       aliasUsed:incomingLeadId!==canonicalId
     });
     audit_(email,'lead',APP.SHEETS.LEADS,canonicalId,'update',existing,savedExisting,'public_form');
-    return {success:true,leadId:incomingLeadId,canonicalLeadId:canonicalId,status:'incomplete',stage:savedExisting.stage||'captured'};
+    return {success:true,leadId:incomingLeadId,canonicalLeadId:canonicalId,landingKey:safeString_(savedExisting.landing_key),status:'incomplete',stage:savedExisting.stage||'captured'};
   }
 
   var rec={
-    lead_id:incomingLeadId,campaign_key:GALICIA.CAMPAIGN_KEY,source:safeString_(data.source)||'direct',status:'incomplete',stage:'captured',
+    lead_id:incomingLeadId,campaign_key:GALICIA.CAMPAIGN_KEY,landing_key:incomingLandingKey,source:safeString_(data.source)||'direct',status:'incomplete',stage:'captured',
     full_name:safeString_(data.fullName),email:email,company:safeString_(data.company),website:sanitizeUrl_(data.website),phone:safeString_(data.phone),
     score_total:'',knockout:false,classification:'',benefit:'pending',mailing_segment:'D',utm_source:safeString_(data.utm_source||data.utmSource),
     utm_medium:safeString_(data.utm_medium||data.utmMedium),utm_campaign:safeString_(data.utm_campaign||data.utmCampaign),referrer:safeString_(data.referrer),
     consent_marketing:safeBoolean_(data.consentMarketing),current_step:1,last_question_key:'',last_activity_at:nowIso_(),manual_review_status:'',
-    meeting_status:'',meeting_clicked_at:'',metadata_json:jsonStringify_({client:data.client||'landing',lastSource:safeString_(data.source),aliasLeadIds:[]})
+    meeting_status:'',meeting_clicked_at:'',metadata_json:jsonStringify_({client:data.client||'landing',lastSource:safeString_(data.source),lastLandingKey:incomingLandingKey,aliasLeadIds:[]})
   };
   var saved=dbInsert_(APP.SHEETS.LEADS,rec);
-  recordLeadEvent_(saved.lead_id,'lead_captured',{source:data.source,pagePath:data.pagePath,client:data.client});
+  recordLeadEvent_(saved.lead_id,'lead_captured',{source:data.source,pagePath:data.pagePath,landingKey:incomingLandingKey,client:data.client});
   audit_(email,'lead',APP.SHEETS.LEADS,saved.lead_id,'create',null,saved,'public_form');
-  return {success:true,leadId:incomingLeadId,canonicalLeadId:saved.lead_id,status:'incomplete',stage:'captured'};
+  return {success:true,leadId:incomingLeadId,canonicalLeadId:saved.lead_id,landingKey:incomingLandingKey,status:'incomplete',stage:'captured'};
 }
 
 function saveGaliciaProgress_(data) {
@@ -157,6 +177,7 @@ function saveGaliciaProgress_(data) {
     recordLeadEvent_(canonicalId,'lead_progress',{
       source:data.source,
       pagePath:data.pagePath,
+      landingKey:safeString_(data.landingKey)||safeString_(lead.landing_key),
       questionKey:lastQuestion,
       answeredCount:Object.keys(allAnswers).length
     });
@@ -165,6 +186,7 @@ function saveGaliciaProgress_(data) {
     success:true,
     leadId:incomingLeadId,
     canonicalLeadId:canonicalId,
+    landingKey:safeString_(saved.landing_key),
     status:'incomplete',
     currentStep:2,
     lastQuestionKey:lastQuestion,
@@ -202,18 +224,26 @@ function completeGaliciaLead_(data) {
     website:website,status:'complete',stage:stage,score_total:total,knockout:knockout,classification:classification,benefit:benefit,mailing_segment:segment,
     current_step:2,last_question_key:'q4',last_activity_at:nowIso_(),manual_review_status:classification==='EN_EVALUACION'?'pending':'',completed_at:nowIso_()
   });
-  recordLeadEvent_(canonicalId,'lead_completed',{score:total,classification:classification,source:lead.source,pagePath:data.pagePath||'/regalo-galicia'});
+  recordLeadEvent_(canonicalId,'lead_completed',{
+    score:total,
+    classification:classification,
+    source:lead.source,
+    landingKey:safeString_(lead.landing_key),
+    pagePath:data.pagePath||getCampaignLandingPathForLead_(lead)
+  });
   audit_(lead.email,'lead',APP.SHEETS.LEADS,canonicalId,'complete',lead,saved,'public_form');
   return galiciaResultFromLead_(saved);
 }
 
 function galiciaResultFromLead_(lead) {
   var campaign=dbFindOne_(APP.SHEETS.CAMPAIGNS,function(r){return r.campaign_key===GALICIA.CAMPAIGN_KEY;},{includeArchived:true})||{};
+  var landing=getCampaignLandingForLead_(lead)||{};
   var classification=safeString_(lead.classification);
   var score=lead.score_total===''?null:safeNumber_(lead.score_total,0);
   return {
     success:true,
     leadId:lead.lead_id,
+    landingKey:safeString_(lead.landing_key)||GALICIA_PRIMARY_LANDING_KEY,
     status:lead.status||'incomplete',
     stage:lead.stage||'',
     currentStep:safeNumber_(lead.current_step,1),
@@ -222,6 +252,8 @@ function galiciaResultFromLead_(lead) {
     knockout:safeBoolean_(lead.knockout),
     classification:classification,
     benefit:lead.benefit||'',
+    benefitLabel:safeString_(landing.benefit_label),
+    benefitPercent:safeNumber_(landing.benefit_percent,0),
     mailingSegment:lead.mailing_segment||'',
     meetingUrl:classification==='CALIFICADO'?safeString_(campaign.meeting_url):''
   };
@@ -251,6 +283,7 @@ function recordLeadEvent_(leadId,eventType,data) {
   return dbInsert_(APP.SHEETS.LEAD_EVENTS,{
     lead_id:canonicalId,
     campaign_key:lead.campaign_key||GALICIA.CAMPAIGN_KEY,
+    landing_key:safeString_(data&&data.landingKey)||safeString_(lead.landing_key)||GALICIA_PRIMARY_LANDING_KEY,
     event_type:eventType,
     page_path:safeString_(data&&data.pagePath),
     source:safeString_(data&&data.source)||lead.source||'',
@@ -261,6 +294,7 @@ function recordLeadEvent_(leadId,eventType,data) {
 function leadEventMetadata_(eventType,data) {
   var meta={};
   if (safeString_(data.client)) meta.client=safeString_(data.client);
+  if (safeString_(data.landingKey)) meta.landingKey=safeString_(data.landingKey);
   if (data.aliasUsed!==undefined) meta.aliasUsed=safeBoolean_(data.aliasUsed);
   if (normalizeQuestionKey_(data.questionKey)) meta.questionKey=normalizeQuestionKey_(data.questionKey);
   if (data.answeredCount!==undefined) meta.answeredCount=safeNumber_(data.answeredCount,0);
@@ -285,9 +319,11 @@ function markGaliciaMeetingClick_(data) {
 function getLeadPublicStatus_(leadId) {
   var row=resolveGaliciaLead_(safeString_(leadId));
   if (!row) return {found:false};
+  var landing=getCampaignLandingForLead_(row)||{};
   return {
     found:true,
     leadId:row.lead_id,
+    landingKey:safeString_(row.landing_key)||GALICIA_PRIMARY_LANDING_KEY,
     status:row.status,
     stage:row.stage,
     currentStep:safeNumber_(row.current_step,1),
@@ -295,7 +331,9 @@ function getLeadPublicStatus_(leadId) {
     score:row.score_total===''?null:safeNumber_(row.score_total,0),
     knockout:safeBoolean_(row.knockout),
     classification:row.classification||'',
-    benefit:row.benefit||''
+    benefit:row.benefit||'',
+    benefitLabel:safeString_(landing.benefit_label),
+    benefitPercent:safeNumber_(landing.benefit_percent,0)
   };
 }
 
@@ -309,7 +347,7 @@ function issueGaliciaResumeToken_(leadId,ttlHours,recordEvent) {
     resume_expires_at:expiresAt,
     last_activity_at:safeString_(lead.last_activity_at)||nowIso_()
   });
-  if (recordEvent!==false) recordLeadEvent_(lead.lead_id,'resume_link_created',{});
+  if (recordEvent!==false) recordLeadEvent_(lead.lead_id,'resume_link_created',{landingKey:safeString_(lead.landing_key)});
   return {token:token,leadId:lead.lead_id,expiresAt:expiresAt};
 }
 
@@ -326,9 +364,12 @@ function getGaliciaResumeState_(token) {
   if (!expires || new Date(expires).getTime()<Date.now()) return {found:false,reason:'expired'};
 
   var answers=getLeadAnswersMap_(lead.lead_id);
+  var landing=getCampaignLandingForLead_(lead)||{};
   return {
     found:true,
     leadId:lead.lead_id,
+    landingKey:safeString_(lead.landing_key)||GALICIA_PRIMARY_LANDING_KEY,
+    landingPath:normalizeCampaignLandingPath_(landing.path),
     status:lead.status,
     stage:lead.stage,
     currentStep:safeNumber_(lead.current_step,1),
@@ -341,7 +382,9 @@ function getGaliciaResumeState_(token) {
     },
     answers:answers,
     classification:safeString_(lead.classification),
-    benefit:safeString_(lead.benefit)
+    benefit:safeString_(lead.benefit),
+    benefitLabel:safeString_(landing.benefit_label),
+    benefitPercent:safeNumber_(landing.benefit_percent,0)
   };
 }
 
