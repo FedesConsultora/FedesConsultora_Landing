@@ -47,6 +47,7 @@ function adminExecuteHttpCommand_(data) {
     case 'campaignLandings': return adminGetCampaignLandings_(token,safeString_(payload.campaignKey));
     case 'setCampaignPublicState': return adminSetCampaignPublicState_(token,safeString_(payload.campaignKey),safeBoolean_(payload.enabled));
     case 'setCampaignLandingStatus': return adminSetCampaignLandingStatus_(token,safeString_(payload.landingId),safeString_(payload.status));
+    case 'createCampaignLanding': return adminCreateCampaignLanding_(token,safeString_(payload.campaignKey),payload.record||{});
     case 'updateCampaignLanding': return adminUpdateCampaignLanding_(token,safeString_(payload.landingId),payload.patch||{});
     case 'lead360': return adminGetLead360(token,safeString_(payload.leadId));
     case 'onboarding360': return adminGetOnboarding360(token,safeString_(payload.onboardingId));
