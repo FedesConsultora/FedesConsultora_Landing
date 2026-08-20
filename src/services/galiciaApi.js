@@ -6,6 +6,7 @@ const POLL_ATTEMPTS = 10
 const LATE_CALLBACK_TTL = 60000
 const GALICIA_LANDING_PATH = '/bonificacion-galicia'
 const PUBLIC_CAMPAIGNS_CACHE_TTL = 30000
+const LANDING_CACHE_TTL = 30000
 
 function assertApiUrl() {
   if (!API_URL) {
@@ -133,6 +134,7 @@ export async function startGaliciaLead(payload) {
   return {
     found: false,
     leadId: payload.leadId,
+    landingKey: payload.landingKey || '',
     status: 'incomplete',
     stage: 'captured',
     pendingConfirmation: true,
@@ -149,13 +151,14 @@ export async function completeGaliciaLead(payload) {
   return waitForLead(payload.leadId, (lead) => lead.status === 'complete')
 }
 
-export async function markGaliciaMeetingClick(leadId, source) {
+export async function markGaliciaMeetingClick(leadId, source, options = {}) {
   if (!leadId) return
   try {
     await postOpaque('galiciaMeetingClick', {
       leadId,
       source,
-      pagePath: GALICIA_LANDING_PATH,
+      landingKey: options.landingKey || '',
+      pagePath: options.pagePath || GALICIA_LANDING_PATH,
     })
   } catch (error) {
     console.warn('[Galicia] No se pudo registrar meeting_click', error)
@@ -177,6 +180,44 @@ export async function getGaliciaCampaign() {
       })
   }
   return campaignPromise
+}
+
+const landingCache = new Map()
+const landingRequests = new Map()
+
+export async function getCampaignLanding(pathOrKey, { force = false } = {}) {
+  const lookup = String(pathOrKey || '').trim()
+  if (!lookup) return null
+  const cached = landingCache.get(lookup)
+  if (!force && cached && Date.now() - cached.at < LANDING_CACHE_TTL) return cached.data
+
+  if (!landingRequests.has(lookup)) {
+    const request = jsonp({ api: 'campaign-landing', path: lookup, _ts: Date.now() })
+      .then((payload) => {
+        const data = payload?.data || payload?.landing || payload || null
+        const normalized = data && !data.error && data.success !== false ? data : null
+        landingCache.set(lookup, { data: normalized, at: Date.now() })
+        return normalized
+      })
+      .catch((error) => {
+        console.info('[Campaign landing] No disponible:', lookup, error.message)
+        return cached?.data || null
+      })
+      .finally(() => landingRequests.delete(lookup))
+    landingRequests.set(lookup, request)
+  }
+
+  return landingRequests.get(lookup)
+}
+
+export async function getCampaignLandings(campaignKey = 'galicia-2026', { force = false } = {}) {
+  const cacheKey = `campaign:${campaignKey}`
+  const cached = landingCache.get(cacheKey)
+  if (!force && cached && Date.now() - cached.at < LANDING_CACHE_TTL) return cached.data
+  const payload = await jsonp({ api: 'campaign-landings', campaignKey, _ts: Date.now() })
+  const data = Array.isArray(payload) ? payload : Array.isArray(payload?.data) ? payload.data : []
+  landingCache.set(cacheKey, { data, at: Date.now() })
+  return data
 }
 
 let campaignsRequest = null
@@ -266,9 +307,6 @@ export async function getActiveHeroCampaigns() {
     const endsAt = Date.parse(c.ends_at || '')
     if (Number.isFinite(endsAt) && endsAt < now) return false
 
-    // El banner puede ocultarse durante la navegación actual, pero un reload
-    // siempre vuelve a empezar desde la primera campaña activa. No persistimos
-    // el descarte en sessionStorage porque el usuario pidió que F5 la muestre.
     return true
   }).sort((a, b) => (Number(a.sort_order) || 0) - (Number(b.sort_order) || 0))
 
@@ -295,16 +333,17 @@ export function createLeadId() {
   return `lead_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`
 }
 
-export function getAttribution() {
+export function getAttribution(defaults = {}) {
   const params = new URLSearchParams(window.location.search)
-  const explicitSource = params.get('source')
-  const utmSource = params.get('utm_source') || ''
+  const utmSource = params.get('utm_source') || defaults.utm_source_default || ''
+  const explicitSource = params.get('source') || defaults.source_default || ''
 
   return {
     source: explicitSource || (utmSource ? `utm_${utmSource}` : 'galicia_direct'),
     utmSource,
-    utmMedium: params.get('utm_medium') || '',
-    utmCampaign: params.get('utm_campaign') || '',
+    utmMedium: params.get('utm_medium') || defaults.utm_medium_default || '',
+    utmCampaign: params.get('utm_campaign') || defaults.utm_campaign_default || '',
+    utmContent: params.get('utm_content') || defaults.meta?.utmContent || '',
     referrer: document.referrer || '',
   }
 }
