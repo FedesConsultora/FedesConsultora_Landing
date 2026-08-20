@@ -173,7 +173,7 @@ export async function getGaliciaCampaign() {
       .then((payload) => payload?.data || payload?.campaign || payload || null)
       .catch((error) => {
         console.info('[Galicia] Datos de campaña no disponibles todavía', error.message)
-        return null
+        return undefined
       })
       .finally(() => {
         campaignPromise = null
@@ -201,7 +201,7 @@ export async function getCampaignLanding(pathOrKey, { force = false } = {}) {
       })
       .catch((error) => {
         console.info('[Campaign landing] No disponible:', lookup, error.message)
-        return cached?.data || null
+        return force ? null : cached?.data || null
       })
       .finally(() => landingRequests.delete(lookup))
     landingRequests.set(lookup, request)
@@ -286,7 +286,7 @@ export async function getActiveHeroCampaigns() {
   ])
 
   const collection = collectionResult.status === 'fulfilled' ? collectionResult.value : []
-  const galicia = galiciaResult.status === 'fulfilled' ? galiciaResult.value : null
+  const galicia = galiciaResult.status === 'fulfilled' ? galiciaResult.value : undefined
   const all = mergeCampaigns(collection, galicia)
 
   if (!Array.isArray(all)) return []
