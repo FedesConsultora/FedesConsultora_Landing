@@ -15,25 +15,25 @@ function LandingLoading() {
 
 export default function CampaignLandingRoute() {
   const location = useLocation()
-  const [state, setState] = useState({ loading: true, landing: null })
+  const [resolved, setResolved] = useState({ path: '', landing: null })
 
   useEffect(() => {
     let active = true
-    setState({ loading: true, landing: null })
+    const requestedPath = location.pathname
 
-    getCampaignLanding(location.pathname, { force: true })
+    getCampaignLanding(requestedPath, { force: true })
       .then((landing) => {
-        if (active) setState({ loading: false, landing })
+        if (active) setResolved({ path: requestedPath, landing })
       })
       .catch(() => {
-        if (active) setState({ loading: false, landing: null })
+        if (active) setResolved({ path: requestedPath, landing: null })
       })
 
     return () => { active = false }
   }, [location.pathname])
 
-  if (state.loading) return <LandingLoading />
-  if (!state.landing) return <Navigate to="/" replace />
+  if (resolved.path !== location.pathname) return <LandingLoading />
+  if (!resolved.landing) return <Navigate to="/" replace />
 
-  return <BonoLanding landing={state.landing} />
+  return <BonoLanding landing={resolved.landing} />
 }
