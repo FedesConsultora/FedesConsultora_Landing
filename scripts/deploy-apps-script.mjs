@@ -30,13 +30,16 @@ if (!config.deploymentId || !config.webAppUrl) {
 
 const description = process.argv.slice(2).join(' ').trim() || `Fedes CMS ${new Date().toISOString()}`
 
-console.log('1/4 Verificando archivos que clasp va a publicar...')
+console.log('1/5 Validando sintaxis local de Apps Script...')
+runNodeScript('scripts/check-apps-script.mjs')
+
+console.log('\n2/5 Verificando archivos que clasp va a publicar...')
 runClasp(['show-file-status'])
 
-console.log('\n2/4 Subiendo código local a Apps Script...')
+console.log('\n3/5 Subiendo código local a Apps Script...')
 runClasp(['push', '--force'])
 
-console.log(`\n3/4 Actualizando el deployment fijo ${config.deploymentId}...`)
+console.log(`\n4/5 Actualizando el deployment fijo ${config.deploymentId}...`)
 runClasp([
   'create-deployment',
   '--deploymentId',
@@ -45,7 +48,7 @@ runClasp([
   description,
 ])
 
-console.log('\n4/4 Verificando la URL pública...')
+console.log('\n5/5 Verificando la URL pública...')
 runNodeScript('scripts/smoke-apps-script.mjs')
 
 console.log('\n✅ Apps Script publicado correctamente.')
