@@ -44,7 +44,10 @@ function adminExecuteHttpCommand_(data) {
     case 'duplicate': return adminDuplicateDataSafe(token,safeString_(payload.tableKey),safeString_(payload.id));
     case 'bulk': return adminBulkActionReact_(token,safeString_(payload.tableKey),payload.ids||[],safeString_(payload.action));
     case 'campaign360': return adminGetCampaign360(token,safeString_(payload.campaignKey));
+    case 'campaignLandings': return adminGetCampaignLandings_(token,safeString_(payload.campaignKey));
     case 'setCampaignPublicState': return adminSetCampaignPublicState_(token,safeString_(payload.campaignKey),safeBoolean_(payload.enabled));
+    case 'setCampaignLandingStatus': return adminSetCampaignLandingStatus_(token,safeString_(payload.landingId),safeString_(payload.status));
+    case 'updateCampaignLanding': return adminUpdateCampaignLanding_(token,safeString_(payload.landingId),payload.patch||{});
     case 'lead360': return adminGetLead360(token,safeString_(payload.leadId));
     case 'onboarding360': return adminGetOnboarding360(token,safeString_(payload.onboardingId));
     case 'changePassword': return adminChangePasswordSecure_(token,safeString_(payload.currentPassword),safeString_(payload.newPassword));
