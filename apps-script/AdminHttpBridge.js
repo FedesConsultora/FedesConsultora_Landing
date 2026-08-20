@@ -44,6 +44,7 @@ function adminExecuteHttpCommand_(data) {
     case 'duplicate': return adminDuplicateDataSafe(token,safeString_(payload.tableKey),safeString_(payload.id));
     case 'bulk': return adminBulkActionReact_(token,safeString_(payload.tableKey),payload.ids||[],safeString_(payload.action));
     case 'campaign360': return adminGetCampaign360(token,safeString_(payload.campaignKey));
+    case 'setCampaignPublicState': return adminSetCampaignPublicState_(token,safeString_(payload.campaignKey),safeBoolean_(payload.enabled));
     case 'lead360': return adminGetLead360(token,safeString_(payload.leadId));
     case 'onboarding360': return adminGetOnboarding360(token,safeString_(payload.onboardingId));
     case 'changePassword': return adminChangePasswordSecure_(token,safeString_(payload.currentPassword),safeString_(payload.newPassword));
@@ -68,8 +69,14 @@ function adminIssueResumeLink_(token,leadId,ttlHours){
   if(!lead)throw new Error('Lead no encontrado');
   if(safeString_(lead.campaign_key)!==GALICIA.CAMPAIGN_KEY)throw new Error('La recuperación automática todavía no está configurada para esta campaña.');
   var issued=issueGaliciaResumeToken_(leadId,ttlHours,true);
-  audit_(session.actor,'admin',APP.SHEETS.LEADS,leadId,'issue_resume_link',null,{expiresAt:issued.expiresAt},'react_admin');
-  return{success:true,leadId:issued.leadId,expiresAt:issued.expiresAt,relativeUrl:'/bonificacion-galicia?resume='+encodeURIComponent(issued.token)+'&source=galicia_recovery_email&utm_source=galicia&utm_medium=email&utm_campaign=beneficio_galicia_2026'};
+  var landing=getCampaignLandingForLead_(lead)||{};
+  var path=normalizeCampaignLandingPath_(landing.path)||'/bonificacion-galicia';
+  var source='galicia_recovery_email';
+  var utmSource=safeString_(landing.utm_source_default)||'galicia';
+  var utmCampaign=safeString_(landing.utm_campaign_default)||'beneficio_galicia_2026';
+  var query='?resume='+encodeURIComponent(issued.token)+'&source='+encodeURIComponent(source)+'&utm_source='+encodeURIComponent(utmSource)+'&utm_medium=email&utm_campaign='+encodeURIComponent(utmCampaign);
+  audit_(session.actor,'admin',APP.SHEETS.LEADS,leadId,'issue_resume_link',null,{expiresAt:issued.expiresAt,landingKey:safeString_(lead.landing_key)},'react_admin');
+  return{success:true,leadId:issued.leadId,expiresAt:issued.expiresAt,relativeUrl:path+query};
 }
 function adminHttpOpaqueId_(value){return /^[A-Za-z0-9_-]{20,120}$/.test(safeString_(value));}
 function adminHttpResultKey_(requestId,clientSecret){return'admin_http:'+digestHex_(safeString_(requestId)+':'+safeString_(clientSecret));}
