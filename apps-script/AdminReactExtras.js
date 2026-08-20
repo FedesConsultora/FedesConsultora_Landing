@@ -1,18 +1,26 @@
 function adminGetWorkspaceReact_(token) {
+  ensureCampaignLandingFoundation_();
   var workspace = adminGetWorkspace(token);
   var galicia = dbFindOne_(APP.SHEETS.CAMPAIGNS, function(row){ return safeString_(row.campaign_key) === GALICIA.CAMPAIGN_KEY; }, {includeArchived:true});
   if (galicia) ensureGaliciaCampaignPath_(galicia);
   var leads = workspace.tables && workspace.tables.leads;
   if (leads && leads.fields) {
     leads.fields.forEach(function(field){
-      if (field.name === 'resume_expires_at' || field.name === 'resume_token_hash') field.readOnly = true;
+      if (field.name === 'resume_expires_at' || field.name === 'resume_token_hash' || field.name === 'landing_key') field.readOnly = true;
     });
+    if (leads.listColumns.indexOf('landing_key') < 0) {
+      var campaignIndex=leads.listColumns.indexOf('campaign_key');
+      leads.listColumns.splice(campaignIndex >= 0 ? campaignIndex + 1 : 0, 0, 'landing_key');
+    }
+    if (leads.filterFields.indexOf('landing_key') < 0) leads.filterFields.push('landing_key');
+    if (leads.searchFields.indexOf('landing_key') < 0) leads.searchFields.push('landing_key');
   }
   return workspace;
 }
 
 function adminQueryTableList_(token, tableKey, query) {
   requireAdminSession_(token);
+  if (safeString_(tableKey)==='leads') ensureCampaignLandingFoundation_();
   var def = adminRequireTable_(tableKey);
   var q = query || {};
   var all = dbReadAll_(def.sheet, {includeArchived:true}).map(function(row){
@@ -22,10 +30,16 @@ function adminQueryTableList_(token, tableKey, query) {
   var base = all.slice();
   if (!safeBoolean_(q.includeArchived) && (SCHEMA[def.sheet] || []).indexOf('archived_at') >= 0) base = base.filter(function(row){ return !safeString_(row.archived_at); });
   var facets = {};
-  (def.filters || []).forEach(function(field){var seen={};base.forEach(function(row){var value=String(row[field]===undefined?'':row[field]);if(value!=='')seen[value]=true;});facets[field]=Object.keys(seen).sort();});
+  var facetFields=(def.filters||[]).slice();
+  if (safeString_(tableKey)==='leads' && facetFields.indexOf('landing_key')<0) facetFields.push('landing_key');
+  facetFields.forEach(function(field){var seen={};base.forEach(function(row){var value=String(row[field]===undefined?'':row[field]);if(value!=='')seen[value]=true;});facets[field]=Object.keys(seen).sort();});
   var rows = base;
   var search = safeString_(q.search).toLowerCase();
-  if (search) rows=rows.filter(function(row){return(def.search||[]).some(function(field){return String(row[field]===undefined?'':row[field]).toLowerCase().indexOf(search)>=0;});});
+  if (search) {
+    var searchFields=(def.search||[]).slice();
+    if (safeString_(tableKey)==='leads' && searchFields.indexOf('landing_key')<0) searchFields.push('landing_key');
+    rows=rows.filter(function(row){return searchFields.some(function(field){return String(row[field]===undefined?'':row[field]).toLowerCase().indexOf(search)>=0;});});
+  }
   var filters=q.filters||{};
   Object.keys(filters).forEach(function(field){var wanted=filters[field];if(wanted===undefined||wanted===null||String(wanted)==='')return;var values=Array.isArray(wanted)?wanted:String(wanted).split('|');rows=rows.filter(function(row){return values.indexOf(String(row[field]===undefined?'':row[field]))>=0;});});
   var dateField=safeString_(q.dateField)||def.dateField,from=safeString_(q.dateFrom),to=safeString_(q.dateTo);
@@ -38,6 +52,7 @@ function adminQueryTableList_(token, tableKey, query) {
 
 function adminListProjection_(def,row){
   var out={},fields=[def.pk].concat(def.list||[]);
+  if(def.sheet===APP.SHEETS.LEADS&&fields.indexOf('landing_key')<0){var idx=fields.indexOf('campaign_key');fields.splice(idx>=0?idx+1:1,0,'landing_key');}
   if((SCHEMA[def.sheet]||[]).indexOf('archived_at')>=0)fields.push('archived_at');
   if(def.sheet===APP.SHEETS.MEDIA)fields=fields.concat(['file_id','drive_url','public_url']);
   fields.forEach(function(field){if(out[field]===undefined)out[field]=row[field];});
@@ -57,6 +72,7 @@ function adminProtectTechnicalFields_(tableKey,record){
   if(key==='leads'){
     delete clean.resume_token_hash;
     delete clean.resume_expires_at;
+    delete clean.landing_key;
   }
   if(key==='campaigns'&&safeString_(clean.campaign_key)===GALICIA.CAMPAIGN_KEY){
     clean.landing_path=GALICIA_PRODUCTION_PATH;
