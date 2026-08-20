@@ -1,7 +1,7 @@
 const APP = Object.freeze({
   NAME: 'Fedes Landing CMS',
-  VERSION: '4.2.2',
-  SCHEMA_VERSION: 3,
+  VERSION: '4.3.0',
+  SCHEMA_VERSION: 4,
   LOCALE: 'es-AR',
   TIMEZONE: 'America/Argentina/Buenos_Aires',
   CURRENCY: 'ARS',
@@ -29,6 +29,7 @@ const APP = Object.freeze({
     MEDIA: 'CMS_Media',
     CONTACTS: 'CRM_Contacts',
     CAMPAIGNS: 'CRM_Campaigns',
+    CAMPAIGN_LANDINGS: 'CRM_CampaignLandings',
     LEADS: 'CRM_Leads',
     LEAD_ANSWERS: 'CRM_LeadAnswers',
     LEAD_EVENTS: 'CRM_LeadEvents',
@@ -105,6 +106,12 @@ const ENTITY_DEFS = Object.freeze({
     pk: 'campaign_id',
     label: 'Campañas',
     fields: ['campaign_key','name','landing_path','benefit_label','meeting_url','starts_at','ends_at','sort_order','featured','status','metadata_json'],
+  },
+  campaignLandings: {
+    sheet: APP.SHEETS.CAMPAIGN_LANDINGS,
+    pk: 'landing_id',
+    label: 'Landings de campaña',
+    fields: ['campaign_key','landing_key','name','path','benefit_label','benefit_percent','badge','kicker','headline','headline_accent','description','seo_title','seo_description','source_default','utm_source_default','utm_medium_default','utm_campaign_default','sort_order','featured','status','metadata_json'],
   },
   settings: {
     sheet: APP.SHEETS.SETTINGS,
