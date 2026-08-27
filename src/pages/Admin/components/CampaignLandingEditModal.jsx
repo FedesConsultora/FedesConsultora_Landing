@@ -3,26 +3,60 @@ import { ExternalLink, Save, X } from 'lucide-react'
 import { adminCommand } from '../adminApi'
 import AdminModalPortal from './AdminModalPortal'
 
-const FIELDS = [
-  ['name', 'Nombre interno', 'text'],
-  ['path', 'Ruta pública', 'text'],
-  ['benefit_label', 'Texto del beneficio', 'text'],
-  ['benefit_percent', 'Porcentaje', 'number'],
-  ['badge', 'Badge', 'text'],
-  ['kicker', 'Kicker', 'text'],
-  ['headline', 'Título principal', 'text'],
-  ['headline_accent', 'Título destacado', 'text'],
-  ['description', 'Descripción', 'textarea'],
-  ['seo_title', 'SEO title', 'text'],
-  ['seo_description', 'SEO description', 'textarea'],
-  ['source_default', 'Source por defecto', 'text'],
-  ['utm_source_default', 'UTM source', 'text'],
-  ['utm_medium_default', 'UTM medium', 'text'],
-  ['utm_campaign_default', 'UTM campaign', 'text'],
-  ['utm_content', 'UTM content', 'text'],
-  ['method_note', 'Nota metodológica', 'textarea'],
-  ['result_note', 'Nota del resultado', 'textarea'],
+const GROUPS = [
+  {
+    key: 'identity',
+    eyebrow: 'Landing',
+    title: 'Identidad y beneficio',
+    description: 'Ruta, nombre interno y propuesta económica específica de esta página.',
+    fields: [
+      ['name', 'Nombre interno', 'text'],
+      ['path', 'Ruta pública', 'text'],
+      ['benefit_label', 'Texto del beneficio', 'text'],
+      ['benefit_percent', 'Porcentaje', 'number'],
+    ],
+  },
+  {
+    key: 'copy',
+    eyebrow: 'Contenido',
+    title: 'Mensaje de la landing',
+    description: 'Este contenido es independiente de otras landings de la misma campaña.',
+    fields: [
+      ['badge', 'Badge', 'text'],
+      ['kicker', 'Kicker', 'text'],
+      ['headline', 'Título principal', 'text'],
+      ['headline_accent', 'Título destacado', 'text'],
+      ['description', 'Descripción', 'textarea'],
+      ['method_note', 'Nota metodológica', 'textarea'],
+      ['result_note', 'Nota del resultado', 'textarea'],
+    ],
+  },
+  {
+    key: 'attribution',
+    eyebrow: 'Medición',
+    title: 'Atribución y UTMs',
+    description: 'Valores por defecto para identificar de dónde vino cada visita y cada lead.',
+    fields: [
+      ['source_default', 'Source por defecto', 'text'],
+      ['utm_source_default', 'UTM source', 'text'],
+      ['utm_medium_default', 'UTM medium', 'text'],
+      ['utm_campaign_default', 'UTM campaign', 'text'],
+      ['utm_content', 'UTM content', 'text'],
+    ],
+  },
+  {
+    key: 'seo',
+    eyebrow: 'SEO',
+    title: 'Metadatos públicos',
+    description: 'Título y descripción usados cuando la landing está publicada.',
+    fields: [
+      ['seo_title', 'SEO title', 'text'],
+      ['seo_description', 'SEO description', 'textarea'],
+    ],
+  },
 ]
+
+const FIELDS = GROUPS.flatMap((group) => group.fields)
 
 function buildTrackingUrl(form) {
   const params = new URLSearchParams()
@@ -55,15 +89,22 @@ function buildPayload(form, landing) {
   if (form.result_note) metadata.resultNote = form.result_note
   else delete metadata.resultNote
 
-  const payload = {
-    ...form,
-    benefit_percent: Number(form.benefit_percent) || 0,
-    metadata_json: JSON.stringify(metadata),
-  }
+  const payload = { ...form, benefit_percent: Number(form.benefit_percent) || 0, metadata_json: JSON.stringify(metadata) }
   delete payload.utm_content
   delete payload.method_note
   delete payload.result_note
   return payload
+}
+
+function Field({ name, label, type, value, onChange }) {
+  return (
+    <label className={`admin-field ${type === 'textarea' ? 'admin-field--wide' : ''}`}>
+      <span>{label}</span>
+      {type === 'textarea'
+        ? <textarea rows={4} value={value} onChange={(event) => onChange(name, event.target.value)} />
+        : <input type={type} value={value} onChange={(event) => onChange(name, event.target.value)} />}
+    </label>
+  )
 }
 
 export default function CampaignLandingEditModal({ landing, busy, onClose, onSave }) {
@@ -85,14 +126,10 @@ export default function CampaignLandingEditModal({ landing, busy, onClose, onSav
     if (!String(form.benefit_label || '').trim()) return setError('Ingresá el texto del beneficio.')
 
     const payload = buildPayload(form, landing)
-
     try {
       if (createMode) {
         setCreateBusy(true)
-        await adminCommand('createCampaignLanding', {
-          campaignKey: landing?.campaign_key,
-          record: payload,
-        })
+        await adminCommand('createCampaignLanding', { campaignKey: landing?.campaign_key, record: payload })
         await onClose()
         return
       }
@@ -111,57 +148,38 @@ export default function CampaignLandingEditModal({ landing, busy, onClose, onSav
         <form className="admin-modal admin-modal--xl admin-glass admin-landing-editor" onSubmit={submit}>
           <button type="button" className="admin-modal-close" onClick={onClose}><X size={19} /></button>
           <div className="admin-modal-heading">
-            <span>Landing de campaña</span>
+            <span>Contenido de landing</span>
             <h2>{createMode ? 'Nueva landing' : landing?.name || landing?.landing_key || 'Editar landing'}</h2>
             <p>{landing?.campaign_key}{!createMode && landing?.landing_key ? ` · ${landing.landing_key}` : ' · se crea inicialmente como borrador'}</p>
           </div>
 
-          <div className="admin-landing-editor__grid">
-            {createMode && (
-              <label className="admin-field">
-                <span>Clave estable de landing</span>
-                <input
-                  type="text"
-                  value={form.landing_key}
-                  onChange={(event) => change('landing_key', event.target.value)}
-                  placeholder="galicia-cordoba"
-                />
-              </label>
-            )}
-            {FIELDS.map(([name, label, type]) => (
-              <label className={`admin-field ${type === 'textarea' ? 'admin-field--wide' : ''}`} key={name}>
-                <span>{label}</span>
-                {type === 'textarea' ? (
-                  <textarea rows={4} value={form[name]} onChange={(event) => change(name, event.target.value)} />
-                ) : (
-                  <input type={type} value={form[name]} onChange={(event) => change(name, event.target.value)} />
-                )}
-              </label>
-            ))}
-          </div>
+          {createMode && (
+            <section className="admin-form-section">
+              <div className="admin-form-section__heading"><span>Estructura</span><h3>Clave estable</h3><p>No cambia aunque después edites el nombre o el copy.</p></div>
+              <label className="admin-field"><span>Clave estable de landing</span><input type="text" value={form.landing_key} onChange={(event) => change('landing_key', event.target.value)} placeholder="galicia-cordoba" /></label>
+            </section>
+          )}
+
+          {GROUPS.map((group) => (
+            <section className="admin-form-section" key={group.key}>
+              <div className="admin-form-section__heading"><span>{group.eyebrow}</span><h3>{group.title}</h3><p>{group.description}</p></div>
+              <div className="admin-landing-editor__grid">
+                {group.fields.map(([name, label, type]) => <Field key={name} name={name} label={label} type={type} value={form[name]} onChange={change} />)}
+              </div>
+            </section>
+          ))}
 
           <section className="admin-landing-editor__preview admin-glass-soft">
-            <div>
-              <span>URL de tracking resultante</span>
-              <code>{trackingUrl}</code>
-            </div>
-            {!createMode && landing?.status === 'published' && (
-              <a href={trackingUrl} target="_blank" rel="noreferrer"><ExternalLink size={14} />Vista pública</a>
-            )}
+            <div><span>URL de tracking resultante</span><code>{trackingUrl}</code></div>
+            {!createMode && landing?.status === 'published' && <a href={trackingUrl} target="_blank" rel="noreferrer"><ExternalLink size={14} />Vista pública</a>}
           </section>
 
-          {createMode && (
-            <div className="admin-form-note">
-              La landing se guarda como <strong>draft</strong>. Después podés revisarla y publicarla desde la Vista 360° de la campaña.
-            </div>
-          )}
+          {createMode && <div className="admin-form-note">La landing se guarda como <strong>draft</strong>. Después la revisás y la publicás desde el Centro de control de la campaña.</div>}
           {error && <div className="admin-form-error">{error}</div>}
 
           <div className="admin-modal-actions">
             <button type="button" className="admin-button admin-button--ghost" onClick={onClose}>Cancelar</button>
-            <button type="submit" className="admin-button admin-button--primary" disabled={isBusy}>
-              <Save size={15} />{isBusy ? 'Guardando…' : createMode ? 'Crear landing' : 'Guardar landing'}
-            </button>
+            <button type="submit" className="admin-button admin-button--primary" disabled={isBusy}><Save size={15} />{isBusy ? 'Guardando…' : createMode ? 'Crear landing' : 'Guardar landing'}</button>
           </div>
         </form>
       </div>
