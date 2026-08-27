@@ -1,6 +1,7 @@
 var GALICIA_PRIMARY_LANDING_KEY = 'charla-pymes';
 var GALICIA_OFFICE_BANKING_LANDING_KEY = 'office-banking';
 var CAMPAIGN_LANDING_BACKFILL_KEY = 'campaign_landings_v1_backfill';
+var CAMPAIGN_LANDING_FOUNDATION_CACHE_KEY = 'campaign_landings_foundation:v2:schema-' + APP.SCHEMA_VERSION;
 
 function normalizeCampaignLandingPath_(value) {
   var raw=safeString_(value).trim();
@@ -94,7 +95,10 @@ function backfillCampaignLandingKeys_() {
   systemSet_(CAMPAIGN_LANDING_BACKFILL_KEY,'done');
 }
 
-function ensureCampaignLandingFoundation_() {
+function ensureCampaignLandingFoundation_(force) {
+  var cache=CacheService.getScriptCache();
+  if (!safeBoolean_(force) && cache.get(CAMPAIGN_LANDING_FOUNDATION_CACHE_KEY)==='ready') return;
+
   ensureSheet_(APP.SHEETS.CAMPAIGN_LANDINGS,SCHEMA[APP.SHEETS.CAMPAIGN_LANDINGS]);
   ensureSheet_(APP.SHEETS.LEADS,SCHEMA[APP.SHEETS.LEADS]);
   ensureSheet_(APP.SHEETS.LEAD_EVENTS,SCHEMA[APP.SHEETS.LEAD_EVENTS]);
@@ -107,6 +111,7 @@ function ensureCampaignLandingFoundation_() {
   });
 
   backfillCampaignLandingKeys_();
+  cache.put(CAMPAIGN_LANDING_FOUNDATION_CACHE_KEY,'ready',21600);
 }
 
 function campaignIsPublicNow_(campaign) {
