@@ -41,9 +41,9 @@ function adminExecuteHttpCommand_(data) {
     case 'record': return adminGetRecord_(token,safeString_(payload.tableKey),safeString_(payload.id));
     case 'create': return adminCreateDataReact_(token,safeString_(payload.tableKey),payload.record||{});
     case 'update': return adminUpdateDataReact_(token,safeString_(payload.tableKey),safeString_(payload.id),payload.record||{});
-    case 'archive': return adminArchiveData(token,safeString_(payload.tableKey),safeString_(payload.id));
+    case 'archive': return adminArchiveDataReactGuard_(token,safeString_(payload.tableKey),safeString_(payload.id));
     case 'restore': return adminRestoreDataReact_(token,safeString_(payload.tableKey),safeString_(payload.id));
-    case 'delete': return adminHardDeleteData(token,safeString_(payload.tableKey),safeString_(payload.id));
+    case 'delete': return adminHardDeleteDataReactGuard_(token,safeString_(payload.tableKey),safeString_(payload.id));
     case 'duplicate': return adminDuplicateDataSafe(token,safeString_(payload.tableKey),safeString_(payload.id));
     case 'bulk': return adminBulkActionReact_(token,safeString_(payload.tableKey),payload.ids||[],safeString_(payload.action));
     case 'campaign360': return adminGetCampaign360WithFunnel_(token,safeString_(payload.campaignKey));
