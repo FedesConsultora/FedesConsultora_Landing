@@ -37,23 +37,31 @@ function analyticsDimensionPatch_(row) {
 
 function backfillAnalyticsDimensions_() {
   ensureAnalyticsDimensionsSchema_(true);
-  if(systemGet_(ANALYTICS_DIMENSIONS_BACKFILL_KEY)==='done')return;
+  if(systemGet_(ANALYTICS_DIMENSIONS_BACKFILL_KEY)==='done')return{success:true,unchanged:true,rows:0};
 
   var sheet=getSpreadsheet_().getSheetByName(APP.SHEETS.ANALYTICS);
-  if(!sheet||sheet.getLastRow()<2){systemSet_(ANALYTICS_DIMENSIONS_BACKFILL_KEY,'done');return;}
+  if(!sheet||sheet.getLastRow()<2){systemSet_(ANALYTICS_DIMENSIONS_BACKFILL_KEY,'done');return{success:true,rows:0};}
 
   var headers=dbHeaders_(sheet);
   var count=sheet.getLastRow()-1;
   var values=sheet.getRange(2,1,count,headers.length).getValues();
   var dimensionFields=['campaign_key','landing_key','visitor_id','session_id','source','utm_source','utm_medium','utm_campaign','utm_content'];
   var columns={};
+  var enriched=0;
   dimensionFields.forEach(function(field){columns[field]=[];});
 
   values.forEach(function(raw){
     var row={};
     headers.forEach(function(header,index){row[header]=normalizeCellValue_(raw[index]);});
     var patch=analyticsDimensionPatch_(row);
-    dimensionFields.forEach(function(field){columns[field].push([safeString_(row[field])||safeString_(patch[field])]);});
+    var changed=false;
+    dimensionFields.forEach(function(field){
+      var existing=safeString_(row[field]);
+      var next=existing||safeString_(patch[field]);
+      if(!existing&&next)changed=true;
+      columns[field].push([next]);
+    });
+    if(changed)enriched++;
   });
 
   dimensionFields.forEach(function(field){
@@ -62,9 +70,16 @@ function backfillAnalyticsDimensions_() {
   });
   dbInvalidateRequestCache_(APP.SHEETS.ANALYTICS);
   systemSet_(ANALYTICS_DIMENSIONS_BACKFILL_KEY,'done');
+  return{success:true,rows:count,enriched:enriched};
 }
 
 function ensureAnalyticsDimensions_(backfill) {
   ensureAnalyticsDimensionsSchema_(false);
-  if(safeBoolean_(backfill))backfillAnalyticsDimensions_();
+  if(safeBoolean_(backfill))return backfillAnalyticsDimensions_();
+  return{success:true,schemaReady:true};
+}
+
+function adminSyncAnalyticsDimensions_(token) {
+  requireAdminSession_(token);
+  return backfillAnalyticsDimensions_();
 }
