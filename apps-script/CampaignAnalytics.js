@@ -149,6 +149,8 @@ function adminGetCampaignFunnel_(token,campaignKey) {
       source:safeString_(lead.source),
       utm_source:safeString_(lead.utm_source),
       utm_medium:safeString_(lead.utm_medium),
+      utm_campaign:safeString_(lead.utm_campaign),
+      utm_content:safeString_(lead.utm_content),
       answer_count:safeNumber_(answerCountByLead[safeString_(lead.lead_id)],0),
       last_question_key:safeString_(lead.last_question_key),
       status:safeString_(lead.status),
@@ -182,6 +184,19 @@ function adminGetCampaignFunnel_(token,campaignKey) {
 
 function adminGetCampaign360WithFunnel_(token,campaignKey) {
   var base=adminGetCampaign360(token,campaignKey);
+  var landingData=adminGetCampaignLandings_(token,campaignKey);
+  var rawCampaign=dbFindOne_(APP.SHEETS.CAMPAIGNS,function(row){return safeString_(row.campaign_key)===safeString_(campaignKey);},{includeArchived:true})||{};
+  var hero=campaignHeroRuntimeState_(rawCampaign,publicMediaMap_());
   base.funnel=adminGetCampaignFunnel_(token,campaignKey);
+  base.landings=landingData.landings||[];
+  base.hero=hero;
+  base.integrity=campaignIntegritySummary_(rawCampaign,base.landings,hero);
+  base.publicState={
+    campaignPublic:campaignIsPublicNow_(rawCampaign),
+    heroActive:hero.active,
+    heroReason:hero.reason,
+    publishedLandings:(base.landings||[]).filter(function(row){return safeString_(row.status)===APP.STATUS.PUBLISHED&&!safeString_(row.archived_at);}).length,
+    totalLandings:(base.landings||[]).filter(function(row){return !safeString_(row.archived_at);}).length
+  };
   return base;
 }
