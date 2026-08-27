@@ -61,7 +61,8 @@ function adminGetDashboardOverview_(token) {
   });
 
   var campaignIssues=cards.filter(function(card){
-    return card.status==='published' && (!card.publishedLandings || !card.hero.desktopReady || !card.hero.mobileReady);
+    var heroBroken=card.hero.enabled && (!card.hero.desktopReady || !card.hero.mobileReady);
+    return card.status==='published' && (!card.publishedLandings || heroBroken);
   }).length;
 
   return {
