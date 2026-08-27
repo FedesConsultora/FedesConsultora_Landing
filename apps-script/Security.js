@@ -31,10 +31,16 @@ function verifyVaddarApiKey_(apiKey) {
 
 function adminLogin(password) {
   if (!verifySecret_(APP.PROPS.ADMIN_PASSWORD_HASH, APP.PROPS.ADMIN_PASSWORD_SALT, password)) {
+    console.warn('[AdminAuth] Intento de acceso rechazado');
     return {success:false, error:'Clave incorrecta'};
   }
+
+  // El login no escribe en Google Sheets. Una inserción sincrónica en _AuditLog
+  // agregaba latencia exactamente en el camino crítico de autenticación. La sesión
+  // queda registrada por CacheService y las mutaciones administrativas continúan
+  // auditándose en Sheets como antes.
   var token = createAdminSession_('admin');
-  audit_('admin','admin','auth','admin','login',null,{success:true},'admin_panel');
+  console.info('[AdminAuth] Sesión administrativa creada');
   return {
     success:true,
     token:token,
@@ -57,8 +63,6 @@ function resetAdminPassword_() {
   return 'Nueva contraseña generada. Revisá el registro de ejecución.';
 }
 
-// Wrapper público para poder ejecutar el reset desde el selector del editor de Apps Script.
-// Las funciones cuyo nombre termina en "_" se mantienen como helpers internos.
 function resetAdminPassword() {
   return resetAdminPassword_();
 }
