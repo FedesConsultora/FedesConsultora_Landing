@@ -1,3 +1,10 @@
+function invalidateAdminAnalyticsOverviewCache_() {
+  var cache=CacheService.getScriptCache();
+  [7,30,90].forEach(function(days){
+    cache.remove('admin_analytics_overview:v2:'+days+':schema-'+APP.SCHEMA_VERSION);
+  });
+}
+
 function saveTracking_(data) {
   data=data||{};
   ensureAnalyticsDimensionsSchema_(false);
@@ -24,5 +31,7 @@ function saveTracking_(data) {
     if(!safeString_(record[field]))record[field]=dimensions[field];
   });
 
-  return dbInsert_(APP.SHEETS.ANALYTICS,record);
+  var saved=dbInsert_(APP.SHEETS.ANALYTICS,record);
+  invalidateAdminAnalyticsOverviewCache_();
+  return saved;
 }
