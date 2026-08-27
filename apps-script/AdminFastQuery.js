@@ -44,7 +44,8 @@ function adminFastFacetFields_(tableKey,def) {
 
 function adminQueryAppendOnlyPage_(token,tableKey,query) {
   requireAdminSession_(token);
-  if(safeString_(tableKey)==='analytics')ensureAnalyticsDimensionsSchema_(false);
+  var key=safeString_(tableKey);
+  if(key==='analytics')backfillAnalyticsDimensions_();
   var def=adminRequireTable_(tableKey);
   var q=query||{};
   var sheet=getSpreadsheet_().getSheetByName(def.sheet);
@@ -78,6 +79,7 @@ function adminQueryAppendOnlyPage_(token,tableKey,query) {
 function adminQueryTableFast_(token,tableKey,query) {
   var key=safeString_(tableKey);
   var q=query||{};
+  if(key==='analytics')ensureAnalyticsDimensionsSchema_(false);
   var appendOnly={analytics:true,audit:true,leadEvents:true};
   var defaultSort=!safeString_(q.sortBy)||safeString_(q.sortBy)==='created_at';
   var descending=!safeString_(q.sortDir)||safeString_(q.sortDir).toLowerCase()==='desc';
@@ -88,6 +90,10 @@ function adminQueryTableFast_(token,tableKey,query) {
     !safeString_(q.dateTo)&&
     !safeBoolean_(q.includeArchived)&&
     defaultSort&&descending;
+
+  // El primer ingreso a Analítica normaliza el histórico una sola vez. No se hace
+  // durante login para no penalizar el camino crítico del administrador.
+  if(key==='analytics'&&systemGet_(ANALYTICS_DIMENSIONS_BACKFILL_KEY)!=='done')backfillAnalyticsDimensions_();
 
   if(canFast)return adminQueryAppendOnlyPage_(token,key,q);
   return adminQueryTableList_(token,key,q);
