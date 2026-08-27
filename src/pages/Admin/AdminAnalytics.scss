@@ -1,0 +1,426 @@
+/* Analítica operativa: visualización compacta sin dependencias de charting. */
+.admin-analytics-overview {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-analytics-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-segmented-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px;
+  border: 1px solid #dce5ef;
+  background: rgba(255, 255, 255, .86);
+  border-radius: 12px;
+}
+
+.admin-segmented-control button {
+  border: 0;
+  background: transparent;
+  color: #66758a;
+  border-radius: 9px;
+  padding: 7px 11px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.admin-segmented-control button.is-active {
+  color: #174f9f;
+  background: #eef5ff;
+  box-shadow: inset 0 0 0 1px rgba(39, 105, 201, .12);
+}
+
+.admin-analytics-updating {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-analytics-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-analytics-kpi {
+  min-height: 106px;
+  padding: 15px;
+  border-radius: 17px;
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+}
+
+.admin-analytics-kpi__icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  background: #eef5ff;
+  color: #2365c7;
+  flex: 0 0 auto;
+}
+
+.admin-analytics-kpi > div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.admin-analytics-kpi span:not(.admin-analytics-kpi__icon),
+.admin-analytics-kpi small {
+  color: #718096;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.admin-analytics-kpi strong {
+  color: #1f2937;
+  font-size: 25px;
+  line-height: 1.1;
+  letter-spacing: -.035em;
+}
+
+.admin-analytics-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(420px, .85fr);
+  gap: 12px;
+}
+
+.admin-analytics-chart-card,
+.admin-analytics-ranking,
+.admin-analytics-coverage {
+  padding: 16px;
+  border-radius: 18px;
+  min-width: 0;
+}
+
+.admin-analytics-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 34px;
+  margin-bottom: 10px;
+  color: #69788e;
+}
+
+.admin-analytics-section-head > div {
+  display: grid;
+  gap: 1px;
+}
+
+.admin-analytics-section-head span {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-weight: 800;
+}
+
+.admin-analytics-section-head h3 {
+  margin: 0;
+  color: #202a37;
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.admin-trend-chart {
+  width: 100%;
+  overflow: hidden;
+}
+
+.admin-trend-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 180px;
+}
+
+.admin-trend-grid {
+  stroke: #e8eef5;
+  stroke-width: 1;
+}
+
+.admin-trend-area {
+  fill: rgba(43, 106, 201, .09);
+}
+
+.admin-trend-line {
+  stroke: #2d68c6;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.admin-trend-dot {
+  fill: #fff;
+  stroke: #2d68c6;
+  stroke-width: 2.4;
+}
+
+.admin-trend-label {
+  fill: #7a8798;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.admin-heatmap-wrap {
+  min-width: 0;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.admin-heatmap-hours,
+.admin-heatmap-row {
+  display: grid;
+  grid-template-columns: 34px repeat(24, minmax(8px, 1fr));
+  gap: 3px;
+  min-width: 520px;
+}
+
+.admin-heatmap-hours {
+  margin-bottom: 4px;
+}
+
+.admin-heatmap-hours span {
+  color: #8894a5;
+  font-size: 8px;
+  text-align: center;
+}
+
+.admin-heatmap-grid {
+  display: grid;
+  gap: 3px;
+}
+
+.admin-heatmap-row strong {
+  color: #69788e;
+  font-size: 9px;
+  line-height: 14px;
+  font-weight: 800;
+}
+
+.admin-heatmap-row > span {
+  display: block;
+  height: 14px;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+  background: #edf2f7;
+}
+
+.admin-heatmap-row > span i {
+  position: absolute;
+  inset: 0;
+  background: #2f69c5;
+  opacity: 0;
+}
+
+.admin-heatmap-row > span.heat-1 i,
+.admin-heatmap-legend i.heat-1 { opacity: .22; }
+.admin-heatmap-row > span.heat-2 i,
+.admin-heatmap-legend i.heat-2 { opacity: .42; }
+.admin-heatmap-row > span.heat-3 i,
+.admin-heatmap-legend i.heat-3 { opacity: .67; }
+.admin-heatmap-row > span.heat-4 i,
+.admin-heatmap-legend i.heat-4 { opacity: .94; }
+
+.admin-heatmap-legend {
+  min-width: 520px;
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+  color: #7b8797;
+  font-size: 9px;
+}
+
+.admin-heatmap-legend i {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  background: #2f69c5;
+  opacity: .08;
+}
+
+.admin-analytics-ranking-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-analytics-ranking__list {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-analytics-ranking__list button {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.admin-analytics-ranking__list button:disabled {
+  cursor: default;
+}
+
+.admin-analytics-ranking__list button > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.admin-analytics-ranking__list button span {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #4f5f73;
+  font-size: 11px;
+}
+
+.admin-analytics-ranking__list button strong {
+  color: #223043;
+  font-size: 11px;
+}
+
+.admin-analytics-ranking__list button > i,
+.admin-analytics-coverage article > i {
+  display: block;
+  height: 5px;
+  border-radius: 99px;
+  background: #edf2f7;
+  overflow: hidden;
+}
+
+.admin-analytics-ranking__list button > i b,
+.admin-analytics-coverage article > i b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #4a78ca;
+}
+
+.admin-analytics-ranking__list button:not(:disabled):hover span {
+  color: #1f5eb8;
+}
+
+.admin-analytics-coverage__grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-analytics-coverage article {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.admin-analytics-coverage article span {
+  color: #718096;
+  font-size: 10px;
+}
+
+.admin-analytics-coverage article strong {
+  color: #243244;
+  font-size: 16px;
+}
+
+/* Accesos rápidos del Inicio: reduce navegación por el sidebar. */
+.admin-dashboard-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.admin-dashboard-shortcuts button {
+  border: 1px solid #dde6ef;
+  background: rgba(255, 255, 255, .82);
+  border-radius: 15px;
+  padding: 12px 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  cursor: pointer;
+  color: #334155;
+  font: inherit;
+  transition: border-color .16s ease, transform .16s ease, box-shadow .16s ease;
+}
+
+.admin-dashboard-shortcuts button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(36, 99, 190, .28);
+  box-shadow: 0 8px 22px rgba(45, 67, 99, .07);
+}
+
+.admin-dashboard-shortcuts button > i {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: #eef5ff;
+  color: #2e67bd;
+  flex: 0 0 auto;
+}
+
+.admin-dashboard-shortcuts button > span {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.admin-dashboard-shortcuts strong {
+  font-size: 12px;
+  color: #263445;
+}
+
+.admin-dashboard-shortcuts small {
+  color: #77859a;
+  font-size: 10px;
+}
+
+@media (max-width: 1250px) {
+  .admin-analytics-kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .admin-analytics-main-grid { grid-template-columns: 1fr; }
+  .admin-analytics-ranking-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-analytics-coverage__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .admin-dashboard-shortcuts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 760px) {
+  .admin-analytics-toolbar { align-items: flex-start; }
+  .admin-analytics-kpi-grid,
+  .admin-analytics-ranking-grid,
+  .admin-analytics-coverage__grid,
+  .admin-dashboard-shortcuts { grid-template-columns: 1fr 1fr; }
+  .admin-analytics-main-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 520px) {
+  .admin-analytics-kpi-grid,
+  .admin-analytics-ranking-grid,
+  .admin-analytics-coverage__grid,
+  .admin-dashboard-shortcuts { grid-template-columns: 1fr; }
+}
