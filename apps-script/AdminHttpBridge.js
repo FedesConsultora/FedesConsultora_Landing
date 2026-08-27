@@ -53,7 +53,7 @@ function adminExecuteHttpCommand_(data) {
     case 'setCampaignLandingStatus': return adminSetCampaignLandingStatus_(token,safeString_(payload.landingId),safeString_(payload.status));
     case 'createCampaignLanding': return adminCreateCampaignLanding_(token,safeString_(payload.campaignKey),payload.record||{});
     case 'updateCampaignLanding': return adminUpdateCampaignLanding_(token,safeString_(payload.landingId),payload.patch||{});
-    case 'lead360': return adminGetLead360(token,safeString_(payload.leadId));
+    case 'lead360': return adminGetLead360Connected_(token,safeString_(payload.leadId));
     case 'onboarding360': return adminGetOnboarding360(token,safeString_(payload.onboardingId));
     case 'changePassword': return adminChangePasswordSecure_(token,safeString_(payload.currentPassword),safeString_(payload.newPassword));
     case 'rotateVaddarApiKey': return adminRotateVaddarApiKey(token);
