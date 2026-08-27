@@ -64,7 +64,10 @@ function adminGetWorkspaceReact_(token) {
     };
     analytics.fields.forEach(function(field){
       if(analyticsLabels[field.name])field.label=analyticsLabels[field.name];
+      field.readOnly=true;
     });
+    analytics.readOnly=true;
+    analytics.permissions={create:false,write:false,deleteMode:'none'};
     analytics.listColumns=['category','label','campaign_key','landing_key','page_path','source','session_id','created_at'];
     ['campaign_key','landing_key','category','label','source','page_path','utm_source','utm_medium','utm_campaign'].forEach(function(field){
       if(analytics.filterFields.indexOf(field)<0)analytics.filterFields.push(field);
@@ -73,6 +76,14 @@ function adminGetWorkspaceReact_(token) {
       if(analytics.searchFields.indexOf(field)<0)analytics.searchFields.push(field);
     });
   }
+
+  ['leadAnswers','leadEvents'].forEach(function(tableName){
+    var table=workspace.tables&&workspace.tables[tableName];
+    if(!table)return;
+    table.readOnly=true;
+    table.permissions={create:false,write:false,deleteMode:'none'};
+    (table.fields||[]).forEach(function(field){field.readOnly=true;});
+  });
 
   return workspace;
 }
@@ -141,8 +152,9 @@ function adminGetRecord_(token,tableKey,id){
   if(def.sheet===APP.SHEETS.MEDIA)row=repairMediaRecordPublic_(row);
   return{success:true,record:adminSanitizeRowForUi_(def,row)};
 }
-function adminCreateDataReact_(token,tableKey,record){return adminCreateData(token,tableKey,adminProtectTechnicalFields_(tableKey,record));}
-function adminUpdateDataReact_(token,tableKey,id,record){return adminUpdateData(token,tableKey,id,adminProtectTechnicalFields_(tableKey,record));}
+function adminMutationProtectedTable_(tableKey){return['analytics','leadAnswers','leadEvents','audit','system'].indexOf(safeString_(tableKey))>=0;}
+function adminCreateDataReact_(token,tableKey,record){if(adminMutationProtectedTable_(tableKey))throw new Error('Este registro es generado por el sistema y es de solo lectura.');return adminCreateData(token,tableKey,adminProtectTechnicalFields_(tableKey,record));}
+function adminUpdateDataReact_(token,tableKey,id,record){if(adminMutationProtectedTable_(tableKey))throw new Error('Este registro es generado por el sistema y es de solo lectura.');return adminUpdateData(token,tableKey,id,adminProtectTechnicalFields_(tableKey,record));}
 function adminProtectTechnicalFields_(tableKey,record){
   var key=safeString_(tableKey),clean=Object.assign({},record||{});
   if(key==='leads'){
@@ -162,5 +174,5 @@ function adminProtectTechnicalFields_(tableKey,record){
   }
   return clean;
 }
-function adminRestoreDataReact_(token,tableKey,id){requireAdminSession_(token);var def=adminRequireTable_(tableKey);if(def.deleteMode!=='archive')throw new Error('Restauración no habilitada para '+def.label);var before=dbFindOne_(def.sheet,function(item){return String(item[def.pk])===String(id);},{includeArchived:true});if(!before)throw new Error('Registro no encontrado');if(!safeString_(before.archived_at))return{success:true,unchanged:true,record:adminSanitizeRowForUi_(def,before)};return adminRestoreDataSafe(token,tableKey,id);}
-function adminBulkActionReact_(token,tableKey,ids,action){requireAdminSession_(token);ids=Array.isArray(ids)?ids:[];if(ids.length>100)throw new Error('Máximo 100 registros por operación');var results=[];ids.forEach(function(id){try{if(action==='archive')results.push(adminArchiveData(token,tableKey,id));else if(action==='restore')results.push(adminRestoreDataReact_(token,tableKey,id));else if(action==='delete')results.push(adminHardDeleteData(token,tableKey,id));else results.push({success:false,id:id,error:'Acción inválida'});}catch(err){results.push({success:false,id:id,error:err.message});}});return{success:true,results:results};}
+function adminRestoreDataReact_(token,tableKey,id){if(adminMutationProtectedTable_(tableKey))throw new Error('Este registro es de solo lectura.');requireAdminSession_(token);var def=adminRequireTable_(tableKey);if(def.deleteMode!=='archive')throw new Error('Restauración no habilitada para '+def.label);var before=dbFindOne_(def.sheet,function(item){return String(item[def.pk])===String(id);},{includeArchived:true});if(!before)throw new Error('Registro no encontrado');if(!safeString_(before.archived_at))return{success:true,unchanged:true,record:adminSanitizeRowForUi_(def,before)};return adminRestoreDataSafe(token,tableKey,id);}
+function adminBulkActionReact_(token,tableKey,ids,action){requireAdminSession_(token);if(adminMutationProtectedTable_(tableKey))throw new Error('Este conjunto de datos es de solo lectura.');ids=Array.isArray(ids)?ids:[];if(ids.length>100)throw new Error('Máximo 100 registros por operación');var results=[];ids.forEach(function(id){try{if(action==='archive')results.push(adminArchiveData(token,tableKey,id));else if(action==='restore')results.push(adminRestoreDataReact_(token,tableKey,id));else if(action==='delete')results.push(adminHardDeleteData(token,tableKey,id));else results.push({success:false,id:id,error:'Acción inválida'});}catch(err){results.push({success:false,id:id,error:err.message});}});return{success:true,results:results};}
