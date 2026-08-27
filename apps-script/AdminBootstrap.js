@@ -13,20 +13,18 @@ function adminCollectionHealthFast_(sheetName) {
   return{total:total,published:published,draft:draft,hidden:hidden};
 }
 
-function adminGetOperationalInsights_(token) {
+function adminGetOperationalInsights_(token,analyticsWindow) {
   requireAdminSession_(token);
-  // Dashboard ya leyó estas colecciones durante el mismo request. dbReadAll_ reutiliza
-  // la caché por ejecución, por lo que estas métricas no vuelven a golpear Sheets.
-  var analytics=dbReadAll_(APP.SHEETS.ANALYTICS,{includeArchived:true});
+  var analytics30=Array.isArray(analyticsWindow)?analyticsWindow:adminAnalyticsReadWindow_(30);
+  var analyticsSheet=getSpreadsheet_().getSheetByName(APP.SHEETS.ANALYTICS);
+  var analyticsTotal=analyticsSheet?Math.max(0,analyticsSheet.getLastRow()-1):0;
   var leads=dbReadAll_(APP.SHEETS.LEADS);
   var contacts=dbReadAll_(APP.SHEETS.CONTACTS);
-  var cutoff=Date.now()-30*24*60*60*1000;
-  var analytics30=analytics.filter(function(row){var t=Date.parse(row.created_at||'');return isFinite(t)&&t>=cutoff;});
 
   return{
     success:true,
     analytics:{
-      total:analytics.length,
+      total:analyticsTotal,
       last30:analytics30.length,
       topPages:adminCountTop_(analytics30,'page_path',8),
       topSources:adminCountTop_(analytics30,'source',8),
@@ -55,9 +53,10 @@ function adminGetOperationalInsights_(token) {
 function adminGetBootstrapBundle_(token) {
   requireAdminSession_(token);
   var started=Date.now();
+  var analytics30=adminAnalyticsReadWindow_(30);
   var workspace=adminGetWorkspaceReact_(token);
-  var dashboard=adminGetDashboardOverview_(token);
-  var insights=adminGetOperationalInsights_(token);
+  var dashboard=adminGetDashboardOverview_(token,analytics30);
+  var insights=adminGetOperationalInsights_(token,analytics30);
   return {
     success:true,
     workspace:workspace,
@@ -67,7 +66,8 @@ function adminGetBootstrapBundle_(token) {
       generatedAt:nowIso_(),
       elapsedMs:Date.now()-started,
       appVersion:APP.VERSION,
-      schemaVersion:APP.SCHEMA_VERSION
+      schemaVersion:APP.SCHEMA_VERSION,
+      analyticsWindowDays:30
     }
   };
 }
@@ -75,15 +75,17 @@ function adminGetBootstrapBundle_(token) {
 function adminGetOverviewBundle_(token) {
   requireAdminSession_(token);
   var started=Date.now();
+  var analytics30=adminAnalyticsReadWindow_(30);
   return {
     success:true,
-    dashboard:adminGetDashboardOverview_(token),
-    insights:adminGetOperationalInsights_(token),
+    dashboard:adminGetDashboardOverview_(token,analytics30),
+    insights:adminGetOperationalInsights_(token,analytics30),
     meta:{
       generatedAt:nowIso_(),
       elapsedMs:Date.now()-started,
       appVersion:APP.VERSION,
-      schemaVersion:APP.SCHEMA_VERSION
+      schemaVersion:APP.SCHEMA_VERSION,
+      analyticsWindowDays:30
     }
   };
 }
