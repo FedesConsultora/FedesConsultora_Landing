@@ -57,3 +57,9 @@ export async function getCampaignHeroRuntime(campaignKey = 'galicia-2026') {
     campaign: payload.campaign || null,
   }
 }
+
+export async function getActiveCampaignHeroes() {
+  const payload = await jsonp({ api: 'hero-runtimes' })
+  if (!payload || payload.success === false) return []
+  return Array.isArray(payload.campaigns) ? payload.campaigns : []
+}
