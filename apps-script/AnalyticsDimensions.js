@@ -36,7 +36,7 @@ function analyticsDimensionPatch_(row) {
 }
 
 function backfillAnalyticsDimensions_() {
-  ensureAnalyticsDimensionsSchema_(true);
+  ensureAnalyticsDimensionsSchema_(false);
   if(systemGet_(ANALYTICS_DIMENSIONS_BACKFILL_KEY)==='done')return{success:true,unchanged:true,rows:0};
 
   var sheet=getSpreadsheet_().getSheetByName(APP.SHEETS.ANALYTICS);
