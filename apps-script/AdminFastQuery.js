@@ -44,8 +44,6 @@ function adminFastFacetFields_(tableKey,def) {
 
 function adminQueryAppendOnlyPage_(token,tableKey,query) {
   requireAdminSession_(token);
-  var key=safeString_(tableKey);
-  if(key==='analytics')backfillAnalyticsDimensions_();
   var def=adminRequireTable_(tableKey);
   var q=query||{};
   var sheet=getSpreadsheet_().getSheetByName(def.sheet);
