@@ -46,7 +46,7 @@ function Distribution({ rows = [] }) {
 
 function CampaignFunnel({ campaign }) {
   const stages = [
-    ['Visitas', campaign.views || 0],
+    ['Sesiones', campaign.sessions || 0],
     ['Leads', campaign.leads || 0],
     ['Respondieron', campaign.responders || 0],
     ['Completos', campaign.complete || 0],
@@ -87,7 +87,12 @@ function CampaignCard({ campaign, onOpen }) {
       </div>
       <div className="admin-campaign-overview-card__runtime"><HeroState hero={campaign.hero} /><span>{campaign.publishedLandings || 0}/{campaign.landings || 0} landings públicas</span></div>
       <CampaignFunnel campaign={campaign} />
-      <div className="admin-campaign-overview-card__rates"><span><b>{campaign.viewToLead || 0}%</b> visita → lead</span><span><b>{campaign.leadToComplete || 0}%</b> lead → completo</span><span><b>{campaign.sessions || 0}</b> sesiones</span></div>
+      <div className="admin-campaign-overview-card__rates">
+        <span><b>{campaign.sessionToLead || 0}%</b> sesión trazable → lead</span>
+        <span><b>{campaign.leadToComplete || 0}%</b> lead → completo</span>
+        <span><b>{campaign.views || 0}</b> vistas</span>
+        <span><b>{campaign.sessionCoverage || 0}%</b> leads con sesión</span>
+      </div>
       <button type="button" className="admin-button admin-button--ghost admin-campaign-open" onClick={() => onOpen(campaign.campaign_key)}>Abrir centro de control <ArrowRight size={14} /></button>
     </article>
   )
@@ -108,13 +113,13 @@ export default function DashboardView({ dashboard, insights, onTable, onCampaign
   return (
     <div className="admin-dashboard-stack admin-dashboard-modern">
       <section className="admin-dashboard-intro">
-        <div><span className="admin-card-eyebrow">Resumen operativo</span><h2>Qué está pasando en Fedes ahora</h2><p>Tráfico, identificación, respuestas y conversión separados para no confundir visitas con leads.</p></div>
-        <div className={`admin-health-badge ${health.campaignIssues ? 'has-warning' : ''}`}>{health.campaignIssues ? <CircleAlert size={17} /> : <CheckCircle2 size={17} />}<div><strong>{health.campaignIssues ? `${health.campaignIssues} campaña(s) para revisar` : 'Campañas operativas'}</strong><span>{health.analyticsEvents || 0} eventos registrados</span></div></div>
+        <div><span className="admin-card-eyebrow">Resumen operativo</span><h2>Qué está pasando en Fedes ahora</h2><p>Tráfico, sesiones, identificación, respuestas y conversión se muestran como etapas distintas del embudo.</p></div>
+        <div className={`admin-health-badge ${health.campaignIssues ? 'has-warning' : ''}`}>{health.campaignIssues ? <CircleAlert size={17} /> : <CheckCircle2 size={17} />}<div><strong>{health.campaignIssues ? `${health.campaignIssues} campaña(s) para revisar` : 'Campañas operativas'}</strong><span>{health.analyticsEvents || 0} eventos · {health.analyticsSessions || 0} sesiones</span></div></div>
       </section>
 
       <div className="admin-primary-kpi-grid">
-        <PrimaryKpi label="Visitas a landings" value={stats.landingViews || 0} note={`${stats.landingSessions || 0} sesiones identificadas`} icon={MousePointerClick} tone="blue" />
-        <PrimaryKpi label="Leads identificados" value={stats.leads || 0} note={`${rate(stats.leads, stats.landingViews)} de las visitas`} icon={Users} tone="cyan" />
+        <PrimaryKpi label="Visitas a landings" value={stats.landingViews || 0} note={`${stats.landingSessions || 0} sesiones únicas registradas`} icon={MousePointerClick} tone="blue" />
+        <PrimaryKpi label="Leads identificados" value={stats.leads || 0} note={`${stats.sessionToLead || 0}% de sesiones trazables terminan identificadas`} icon={Users} tone="cyan" />
         <PrimaryKpi label="Respondieron" value={stats.responders || 0} note={`${rate(stats.responders, stats.leads)} de los leads`} icon={Activity} tone="amber" />
         <PrimaryKpi label="Completaron" value={stats.complete || 0} note={`${rate(stats.complete, stats.leads)} de los leads`} icon={FileCheck2} tone="green" />
       </div>
@@ -139,7 +144,20 @@ export default function DashboardView({ dashboard, insights, onTable, onCampaign
         <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>Atribución</span><h3>Fuentes de tráfico</h3><p>Origen de los eventos web recientes.</p></div></div><Distribution rows={insights?.analytics?.topSources || []} /></section>
       </div>
 
-      <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>Integridad</span><h3>Conexiones y cobertura de datos</h3><p>Indicadores simples para detectar si algo dejó de llegar al administrador.</p></div></div><div className="admin-connection-grid"><CompactMetric label="Eventos analíticos" value={health.analyticsEvents || 0} note="AN_Events" /><CompactMetric label="Leads con landing" value={`${health.leadsWithLanding || 0}/${stats.leads || 0}`} note="Atribución por landing" /><CompactMetric label="Leads con origen" value={`${health.leadsWithSource || 0}/${stats.leads || 0}`} note="Source disponible" /><CompactMetric label="Landings publicadas" value={health.publishedLandings || 0} note="URLs activas" /><CompactMetric label="Problemas de campaña" value={health.campaignIssues || 0} note="Estado / landings / Hero" /></div></section>
+      <section className="admin-panel admin-glass-soft">
+        <div className="admin-panel-head"><div><span>Integridad</span><h3>Conexiones y cobertura de datos</h3><p>Sirve para detectar si el navegador, CRM y analítica dejaron de relacionarse correctamente.</p></div></div>
+        <div className="admin-connection-grid admin-connection-grid--tracking">
+          <CompactMetric label="Eventos analíticos" value={health.analyticsEvents || 0} note={`${health.analyticsSessions || 0} sesiones`} />
+          <CompactMetric label="Leads con landing" value={`${health.leadsWithLanding || 0}/${stats.leads || 0}`} note="Primera adquisición" />
+          <CompactMetric label="Leads con origen" value={`${health.leadsWithSource || 0}/${stats.leads || 0}`} note="Primer source" />
+          <CompactMetric label="Leads con sesión" value={`${health.leadsWithSession || 0}/${stats.leads || 0}`} note={`${health.sessionCoverage || 0}% cobertura`} />
+          <CompactMetric label="Sesiones enlazadas" value={health.linkedLeadSessions || 0} note="Visita ↔ lead verificable" />
+          <CompactMetric label="Última landing" value={`${health.leadsWithLastLanding || 0}/${stats.leads || 0}`} note="Atribución histórica" />
+          <CompactMetric label="Visitantes reconocidos" value={health.leadsWithVisitor || 0} note="Visitor ID persistente" />
+          <CompactMetric label="Landings publicadas" value={health.publishedLandings || 0} note="URLs activas" />
+          <CompactMetric label="Problemas de campaña" value={health.campaignIssues || 0} note="Estado / landings / Hero" />
+        </div>
+      </section>
 
       <div className="admin-dashboard-grid admin-dashboard-grid--balanced">
         <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>CRM</span><h3>Etapas de leads</h3><p>Distribución general del pipeline.</p></div><button type="button" onClick={() => onTable('leads')}>Abrir <ArrowRight size={14} /></button></div><Distribution rows={insights?.crm?.leadStages || []} /></section>
