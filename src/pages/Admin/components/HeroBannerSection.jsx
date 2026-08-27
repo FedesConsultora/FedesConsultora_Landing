@@ -3,6 +3,7 @@ import { ExternalLink, Eye, FolderOpen, ImagePlus, LoaderCircle, Monitor, Smartp
 import MediaSelectorModal from './MediaSelectorModal'
 import ResilientMediaImage from './ResilientMediaImage'
 import { getMediaFileId, getMediaImageUrl, withLocalMediaPreview } from '../mediaUtils'
+import { adminCommand } from '../adminApi'
 
 function safeBool(value) {
   return value === true || value === 1 || String(value).toLowerCase() === 'true' || String(value) === '1'
@@ -25,12 +26,12 @@ function calcBannerStatus(campaign, banner) {
 }
 
 const STATUS_META = {
-  active: { icon: '●', label: 'Activo ahora', color: '#17835f' },
-  scheduled: { icon: '○', label: 'Programado', color: '#1b5ebf' },
-  disabled: { icon: '○', label: 'Desactivado', color: '#7b8797' },
-  draft: { icon: '○', label: 'Borrador', color: '#9b6a18' },
-  ended: { icon: '○', label: 'Finalizado', color: '#7357a8' },
-  missing_config: { icon: '⚠', label: 'Falta configuración', color: '#b34b54' },
+  active: { icon: '●', label: 'Activo ahora', color: '#4fd2a4' },
+  scheduled: { icon: '○', label: 'Programado', color: '#84a0ff' },
+  disabled: { icon: '○', label: 'Oculto del Hero', color: '#8c98a8' },
+  draft: { icon: '○', label: 'Campaña no pública', color: '#d3a85e' },
+  ended: { icon: '○', label: 'Finalizado', color: '#9d8cc8' },
+  missing_config: { icon: '⚠', label: 'Falta configuración', color: '#ef8993' },
 }
 
 function BannerStatusChip({ status }) {
@@ -148,11 +149,13 @@ function BannerPreview({ desktopRecord, mobileRecord, mode }) {
   return <div className={`hero-banner-preview-frame is-${mode}`}><ResilientMediaImage media={record} alt={`Preview ${mode}`} onUnavailable={() => setFailed(true)} /></div>
 }
 
-export default function HeroBannerSection({ campaign, bannerData = {}, desktopMedia, mobileMedia, onChange, onMediaChange, onUpload }) {
+export default function HeroBannerSection({ campaign, bannerData = {}, desktopMedia, mobileMedia, onChange, onMediaChange, onUpload, immediateToggle = false, onRuntimeChange }) {
   const [previewMode, setPreviewMode] = useState('desktop')
   const [mediaPicker, setMediaPicker] = useState(null)
   const [uploadState, setUploadState] = useState({ desktop: false, mobile: false })
   const [uploadErrors, setUploadErrors] = useState({ desktop: '', mobile: '' })
+  const [toggleBusy, setToggleBusy] = useState(false)
+  const [toggleNotice, setToggleNotice] = useState('')
 
   const banner = bannerData || {}
   const enabled = safeBool(banner.enabled)
@@ -167,6 +170,31 @@ export default function HeroBannerSection({ campaign, bannerData = {}, desktopMe
   }, [campaign])
 
   const handleChange = (field, value) => onChange({ ...banner, [field]: value })
+
+  const handleVisibilityToggle = async () => {
+    const nextEnabled = !enabled
+    setToggleNotice('')
+
+    if (!immediateToggle || !campaign?.campaign_key) {
+      handleChange('enabled', nextEnabled)
+      return
+    }
+
+    setToggleBusy(true)
+    try {
+      const response = await adminCommand('setCampaignHeroEnabled', {
+        campaignKey: campaign.campaign_key,
+        enabled: nextEnabled,
+      })
+      handleChange('enabled', nextEnabled)
+      setToggleNotice(nextEnabled ? 'Hero habilitado en el servidor.' : 'Hero ocultado en el servidor. La Home deja de recibirlo desde el próximo request.')
+      onRuntimeChange?.(response?.hero || null)
+    } catch (error) {
+      setToggleNotice(error.message || 'No se pudo cambiar el estado público del Hero.')
+    } finally {
+      setToggleBusy(false)
+    }
+  }
 
   const handleMediaSelect = (field, record) => {
     setMediaPicker(null)
@@ -248,23 +276,26 @@ export default function HeroBannerSection({ campaign, bannerData = {}, desktopMe
   return (
     <div className="hero-banner-section">
       <div className="hero-banner-section-header">
-        <div className="hero-banner-section-title"><h3>Banner del Hero</h3><p>Se guarda con la campaña y sólo aparece en producción cuando está activo, publicado y dentro de sus fechas.</p></div>
+        <div className="hero-banner-section-title"><h3>Banner del Hero</h3><p>El interruptor controla la Home. Las imágenes y el resto de la configuración se guardan junto con la campaña.</p></div>
         <div className="hero-banner-header-actions">
           <BannerStatusChip status={bannerStatus} />
           <button type="button" className="admin-button admin-button--ghost admin-button--sm" onClick={previewInHome}><Eye size={14} />Probar en Home</button>
-          <button type="button" className={`hero-banner-toggle ${enabled ? 'is-on' : ''}`} onClick={() => handleChange('enabled', !enabled)} aria-pressed={enabled} aria-label={enabled ? 'Desactivar banner' : 'Activar banner'}>
-            {enabled ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}<span>{enabled ? 'Mostrar en el Hero' : 'Ocultar del Hero'}</span>
+          <button type="button" className={`hero-banner-toggle ${enabled ? 'is-on' : ''}`} onClick={handleVisibilityToggle} disabled={toggleBusy} aria-pressed={enabled} aria-label={enabled ? 'Desactivar banner' : 'Activar banner'}>
+            {toggleBusy ? <LoaderCircle className="is-spinning" size={23} /> : enabled ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}
+            <span>{toggleBusy ? 'Aplicando…' : enabled ? 'Visible en el Hero' : 'Oculto del Hero'}</span>
           </button>
         </div>
       </div>
 
-      {bannerStatus === 'draft' && <div className="hero-banner-runtime-note"><strong>Está en borrador.</strong> No aparecerá en la Home pública hasta cambiar la campaña a <code>published</code>. Usá “Probar en Home” para verla sin publicarla.</div>}
+      {immediateToggle && <div className="hero-banner-runtime-note"><strong>Control inmediato.</strong> Mostrar/ocultar se aplica en el servidor sin esperar a guardar el resto del formulario. Los cambios de imágenes, URL y tiempos requieren “Guardar cambios”.</div>}
+      {toggleNotice && <div className="hero-banner-runtime-note">{toggleNotice}</div>}
+      {bannerStatus === 'draft' && <div className="hero-banner-runtime-note"><strong>Campaña no pública.</strong> El Hero no aparece mientras la campaña esté oculta o en borrador.</div>}
       {bannerStatus === 'missing_config' && <div className="hero-banner-runtime-note is-warning"><strong>Falta configuración.</strong> Para mostrarse necesita ambas imágenes y una fecha de inicio.</div>}
 
       <div className="hero-banner-media-row">
         <MediaThumbPicker
           label="Desktop"
-          hint="1367 × 683 recomendado · PNG/JPG/WEBP · hasta 8 MB"
+          hint="2048 × 886 recomendado · PNG/JPG/WEBP · hasta 8 MB"
           mediaRecord={desktopMedia}
           busy={uploadState.desktop}
           error={uploadErrors.desktop}
@@ -274,7 +305,7 @@ export default function HeroBannerSection({ campaign, bannerData = {}, desktopMe
         />
         <MediaThumbPicker
           label="Mobile"
-          hint="651 × 1277 recomendado · PNG/JPG/WEBP · hasta 8 MB"
+          hint="985 × 1699 recomendado · PNG/JPG/WEBP · hasta 8 MB"
           mediaRecord={mobileMedia}
           busy={uploadState.mobile}
           error={uploadErrors.mobile}
@@ -285,10 +316,10 @@ export default function HeroBannerSection({ campaign, bannerData = {}, desktopMe
       </div>
 
       <div className="admin-form-grid hero-banner-settings-grid">
-        <label className="admin-field is-wide"><span>Texto alternativo</span><input type="text" value={banner.alt || ''} onChange={(event) => handleChange('alt', event.target.value)} placeholder="Beneficio exclusivo Galicia para participantes de la charla" /></label>
+        <label className="admin-field is-wide"><span>Texto alternativo</span><input type="text" value={banner.alt || ''} onChange={(event) => handleChange('alt', event.target.value)} placeholder="Descripción accesible del banner" /></label>
         <label className="admin-field"><span>Tiempo visible (segundos)</span><input type="number" min={2} max={30} value={banner.display_seconds ?? 6} onChange={(event) => handleChange('display_seconds', Number(event.target.value))} /></label>
         <label className="admin-check-field"><input type="checkbox" checked={banner.show_once_per_session !== false} onChange={(event) => handleChange('show_once_per_session', event.target.checked)} /><span>Mostrar sólo una vez por sesión</span></label>
-        <label className="admin-field is-wide"><span>URL de destino (opcional)</span><div className="hero-banner-url-row"><input type="text" inputMode="url" value={banner.click_url || ''} onChange={(event) => handleChange('click_url', event.target.value)} placeholder={defaultClickUrl || '/bonificacion-galicia?source=home_banner…'} />{(banner.click_url || defaultClickUrl) && <a href={banner.click_url || defaultClickUrl} target="_blank" rel="noopener noreferrer" className="admin-button admin-button--ghost" title="Abrir URL"><ExternalLink size={14} /></a>}</div>{!banner.click_url && defaultClickUrl && <small className="admin-field-hint">Se usará: {defaultClickUrl}</small>}</label>
+        <label className="admin-field is-wide"><span>URL de destino (opcional)</span><div className="hero-banner-url-row"><input type="text" inputMode="url" value={banner.click_url || ''} onChange={(event) => handleChange('click_url', event.target.value)} placeholder={defaultClickUrl || '/landing?source=home_banner…'} />{(banner.click_url || defaultClickUrl) && <a href={banner.click_url || defaultClickUrl} target="_blank" rel="noopener noreferrer" className="admin-button admin-button--ghost" title="Abrir URL"><ExternalLink size={14} /></a>}</div>{!banner.click_url && defaultClickUrl && <small className="admin-field-hint">Se usará: {defaultClickUrl}</small>}</label>
         <label className="admin-check-field"><input type="checkbox" checked={safeBool(banner.open_in_new_tab)} onChange={(event) => handleChange('open_in_new_tab', event.target.checked)} /><span>Abrir en nueva pestaña</span></label>
       </div>
 
