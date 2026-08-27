@@ -5,10 +5,10 @@ import {
   CircleAlert,
   FileCheck2,
   MousePointerClick,
+  Radar,
   Users,
 } from 'lucide-react'
 import { StatusPill } from './DataTable'
-import '../AdminModern.scss'
 
 function rate(numerator, denominator) {
   if (!denominator) return '0%'
@@ -46,7 +46,8 @@ function Distribution({ rows = [] }) {
 
 function CampaignFunnel({ campaign }) {
   const stages = [
-    ['Sesiones', campaign.sessions || 0],
+    ['Interacciones', campaign.interactions || 0],
+    ['Visitas', campaign.views || 0],
     ['Leads', campaign.leads || 0],
     ['Respondieron', campaign.responders || 0],
     ['Completos', campaign.complete || 0],
@@ -54,7 +55,7 @@ function CampaignFunnel({ campaign }) {
   const max = Math.max(...stages.map(([, value]) => Number(value) || 0), 1)
 
   return (
-    <div className="admin-campaign-mini-funnel">
+    <div className="admin-campaign-mini-funnel admin-campaign-mini-funnel--five">
       {stages.map(([label, value]) => (
         <div className="admin-campaign-mini-funnel__stage" key={label}>
           <div className="admin-campaign-mini-funnel__label"><span>{label}</span><strong>{value}</strong></div>
@@ -85,15 +86,10 @@ function CampaignCard({ campaign, onOpen }) {
         <div><span className="admin-card-eyebrow">{campaign.campaign_key}</span><h3>{campaign.name || campaign.campaign_key}</h3></div>
         <StatusPill value={campaign.status} />
       </div>
-      <div className="admin-campaign-overview-card__runtime"><HeroState hero={campaign.hero} /><span>{campaign.publishedLandings || 0}/{campaign.landings || 0} landings públicas</span></div>
+      <div className="admin-campaign-overview-card__runtime"><HeroState hero={campaign.hero} /><span>{campaign.publishedLandings || 0}/{campaign.landings || 0} landings públicas</span><span>{campaign.impressions || 0} impresiones · {campaign.bannerClicks || 0} clicks</span></div>
       <CampaignFunnel campaign={campaign} />
-      <div className="admin-campaign-overview-card__rates">
-        <span><b>{campaign.sessionToLead || 0}%</b> sesión trazable → lead</span>
-        <span><b>{campaign.leadToComplete || 0}%</b> lead → completo</span>
-        <span><b>{campaign.views || 0}</b> vistas</span>
-        <span><b>{campaign.sessionCoverage || 0}%</b> leads con sesión</span>
-      </div>
-      <button type="button" className="admin-button admin-button--ghost admin-campaign-open" onClick={() => onOpen(campaign.campaign_key)}>Abrir centro de control <ArrowRight size={14} /></button>
+      <div className="admin-campaign-overview-card__rates"><span><b>{campaign.viewToLead || 0}%</b> visita → lead</span><span><b>{campaign.leadToResponse || 0}%</b> lead → respuesta</span><span><b>{campaign.leadToComplete || 0}%</b> lead → completo</span><span><b>{campaign.traceability || 0}%</b> sesiones enlazadas</span></div>
+      <button type="button" className="admin-button admin-button--ghost admin-campaign-open" onClick={() => onOpen(campaign.campaign_key)}>Centro de control <ArrowRight size={14} /></button>
     </article>
   )
 }
@@ -113,13 +109,14 @@ export default function DashboardView({ dashboard, insights, onTable, onCampaign
   return (
     <div className="admin-dashboard-stack admin-dashboard-modern">
       <section className="admin-dashboard-intro">
-        <div><span className="admin-card-eyebrow">Resumen operativo</span><h2>Qué está pasando en Fedes ahora</h2><p>Tráfico, sesiones, identificación, respuestas y conversión se muestran como etapas distintas del embudo.</p></div>
-        <div className={`admin-health-badge ${health.campaignIssues ? 'has-warning' : ''}`}>{health.campaignIssues ? <CircleAlert size={17} /> : <CheckCircle2 size={17} />}<div><strong>{health.campaignIssues ? `${health.campaignIssues} campaña(s) para revisar` : 'Campañas operativas'}</strong><span>{health.analyticsEvents || 0} eventos · {health.analyticsSessions || 0} sesiones</span></div></div>
+        <div><span className="admin-card-eyebrow">Resumen operativo</span><h2>Actividad y CRM</h2></div>
+        <div className={`admin-health-badge ${health.campaignIssues ? 'has-warning' : ''}`}>{health.campaignIssues ? <CircleAlert size={17} /> : <CheckCircle2 size={17} />}<div><strong>{health.campaignIssues ? `${health.campaignIssues} campaña(s) para revisar` : 'Operación conectada'}</strong><span>{health.analyticsEvents || 0} eventos · {health.analyticsSessions || 0} sesiones</span></div></div>
       </section>
 
       <div className="admin-primary-kpi-grid">
-        <PrimaryKpi label="Visitas a landings" value={stats.landingViews || 0} note={`${stats.landingSessions || 0} sesiones únicas registradas`} icon={MousePointerClick} tone="blue" />
-        <PrimaryKpi label="Leads identificados" value={stats.leads || 0} note={`${stats.sessionToLead || 0}% de sesiones trazables terminan identificadas`} icon={Users} tone="cyan" />
+        <PrimaryKpi label="Interacciones" value={stats.interactions || 0} note={`${stats.heroImpressions || 0} impresiones · ${stats.heroClicks || 0} clicks`} icon={Radar} tone="violet" />
+        <PrimaryKpi label="Visitas a landings" value={stats.landingViews || 0} note={`${stats.landingSessions || 0} sesiones`} icon={MousePointerClick} tone="blue" />
+        <PrimaryKpi label="Leads identificados" value={stats.leads || 0} note={`${rate(stats.leads, stats.landingViews)} de las visitas`} icon={Users} tone="cyan" />
         <PrimaryKpi label="Respondieron" value={stats.responders || 0} note={`${rate(stats.responders, stats.leads)} de los leads`} icon={Activity} tone="amber" />
         <PrimaryKpi label="Completaron" value={stats.complete || 0} note={`${rate(stats.complete, stats.leads)} de los leads`} icon={FileCheck2} tone="green" />
       </div>
@@ -133,42 +130,29 @@ export default function DashboardView({ dashboard, insights, onTable, onCampaign
       </section>
 
       <section className="admin-panel admin-glass-soft admin-dashboard-campaigns">
-        <div className="admin-panel-head"><div><span>Campañas</span><h3>Control de campañas</h3><p>Cada tarjeta combina estado público, Hero, landings y el embudo real.</p></div><button type="button" onClick={() => onTable('campaigns')}>Ver todas <ArrowRight size={14} /></button></div>
+        <div className="admin-panel-head"><div><span>Campañas</span><h3>Control de campañas</h3></div><button type="button" onClick={() => onTable('campaigns')}>Ver todas <ArrowRight size={14} /></button></div>
         <div className="admin-campaign-overview-grid">{(dashboard?.campaigns || []).length ? dashboard.campaigns.map((campaign) => <CampaignCard key={campaign.campaign_key} campaign={campaign} onOpen={onCampaign} />) : <div className="admin-empty-inline">Todavía no hay campañas.</div>}</div>
       </section>
 
       <div className="admin-dashboard-grid admin-dashboard-grid--balanced">
-        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>Operación</span><h3>Necesitan atención</h3><p>Registros incompletos de +24 h o revisión manual pendiente.</p></div></div><div className="admin-attention-list">{(dashboard?.attention || []).length ? dashboard.attention.map((lead) => <button type="button" key={lead.lead_id} onClick={() => onLead(lead.lead_id)}><div><strong>{lead.company || lead.full_name || lead.email}</strong><span>{lead.landing_key || 'sin landing'} · {lead.last_activity_at ? new Date(lead.last_activity_at).toLocaleString('es-AR') : 'sin fecha'}</span></div><StatusPill value={lead.status} /></button>) : <div className="admin-empty-inline">Todo al día.</div>}</div></section>
-        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>CRM</span><h3>Leads recientes</h3><p>Últimos ingresos identificados.</p></div><button type="button" onClick={() => onTable('leads')}>Abrir <ArrowRight size={14} /></button></div><div className="admin-attention-list">{(dashboard?.recentLeads || []).map((lead) => <button type="button" key={lead.lead_id} onClick={() => onLead(lead.lead_id)}><div><strong>{lead.company || lead.full_name || lead.email}</strong><span>{lead.campaign_key || 'Sin campaña'} · {lead.landing_key || 'sin landing'} · {lead.source || 'Sin origen'}</span></div><StatusPill value={lead.status} /></button>)}</div></section>
-        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>Analítica</span><h3>Páginas con actividad</h3><p>{insights?.analytics?.last30 || 0} eventos durante los últimos 30 días.</p></div><button type="button" onClick={() => onTable('analytics')}>Abrir <ArrowRight size={14} /></button></div><Distribution rows={insights?.analytics?.topPages || []} /></section>
-        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>Atribución</span><h3>Fuentes de tráfico</h3><p>Origen de los eventos web recientes.</p></div></div><Distribution rows={insights?.analytics?.topSources || []} /></section>
+        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>Operación</span><h3>Necesitan atención</h3></div></div><div className="admin-attention-list">{(dashboard?.attention || []).length ? dashboard.attention.map((lead) => <button type="button" key={lead.lead_id} onClick={() => onLead(lead.lead_id)}><div><strong>{lead.company || lead.full_name || lead.email}</strong><span>{lead.landing_key || 'sin landing'} · {lead.last_activity_at ? new Date(lead.last_activity_at).toLocaleString('es-AR') : 'sin fecha'}</span></div><StatusPill value={lead.status} /></button>) : <div className="admin-empty-inline">Todo al día.</div>}</div></section>
+        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>CRM</span><h3>Leads recientes</h3></div><button type="button" onClick={() => onTable('leads')}>Abrir <ArrowRight size={14} /></button></div><div className="admin-attention-list">{(dashboard?.recentLeads || []).map((lead) => <button type="button" key={lead.lead_id} onClick={() => onLead(lead.lead_id)}><div><strong>{lead.company || lead.full_name || lead.email}</strong><span>{lead.campaign_key || 'Sin campaña'} · {lead.landing_key || 'sin landing'} · {lead.source || 'Sin origen'}</span></div><StatusPill value={lead.status} /></button>)}</div></section>
+        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>Analítica</span><h3>Páginas con actividad</h3></div><button type="button" onClick={() => onTable('analytics')}>Abrir <ArrowRight size={14} /></button></div><Distribution rows={insights?.analytics?.topPages || []} /></section>
+        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>Atribución</span><h3>Fuentes de tráfico</h3></div></div><Distribution rows={insights?.analytics?.topSources || []} /></section>
       </div>
 
-      <section className="admin-panel admin-glass-soft">
-        <div className="admin-panel-head"><div><span>Integridad</span><h3>Conexiones y cobertura de datos</h3><p>Sirve para detectar si el navegador, CRM y analítica dejaron de relacionarse correctamente.</p></div></div>
-        <div className="admin-connection-grid admin-connection-grid--tracking">
-          <CompactMetric label="Eventos analíticos" value={health.analyticsEvents || 0} note={`${health.analyticsSessions || 0} sesiones`} />
-          <CompactMetric label="Leads con landing" value={`${health.leadsWithLanding || 0}/${stats.leads || 0}`} note="Primera adquisición" />
-          <CompactMetric label="Leads con origen" value={`${health.leadsWithSource || 0}/${stats.leads || 0}`} note="Primer source" />
-          <CompactMetric label="Leads con sesión" value={`${health.leadsWithSession || 0}/${stats.leads || 0}`} note={`${health.sessionCoverage || 0}% cobertura`} />
-          <CompactMetric label="Sesiones enlazadas" value={health.linkedLeadSessions || 0} note="Visita ↔ lead verificable" />
-          <CompactMetric label="Última landing" value={`${health.leadsWithLastLanding || 0}/${stats.leads || 0}`} note="Atribución histórica" />
-          <CompactMetric label="Visitantes reconocidos" value={health.leadsWithVisitor || 0} note="Visitor ID persistente" />
-          <CompactMetric label="Landings publicadas" value={health.publishedLandings || 0} note="URLs activas" />
-          <CompactMetric label="Problemas de campaña" value={health.campaignIssues || 0} note="Estado / landings / Hero" />
-        </div>
-      </section>
+      <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>Integridad</span><h3>Conexiones de datos</h3></div></div><div className="admin-connection-grid admin-connection-grid--tracking"><CompactMetric label="Eventos" value={health.analyticsEvents || 0} note="AN_Events" /><CompactMetric label="Sesiones" value={health.analyticsSessions || 0} note="tráfico anónimo" /><CompactMetric label="Leads con landing" value={`${health.leadsWithLanding || 0}/${stats.leads || 0}`} note="adquisición" /><CompactMetric label="Leads con origen" value={`${health.leadsWithSource || 0}/${stats.leads || 0}`} note="source" /><CompactMetric label="Leads con sesión" value={`${health.leadsWithSession || 0}/${stats.leads || 0}`} note="trazabilidad" /><CompactMetric label="Sesiones enlazadas" value={health.linkedLeadSessions || 0} note="analítica ↔ CRM" /><CompactMetric label="Última landing" value={`${health.leadsWithLastLanding || 0}/${stats.leads || 0}`} note="último contacto" /><CompactMetric label="Visitor ID" value={`${health.leadsWithVisitor || 0}/${stats.leads || 0}`} note="identidad web" /><CompactMetric label="Landings públicas" value={health.publishedLandings || 0} note="URLs activas" /><CompactMetric label="Alertas" value={health.campaignIssues || 0} note="campañas" /></div></section>
 
       <div className="admin-dashboard-grid admin-dashboard-grid--balanced">
-        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>CRM</span><h3>Etapas de leads</h3><p>Distribución general del pipeline.</p></div><button type="button" onClick={() => onTable('leads')}>Abrir <ArrowRight size={14} /></button></div><Distribution rows={insights?.crm?.leadStages || []} /></section>
-        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>CRM</span><h3>Clasificación interna</h3><p>Calificados, evaluación y recursos.</p></div></div><Distribution rows={insights?.crm?.leadClassifications || []} /></section>
+        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>CRM</span><h3>Etapas de leads</h3></div><button type="button" onClick={() => onTable('leads')}>Abrir <ArrowRight size={14} /></button></div><Distribution rows={insights?.crm?.leadStages || []} /></section>
+        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>CRM</span><h3>Clasificación interna</h3></div></div><Distribution rows={insights?.crm?.leadClassifications || []} /></section>
       </div>
 
-      <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>CMS</span><h3>Salud editorial</h3><p>Publicados versus total administrable.</p></div></div><CmsHealth cms={insights?.cms} onTable={onTable} /></section>
+      <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>CMS</span><h3>Salud editorial</h3></div></div><CmsHealth cms={insights?.cms} onTable={onTable} /></section>
 
       <div className="admin-dashboard-grid admin-dashboard-grid--balanced">
-        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>Auditoría</span><h3>Actividad administrativa</h3><p>Últimos cambios registrados.</p></div><button type="button" onClick={() => onTable('audit')}>Historial <ArrowRight size={14} /></button></div><div className="admin-attention-list">{(dashboard?.recentAudit || []).map((item) => <button type="button" key={item.audit_id} onClick={() => onTable('audit')}><div><strong>{item.action} · {item.entity}</strong><span>{item.actor || 'admin'} · {item.created_at ? new Date(item.created_at).toLocaleString('es-AR') : '—'}</span></div><ArrowRight size={15} /></button>)}</div></section>
-        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>Contactos</span><h3>Origen de consultas</h3><p>Distribución de formularios generales.</p></div><button type="button" onClick={() => onTable('contacts')}>Abrir <ArrowRight size={14} /></button></div><Distribution rows={insights?.crm?.contactSources || []} /></section>
+        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>Auditoría</span><h3>Actividad administrativa</h3></div><button type="button" onClick={() => onTable('audit')}>Historial <ArrowRight size={14} /></button></div><div className="admin-attention-list">{(dashboard?.recentAudit || []).map((item) => <button type="button" key={item.audit_id} onClick={() => onTable('audit')}><div><strong>{item.action} · {item.entity}</strong><span>{item.actor || 'admin'} · {item.created_at ? new Date(item.created_at).toLocaleString('es-AR') : '—'}</span></div><ArrowRight size={15} /></button>)}</div></section>
+        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>Contactos</span><h3>Origen de consultas</h3></div><button type="button" onClick={() => onTable('contacts')}>Abrir <ArrowRight size={14} /></button></div><Distribution rows={insights?.crm?.contactSources || []} /></section>
       </div>
     </div>
   )
