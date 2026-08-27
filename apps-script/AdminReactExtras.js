@@ -1,5 +1,6 @@
 function adminGetWorkspaceReact_(token) {
   ensureCampaignLandingFoundation_();
+  ensureAnalyticsDimensionsSchema_(false);
   var workspace = adminGetWorkspace(token);
   var galicia = dbFindOne_(APP.SHEETS.CAMPAIGNS, function(row){ return safeString_(row.campaign_key) === GALICIA.CAMPAIGN_KEY; }, {includeArchived:true});
   if (galicia) ensureGaliciaCampaignPath_(galicia);
@@ -35,9 +36,6 @@ function adminGetWorkspaceReact_(token) {
       if (protectedLeadFields[field.name]) field.readOnly=true;
     });
 
-    // El listado por defecto prioriza identidad + primera/última atribución + estado.
-    // Las UTMs completas siguen disponibles en filtros, búsqueda y Vista 360° sin
-    // convertir la tabla principal en una sábana horizontal.
     leads.listColumns=[
       'full_name','company','email','campaign_key','landing_key','last_landing_key',
       'source','last_source','status','classification','last_activity_at'
@@ -51,12 +49,39 @@ function adminGetWorkspaceReact_(token) {
       if (leads.searchFields.indexOf(field)<0) leads.searchFields.push(field);
     });
   }
+
+  var analytics=workspace.tables&&workspace.tables.analytics;
+  if(analytics&&analytics.fields){
+    var analyticsLabels={
+      campaign_key:'Campaña',
+      landing_key:'Landing',
+      visitor_id:'Visitante',
+      session_id:'Sesión',
+      utm_source:'UTM Source',
+      utm_medium:'UTM Medium',
+      utm_campaign:'UTM Campaign',
+      utm_content:'UTM Content'
+    };
+    analytics.fields.forEach(function(field){
+      if(analyticsLabels[field.name])field.label=analyticsLabels[field.name];
+    });
+    analytics.listColumns=['category','label','campaign_key','landing_key','page_path','source','session_id','created_at'];
+    ['campaign_key','landing_key','category','label','source','page_path','utm_source','utm_medium','utm_campaign'].forEach(function(field){
+      if(analytics.filterFields.indexOf(field)<0)analytics.filterFields.push(field);
+    });
+    ['campaign_key','landing_key','visitor_id','session_id','utm_source','utm_medium','utm_campaign','utm_content'].forEach(function(field){
+      if(analytics.searchFields.indexOf(field)<0)analytics.searchFields.push(field);
+    });
+  }
+
   return workspace;
 }
 
 function adminQueryTableList_(token, tableKey, query) {
   requireAdminSession_(token);
-  if (safeString_(tableKey)==='leads') ensureCampaignLandingFoundation_();
+  var normalizedTableKey=safeString_(tableKey);
+  if (normalizedTableKey==='leads') ensureCampaignLandingFoundation_();
+  if (normalizedTableKey==='analytics') ensureAnalyticsDimensionsSchema_(false);
   var def = adminRequireTable_(tableKey);
   var q = query || {};
   var all = dbReadAll_(def.sheet, {includeArchived:true}).map(function(row){
@@ -67,16 +92,22 @@ function adminQueryTableList_(token, tableKey, query) {
   if (!safeBoolean_(q.includeArchived) && (SCHEMA[def.sheet] || []).indexOf('archived_at') >= 0) base = base.filter(function(row){ return !safeString_(row.archived_at); });
   var facets = {};
   var facetFields=(def.filters||[]).slice();
-  if (safeString_(tableKey)==='leads') {
+  if (normalizedTableKey==='leads') {
     ['landing_key','last_landing_key','last_source'].forEach(function(field){if(facetFields.indexOf(field)<0)facetFields.push(field);});
+  }
+  if(normalizedTableKey==='analytics'){
+    ['campaign_key','landing_key','utm_source','utm_medium','utm_campaign'].forEach(function(field){if(facetFields.indexOf(field)<0)facetFields.push(field);});
   }
   facetFields.forEach(function(field){var seen={};base.forEach(function(row){var value=String(row[field]===undefined?'':row[field]);if(value!=='')seen[value]=true;});facets[field]=Object.keys(seen).sort();});
   var rows = base;
   var search = safeString_(q.search).toLowerCase();
   if (search) {
     var searchFields=(def.search||[]).slice();
-    if (safeString_(tableKey)==='leads') {
+    if (normalizedTableKey==='leads') {
       ['landing_key','last_landing_key','last_source','visitor_id','session_id'].forEach(function(field){if(searchFields.indexOf(field)<0)searchFields.push(field);});
+    }
+    if(normalizedTableKey==='analytics'){
+      ['campaign_key','landing_key','visitor_id','session_id','utm_source','utm_medium','utm_campaign','utm_content'].forEach(function(field){if(searchFields.indexOf(field)<0)searchFields.push(field);});
     }
     rows=rows.filter(function(row){return searchFields.some(function(field){return String(row[field]===undefined?'':row[field]).toLowerCase().indexOf(search)>=0;});});
   }
@@ -86,14 +117,17 @@ function adminQueryTableList_(token, tableKey, query) {
   if(dateField&&(from||to))rows=rows.filter(function(row){var t=Date.parse(row[dateField]||'');if(!isFinite(t))return false;if(from&&t<Date.parse(from))return false;if(to){var end=Date.parse(to);if(String(to).length<=10)end+=86399999;if(t>end)return false;}return true;});
   var sortBy=safeString_(q.sortBy)||def.dateField||def.pk,sortDir=safeString_(q.sortDir).toLowerCase()==='asc'?1:-1;
   rows.sort(function(a,b){var av=a[sortBy],bv=b[sortBy],ad=Date.parse(av||''),bd=Date.parse(bv||'');if(isFinite(ad)&&isFinite(bd))return(ad-bd)*sortDir;var an=Number(av),bn=Number(bv);if(isFinite(an)&&isFinite(bn)&&String(av)!==''&&String(bv)!=='')return(an-bn)*sortDir;return String(av===undefined?'':av).localeCompare(String(bv===undefined?'':bv))*sortDir;});
-  var total=rows.length,page=Math.max(1,safeNumber_(q.page,1)),pageSize=Math.min(100,Math.max(10,safeNumber_(q.pageSize,50))),start=(page-1)*pageSize;
+  var total=rows.length,page=Math.max(1,safeNumber_(q.page,1)),pageSize=Math.min(100,Math.max(10,safeNumber_(q.pageSize,25))),start=(page-1)*pageSize;
   return {success:true,tableKey:tableKey,total:total,page:page,pageSize:pageSize,pages:Math.max(1,Math.ceil(total/pageSize)),rows:rows.slice(start,start+pageSize).map(function(row){return adminListProjection_(def,row,tableKey);}),facets:facets};
 }
 
 function adminListProjection_(def,row,tableKey){
-  var out={},fields=[def.pk].concat(def.list||[]);
-  if(safeString_(tableKey)==='leads'||def.sheet===APP.SHEETS.LEADS){
+  var out={},fields=[def.pk].concat(def.list||[]),key=safeString_(tableKey);
+  if(key==='leads'||def.sheet===APP.SHEETS.LEADS){
     fields=fields.concat(['landing_key','last_landing_key','last_source']);
+  }
+  if(key==='analytics'||def.sheet===APP.SHEETS.ANALYTICS){
+    fields=fields.concat(['campaign_key','landing_key','visitor_id','session_id','utm_source','utm_medium','utm_campaign','utm_content']);
   }
   if((SCHEMA[def.sheet]||[]).indexOf('archived_at')>=0)fields.push('archived_at');
   if(def.sheet===APP.SHEETS.MEDIA)fields=fields.concat(['file_id','drive_url','public_url']);
