@@ -1,11 +1,16 @@
 import {
   Activity,
   ArrowRight,
+  ChartNoAxesCombined,
   CheckCircle2,
   CircleAlert,
+  ClipboardCheck,
+  ContactRound,
   FileCheck2,
+  Megaphone,
   MousePointerClick,
   Radar,
+  UserRoundSearch,
   Users,
 } from 'lucide-react'
 import { StatusPill } from './DataTable'
@@ -102,6 +107,25 @@ function CmsHealth({ cms = {}, onTable }) {
   return <div className="admin-cms-health-grid">{rows.map(([label, data, table]) => <button type="button" key={table} onClick={() => onTable(table)}><span>{label}</span><strong>{data?.published || 0}<small> / {data?.total || 0}</small></strong><em>{data?.draft || 0} borradores · {data?.hidden || 0} ocultos</em></button>)}</div>
 }
 
+function DashboardShortcuts({ stats, onTable }) {
+  const items = [
+    ['Campañas', `${stats.activeCampaigns || 0} activas`, 'campaigns', Megaphone],
+    ['Leads', `${stats.leads || 0} identificados`, 'leads', UserRoundSearch],
+    ['Analítica', `${stats.interactions || 0} eventos`, 'analytics', ChartNoAxesCombined],
+    ['Contactos', `${stats.contacts || 0} consultas`, 'contacts', ContactRound],
+    ['Onboarding', `${stats.onboardingCompleted || 0}/${stats.onboardings || 0} completos`, 'onboarding', ClipboardCheck],
+  ]
+  return (
+    <div className="admin-dashboard-shortcuts">
+      {items.map(([label, note, table, Icon]) => (
+        <button type="button" key={table} onClick={() => onTable(table)}>
+          <i><Icon size={17} /></i><span><strong>{label}</strong><small>{note}</small></span>
+        </button>
+      ))}
+    </div>
+  )
+}
+
 export default function DashboardView({ dashboard, insights, onTable, onCampaign, onLead }) {
   const stats = dashboard?.stats || {}
   const health = dashboard?.health || {}
@@ -112,6 +136,8 @@ export default function DashboardView({ dashboard, insights, onTable, onCampaign
         <div><span className="admin-card-eyebrow">Resumen operativo</span><h2>Actividad y CRM</h2></div>
         <div className={`admin-health-badge ${health.campaignIssues ? 'has-warning' : ''}`}>{health.campaignIssues ? <CircleAlert size={17} /> : <CheckCircle2 size={17} />}<div><strong>{health.campaignIssues ? `${health.campaignIssues} campaña(s) para revisar` : 'Operación conectada'}</strong><span>{health.analyticsEvents || 0} eventos · {health.analyticsSessions || 0} sesiones</span></div></div>
       </section>
+
+      <DashboardShortcuts stats={stats} onTable={onTable} />
 
       <div className="admin-primary-kpi-grid">
         <PrimaryKpi label="Interacciones" value={stats.interactions || 0} note={`${stats.heroImpressions || 0} impresiones · ${stats.heroClicks || 0} clicks`} icon={Radar} tone="violet" />
