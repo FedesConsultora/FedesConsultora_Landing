@@ -36,7 +36,7 @@ function adminExecuteHttpCommand_(data) {
     case 'workspace': return adminGetWorkspaceReact_(token);
     case 'dashboard': return adminGetDashboardOverview_(token);
     case 'insights': return adminGetInsights(token);
-    case 'queryTable': return adminQueryTableList_(token,safeString_(payload.tableKey),payload.query||{});
+    case 'queryTable': return adminQueryTableFast_(token,safeString_(payload.tableKey),payload.query||{});
     case 'record': return adminGetRecord_(token,safeString_(payload.tableKey),safeString_(payload.id));
     case 'create': return adminCreateDataReact_(token,safeString_(payload.tableKey),payload.record||{});
     case 'update': return adminUpdateDataReact_(token,safeString_(payload.tableKey),safeString_(payload.id),payload.record||{});
