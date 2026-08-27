@@ -80,7 +80,7 @@ function Heatmap({ data }) {
             <strong>{day}</strong>
             {hours.map((hour) => {
               const value = Number(matrix?.[dayIndex]?.[hour] || 0)
-              return <span key={`${day}-${hour}`} className={`heat-${levelFor(value)}`}><i /><title>{`${day} ${String(hour).padStart(2, '0')}:00 · ${value} eventos`}</title></span>
+              return <span key={`${day}-${hour}`} className={`heat-${levelFor(value)}`} title={`${day} ${String(hour).padStart(2, '0')}:00 · ${value} eventos`}><i /></span>
             })}
           </div>
         ))}
