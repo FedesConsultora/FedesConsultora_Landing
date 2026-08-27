@@ -109,13 +109,13 @@ function campaignAnalyticsSourceCounts_(rows) {
 function adminGetCampaignFunnel_(token,campaignKey) {
   requireAdminSession_(token);
   ensureCampaignLandingFoundation_();
-  ensureAnalyticsDimensionsSchema_(false);
+  ensureAnalyticsDimensions_(true);
 
   var key=safeString_(campaignKey);
   var landings=dbReadAll_(APP.SHEETS.CAMPAIGN_LANDINGS,{includeArchived:true}).filter(function(row){
     return safeString_(row.campaign_key)===key && !safeString_(row.archived_at);
   });
-  var analytics=dbReadAll_(APP.SHEETS.ANALYTICS,{includeArchived:true}).filter(function(row){
+  var analytics=adminFindRowsByExactFields_(APP.SHEETS.ANALYTICS,[{field:'campaign_key',value:key}]).filter(function(row){
     return campaignAnalyticsMatches_(row,key,landings);
   });
   var leads=dbReadAll_(APP.SHEETS.LEADS,{includeArchived:true}).filter(function(row){
