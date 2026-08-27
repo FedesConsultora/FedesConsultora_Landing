@@ -15,7 +15,7 @@ function campaignAnalyticsPath_(value) {
 }
 
 function campaignAnalyticsLandingKey_(row,meta,landings) {
-  var explicit=safeString_(meta.landing_key||meta.landingKey);
+  var explicit=safeString_(row&&row.landing_key)||safeString_(meta.landing_key||meta.landingKey);
   if (explicit) return explicit;
 
   var candidates=[
@@ -35,7 +35,7 @@ function campaignAnalyticsLandingKey_(row,meta,landings) {
 
 function campaignAnalyticsMatches_(row,campaignKey,landings) {
   var meta=campaignAnalyticsMeta_(row);
-  var explicit=safeString_(meta.campaign_key||meta.campaignKey);
+  var explicit=safeString_(row&&row.campaign_key)||safeString_(meta.campaign_key||meta.campaignKey);
   if (explicit) return explicit===campaignKey;
 
   var landingKey=campaignAnalyticsLandingKey_(row,meta,landings);
@@ -43,14 +43,15 @@ function campaignAnalyticsMatches_(row,campaignKey,landings) {
     return safeString_(landing.landing_key)===landingKey && safeString_(landing.campaign_key)===campaignKey;
   });
 
-  var utmCampaign=safeString_(meta.utm_campaign||meta.utmCampaign);
+  var utmCampaign=safeString_(row&&row.utm_campaign)||safeString_(meta.utm_campaign||meta.utmCampaign);
   return utmCampaign===campaignKey;
 }
 
 function campaignAnalyticsSessionIds_(rows) {
   var seen={};
   (rows||[]).forEach(function(row){
-    var id=safeString_(row.session_id);
+    var meta=campaignAnalyticsMeta_(row);
+    var id=safeString_(row&&row.session_id)||safeString_(meta.session_id)||safeString_(meta.sessionId);
     if (id) seen[id]=true;
   });
   return seen;
@@ -108,6 +109,7 @@ function campaignAnalyticsSourceCounts_(rows) {
 function adminGetCampaignFunnel_(token,campaignKey) {
   requireAdminSession_(token);
   ensureCampaignLandingFoundation_();
+  ensureAnalyticsDimensionsSchema_(false);
 
   var key=safeString_(campaignKey);
   var landings=dbReadAll_(APP.SHEETS.CAMPAIGN_LANDINGS,{includeArchived:true}).filter(function(row){
@@ -145,6 +147,9 @@ function adminGetCampaignFunnel_(token,campaignKey) {
 
   landings.forEach(function(landing){
     var landingKey=safeString_(landing.landing_key);
+    var landingInteractions=analytics.filter(function(row){
+      return campaignAnalyticsLandingKey_(row,campaignAnalyticsMeta_(row),landings)===landingKey;
+    });
     var landingVisits=visits.filter(function(row){
       return campaignAnalyticsLandingKey_(row,campaignAnalyticsMeta_(row),landings)===landingKey;
     });
@@ -160,6 +165,7 @@ function adminGetCampaignFunnel_(token,campaignKey) {
       landingKey:landingKey,
       path:normalizeCampaignLandingPath_(landing.path),
       name:safeString_(landing.name),
+      interactions:landingInteractions.length,
       views:landingVisits.length,
       uniqueViews:campaignAnalyticsUniqueSessions_(landingVisits),
       bannerClicks:landingClicks.length,
@@ -189,6 +195,7 @@ function adminGetCampaignFunnel_(token,campaignKey) {
       last_landing_key:safeString_(lead.last_landing_key),
       source:safeString_(lead.source),
       last_source:safeString_(lead.last_source),
+      visitor_id:safeString_(lead.visitor_id),
       session_id:safeString_(lead.session_id),
       utm_source:safeString_(lead.utm_source),
       utm_medium:safeString_(lead.utm_medium),
@@ -205,6 +212,7 @@ function adminGetCampaignFunnel_(token,campaignKey) {
   return {
     success:true,
     stats:{
+      interactions:analytics.length,
       impressions:impressions.length,
       bannerClicks:clicks.length,
       landingViews:visits.length,
@@ -225,7 +233,7 @@ function adminGetCampaignFunnel_(token,campaignKey) {
     visitSources:campaignAnalyticsSourceCounts_(visits),
     answerDistribution:answerDistribution,
     responders:responderRows,
-    trackingNote:'Sesión → lead usa únicamente sesiones que pueden vincularse de forma determinística entre AN_Events y CRM_Leads. Los registros históricos anteriores al tracking de sesión permanecen visibles, pero no se inventa su atribución.'
+    trackingNote:'Interacciones, visitas y leads son etapas distintas. Sesión → lead usa sólo sesiones vinculables de forma determinística; el histórico sin session_id permanece visible sin inventar atribución.'
   };
 }
 
