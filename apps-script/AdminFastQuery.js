@@ -17,20 +17,32 @@ function adminFastFacetValues_(sheet,headers,fields,cacheKey) {
 
   var lastRow=sheet.getLastRow();
   var out={};
+  var descriptors=[];
   (fields||[]).forEach(function(field){
     var idx=headers.indexOf(field);
     if(idx<0||lastRow<2){out[field]=[];return;}
-    var values=sheet.getRange(2,idx+1,lastRow-1,1).getValues();
-    var seen={};
-    values.forEach(function(row){
-      var normalized=normalizeCellValue_(row[0]);
-      var value=String(normalized===undefined?'':normalized);
-      if(value)seen[value]=true;
-    });
-    out[field]=Object.keys(seen).sort();
+    descriptors.push({field:field,index:idx});
   });
 
-  try{cache.put(cacheKey,jsonStringify_(out),120);}catch(err){/* best effort */}
+  if(descriptors.length){
+    var minIndex=Math.min.apply(null,descriptors.map(function(item){return item.index;}));
+    var maxIndex=Math.max.apply(null,descriptors.map(function(item){return item.index;}));
+    var values=sheet.getRange(2,minIndex+1,lastRow-1,maxIndex-minIndex+1).getValues();
+    var seenByField={};
+    descriptors.forEach(function(item){seenByField[item.field]={};});
+
+    values.forEach(function(row){
+      descriptors.forEach(function(item){
+        var normalized=normalizeCellValue_(row[item.index-minIndex]);
+        var value=String(normalized===undefined?'':normalized);
+        if(value)seenByField[item.field][value]=true;
+      });
+    });
+
+    descriptors.forEach(function(item){out[item.field]=Object.keys(seenByField[item.field]).sort();});
+  }
+
+  try{cache.put(cacheKey,jsonStringify_(out),300);}catch(err){/* best effort */}
   return out;
 }
 
