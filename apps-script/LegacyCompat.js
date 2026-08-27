@@ -23,7 +23,7 @@ function handleLegacyPost_(action,data){
   if(action==='track') return {success:true,data:saveTracking_(data)};
   if(action==='galiciaStart') return saveGaliciaLeadWithAttribution_(data);
   if(action==='galiciaProgress') return saveGaliciaProgressSafe_(data);
-  if(action==='galiciaComplete') return completeGaliciaLead_(data);
+  if(action==='galiciaComplete') return completeGaliciaLeadWithAttribution_(data);
   if(action==='galiciaMeetingClick') return markGaliciaMeetingClick_(data);
   if(action==='addGaleriaFoto') {
     var rec=dbInsert_(APP.SHEETS.GALLERY,{external_url:safeString_(data.imageUrl),sort_order:999,status:'published'});invalidatePublicCache_();return {success:true,data:rec};
