@@ -35,7 +35,14 @@ function adminLogin(password) {
   }
   var token = createAdminSession_('admin');
   audit_('admin','admin','auth','admin','login',null,{success:true},'admin_panel');
-  return {success:true, token:token, expiresIn:APP.ADMIN_SESSION_TTL_SECONDS};
+  return {
+    success:true,
+    token:token,
+    expiresIn:APP.ADMIN_SESSION_TTL_SECONDS,
+    appVersion:APP.VERSION,
+    schemaVersion:APP.SCHEMA_VERSION,
+    authenticatedAt:nowIso_()
+  };
 }
 
 function adminLogout(token) {
