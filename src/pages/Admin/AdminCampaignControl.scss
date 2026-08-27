@@ -1,0 +1,215 @@
+.admin-panel-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.admin-control-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.admin-runtime-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 9px;
+  background: rgba(255,255,255,.035);
+  color: #dbe3ed;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 760;
+  cursor: pointer;
+}
+
+.admin-runtime-action:hover:not(:disabled) {
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.15);
+}
+
+.admin-runtime-action.is-danger {
+  color: #ffadb5;
+  background: rgba(239,123,135,.055);
+  border-color: rgba(239,123,135,.18);
+}
+
+.admin-runtime-action:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+.admin-funnel-kpis {
+  grid-template-columns: repeat(7, minmax(100px, 1fr));
+}
+
+.admin-rate-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  gap: 1px;
+  margin-top: 11px;
+  overflow: hidden;
+  border: 1px solid var(--admin-line);
+  border-radius: 12px;
+  background: var(--admin-line);
+}
+
+.admin-rate-strip span {
+  display: block;
+  padding: 10px 12px;
+  background: #0c151e;
+  color: #748296;
+  font-size: 9px;
+}
+
+.admin-rate-strip b {
+  display: block;
+  margin-bottom: 2px;
+  color: #e7edf4;
+  font-size: 13px;
+}
+
+.admin-data-note {
+  margin: 9px 0 0;
+  color: #657386;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.admin-answer-distribution-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 9px;
+  margin-top: 11px;
+}
+
+.admin-answer-distribution-grid > article {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--admin-line);
+  border-radius: 12px;
+  background: rgba(255,255,255,.018);
+}
+
+.admin-answer-distribution-grid > article > strong {
+  display: block;
+  margin-bottom: 10px;
+  color: #8795a8;
+  font-size: 9px;
+  letter-spacing: .08em;
+}
+
+.admin-mini-kpi small {
+  display: block;
+  margin-top: 2px;
+  color: #69778a;
+  font-size: 8px;
+}
+
+.admin-campaign-config-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.45;
+}
+
+.admin-form-section--hero {
+  padding-bottom: 18px;
+}
+
+.hero-banner-runtime-note {
+  padding: 9px 11px;
+  border: 1px solid rgba(113,136,255,.14);
+  border-radius: 10px;
+  background: rgba(113,136,255,.045);
+  color: #8998ac;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.hero-banner-runtime-note strong {
+  color: #cbd5e0;
+}
+
+.hero-banner-runtime-note.is-warning {
+  border-color: rgba(240,184,92,.18);
+  background: rgba(240,184,92,.05);
+  color: #c5a66e;
+}
+
+.hero-banner-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-campaign-config-modal .admin-form-grid,
+.admin-landing-editor__grid {
+  align-items: start;
+}
+
+.admin-campaign-config-modal .admin-detail-card {
+  min-height: 64px;
+}
+
+.admin-landing-editor {
+  max-height: 94vh;
+}
+
+.admin-landing-editor__preview {
+  position: sticky;
+  bottom: 58px;
+  z-index: 4;
+  margin-top: 12px;
+  border: 1px solid rgba(113,136,255,.12);
+  background: rgba(11,18,27,.94);
+  backdrop-filter: blur(14px);
+}
+
+.admin-campaign-control-modal .admin-special-grid {
+  gap: 9px;
+}
+
+.admin-campaign-control-modal .admin-panel {
+  padding: 15px;
+}
+
+.admin-campaign-control-modal .admin-kpi-row {
+  gap: 7px;
+}
+
+.admin-campaign-control-modal .admin-mini-kpi {
+  min-width: 0;
+  padding: 10px 11px;
+  border-radius: 11px;
+  background: rgba(255,255,255,.02);
+}
+
+.admin-campaign-control-modal .admin-mini-kpi strong {
+  font-size: 17px;
+}
+
+.admin-campaign-control-modal .admin-mini-kpi span {
+  font-size: 8px;
+}
+
+@media (max-width: 1120px) {
+  .admin-funnel-kpis { grid-template-columns: repeat(4, minmax(0,1fr)); }
+  .admin-rate-strip { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 760px) {
+  .admin-panel-heading-actions { justify-content: flex-start; }
+  .admin-funnel-kpis { grid-template-columns: 1fr 1fr; }
+  .admin-rate-strip { grid-template-columns: 1fr; }
+  .admin-answer-distribution-grid { grid-template-columns: 1fr; }
+  .hero-banner-header-actions { width: 100%; justify-content: flex-start; }
+  .admin-landing-editor__preview { position: static; }
+}
