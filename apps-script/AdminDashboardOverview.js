@@ -1,6 +1,7 @@
 function adminGetDashboardOverview_(token) {
   requireAdminSession_(token);
   ensureCampaignLandingFoundation_();
+  ensureAnalyticsDimensionsSchema_(false);
 
   var leads=dbReadAll_(APP.SHEETS.LEADS),
       contacts=dbReadAll_(APP.SHEETS.CONTACTS),
@@ -29,8 +30,12 @@ function adminGetDashboardOverview_(token) {
 
   var mediaMap=publicMediaMap_();
   var campaignInteractionsTotal=0;
+  var analyticsSessionSet=campaignAnalyticsSessionIds_(analytics);
   var traceableLeadSessions={};
-  leads.forEach(function(row){var sid=safeString_(row.session_id);if(sid)traceableLeadSessions[sid]=true;});
+  leads.forEach(function(row){
+    var sid=campaignLeadFirstAttribution_(row).sessionId;
+    if(sid)traceableLeadSessions[sid]=true;
+  });
 
   var cards=campaigns.map(function(campaign){
     var key=safeString_(campaign.campaign_key);
@@ -43,11 +48,10 @@ function adminGetDashboardOverview_(token) {
     var campaignVisits=campaignAnalytics.filter(function(row){return safeString_(row.label)==='campaign_landing_view';});
     var campaignImpressions=campaignAnalytics.filter(function(row){return safeString_(row.label)==='hero_banner_impression';});
     var campaignClicks=campaignAnalytics.filter(function(row){return safeString_(row.label)==='hero_banner_click';});
-    var campaignSessions={};
-    campaignAnalytics.forEach(function(row){var sid=safeString_(row.session_id);if(sid)campaignSessions[sid]=true;});
+    var campaignSessions=campaignAnalyticsSessionIds_(campaignAnalytics);
     var linkedSessions={};
     campaignLeads.forEach(function(row){
-      var sid=safeString_(row.session_id);
+      var sid=campaignLeadFirstAttribution_(row).sessionId;
       if(sid&&campaignSessions[sid])linkedSessions[sid]=true;
     });
     var hero=campaignHeroRuntimeState_(campaign,mediaMap);
@@ -71,7 +75,7 @@ function adminGetDashboardOverview_(token) {
       trackedSessions:Object.keys(campaignSessions).length,
       linkedSessions:Object.keys(linkedSessions).length,
       leads:campaignLeads.length,
-      leadsWithSession:campaignLeads.filter(function(row){return!!safeString_(row.session_id);}).length,
+      leadsWithSession:campaignLeads.filter(function(row){return!!campaignLeadFirstAttribution_(row).sessionId;}).length,
       responders:campaignResponders.length,
       complete:campaignComplete.length,
       viewToLead:campaignAnalyticsRate_(campaignLeads.length,campaignVisits.length),
@@ -117,13 +121,13 @@ function adminGetDashboardOverview_(token) {
     health:{
       campaignIssues:campaignIssues,
       analyticsEvents:analytics.length,
-      analyticsSessions:Object.keys(analytics.reduce(function(acc,row){var sid=safeString_(row.session_id);if(sid)acc[sid]=true;return acc;},{})).length,
+      analyticsSessions:Object.keys(analyticsSessionSet).length,
       leadsWithLanding:leads.filter(function(row){return!!safeString_(row.landing_key);}).length,
       leadsWithSource:leads.filter(function(row){return!!safeString_(row.source);}).length,
-      leadsWithSession:leads.filter(function(row){return!!safeString_(row.session_id);}).length,
-      linkedLeadSessions:Object.keys(traceableLeadSessions).filter(function(sid){return analytics.some(function(row){return safeString_(row.session_id)===sid;});}).length,
+      leadsWithSession:leads.filter(function(row){return!!campaignLeadFirstAttribution_(row).sessionId;}).length,
+      linkedLeadSessions:Object.keys(traceableLeadSessions).filter(function(sid){return!!analyticsSessionSet[sid];}).length,
       leadsWithLastLanding:leads.filter(function(row){return!!safeString_(row.last_landing_key);}).length,
-      leadsWithVisitor:leads.filter(function(row){return!!safeString_(row.visitor_id);}).length,
+      leadsWithVisitor:leads.filter(function(row){return!!campaignLeadFirstAttribution_(row).visitorId;}).length,
       publishedLandings:landings.filter(function(row){return safeString_(row.status)===APP.STATUS.PUBLISHED&&!safeString_(row.archived_at);}).length
     }
   };
