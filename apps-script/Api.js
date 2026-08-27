@@ -13,6 +13,7 @@ function handlePublicApi_(e) {
       case 'testimonials': payload=publishedRows_(APP.SHEETS.TESTIMONIALS);break;
       case 'campaign': payload=getCampaignPublic_(safeString_(e.parameter.key))||null;break;
       case 'campaigns': payload=getCampaignsPublic_();break;
+      case 'hero-runtime': payload=getHeroRuntimePublic_(safeString_(e.parameter.key));break;
       case 'campaign-landing': payload=getCampaignLandingPublic_(safeString_(e.parameter.path||e.parameter.key))||null;break;
       case 'campaign-landings': payload=getCampaignLandingsPublic_(safeString_(e.parameter.campaignKey||e.parameter.key));break;
       case 'lead-status': payload=getLeadPublicStatus_(safeString_(e.parameter.leadId));break;
