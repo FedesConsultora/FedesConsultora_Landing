@@ -15,7 +15,8 @@ function adminGetDashboardOverview_(token) {
   var complete=leads.filter(function(row){return safeString_(row.status)==='complete';});
   var qualified=leads.filter(function(row){return safeString_(row.classification)==='CALIFICADO';});
   var landingViews=analytics.filter(function(row){return safeString_(row.label)==='campaign_landing_view';});
-  var linkedGlobal=campaignLinkedLeadStats_(leads,landingViews);
+  var heroImpressions=analytics.filter(function(row){return safeString_(row.label)==='hero_banner_impression';});
+  var heroClicks=analytics.filter(function(row){return safeString_(row.label)==='hero_banner_click';});
   var responderIds={};
   answers.forEach(function(row){var id=safeString_(row.lead_id);if(id)responderIds[id]=true;});
   var responders=leads.filter(function(row){return responderIds[safeString_(row.lead_id)];});
@@ -27,6 +28,10 @@ function adminGetDashboardOverview_(token) {
   }).sort(function(a,b){return String(b.last_activity_at||'').localeCompare(String(a.last_activity_at||''));}).slice(0,12);
 
   var mediaMap=publicMediaMap_();
+  var campaignInteractionsTotal=0;
+  var traceableLeadSessions={};
+  leads.forEach(function(row){var sid=safeString_(row.session_id);if(sid)traceableLeadSessions[sid]=true;});
+
   var cards=campaigns.map(function(campaign){
     var key=safeString_(campaign.campaign_key);
     var campaignLeads=leads.filter(function(row){return safeString_(row.campaign_key)===key;});
@@ -34,9 +39,19 @@ function adminGetDashboardOverview_(token) {
     var campaignResponders=campaignLeads.filter(function(row){return responderIds[safeString_(row.lead_id)];});
     var campaignLandings=landings.filter(function(row){return safeString_(row.campaign_key)===key&&!safeString_(row.archived_at);});
     var campaignPublishedLandings=campaignLandings.filter(function(row){return safeString_(row.status)===APP.STATUS.PUBLISHED;});
-    var campaignVisits=landingViews.filter(function(row){return campaignAnalyticsMatches_(row,key,campaignLandings);});
-    var linked=campaignLinkedLeadStats_(campaignLeads,campaignVisits);
+    var campaignAnalytics=analytics.filter(function(row){return campaignAnalyticsMatches_(row,key,campaignLandings);});
+    var campaignVisits=campaignAnalytics.filter(function(row){return safeString_(row.label)==='campaign_landing_view';});
+    var campaignImpressions=campaignAnalytics.filter(function(row){return safeString_(row.label)==='hero_banner_impression';});
+    var campaignClicks=campaignAnalytics.filter(function(row){return safeString_(row.label)==='hero_banner_click';});
+    var campaignSessions={};
+    campaignAnalytics.forEach(function(row){var sid=safeString_(row.session_id);if(sid)campaignSessions[sid]=true;});
+    var linkedSessions={};
+    campaignLeads.forEach(function(row){
+      var sid=safeString_(row.session_id);
+      if(sid&&campaignSessions[sid])linkedSessions[sid]=true;
+    });
     var hero=campaignHeroRuntimeState_(campaign,mediaMap);
+    campaignInteractionsTotal+=campaignAnalytics.length;
 
     return {
       campaign_id:campaign.campaign_id,
@@ -48,17 +63,21 @@ function adminGetDashboardOverview_(token) {
       landings:campaignLandings.length,
       publishedLandings:campaignPublishedLandings.length,
       hero:hero,
+      interactions:campaignAnalytics.length,
+      impressions:campaignImpressions.length,
+      bannerClicks:campaignClicks.length,
       views:campaignVisits.length,
       sessions:campaignAnalyticsUniqueSessions_(campaignVisits),
+      trackedSessions:Object.keys(campaignSessions).length,
+      linkedSessions:Object.keys(linkedSessions).length,
       leads:campaignLeads.length,
-      leadsWithSession:linked.withSession,
-      linkedLeads:linked.linked,
-      sessionCoverage:linked.coverage,
-      sessionToLead:linked.sessionToLead,
+      leadsWithSession:campaignLeads.filter(function(row){return!!safeString_(row.session_id);}).length,
       responders:campaignResponders.length,
       complete:campaignComplete.length,
       viewToLead:campaignAnalyticsRate_(campaignLeads.length,campaignVisits.length),
-      leadToComplete:campaignAnalyticsRate_(campaignComplete.length,campaignLeads.length)
+      leadToResponse:campaignAnalyticsRate_(campaignResponders.length,campaignLeads.length),
+      leadToComplete:campaignAnalyticsRate_(campaignComplete.length,campaignLeads.length),
+      traceability:campaignAnalyticsRate_(Object.keys(linkedSessions).length,Object.keys(campaignSessions).length)
     };
   }).sort(function(a,b){
     if (a.status==='published'&&b.status!=='published') return -1;
@@ -74,11 +93,10 @@ function adminGetDashboardOverview_(token) {
   return {
     success:true,
     stats:{
+      interactions:campaignInteractionsTotal,
+      heroImpressions:heroImpressions.length,
+      heroClicks:heroClicks.length,
       leads:leads.length,
-      leadsWithSession:linkedGlobal.withSession,
-      linkedLeads:linkedGlobal.linked,
-      sessionCoverage:linkedGlobal.coverage,
-      sessionToLead:linkedGlobal.sessionToLead,
       complete:complete.length,
       incomplete:leads.filter(function(row){return safeString_(row.status)==='incomplete';}).length,
       responders:responders.length,
@@ -99,15 +117,13 @@ function adminGetDashboardOverview_(token) {
     health:{
       campaignIssues:campaignIssues,
       analyticsEvents:analytics.length,
-      analyticsSessions:campaignAnalyticsUniqueSessions_(analytics),
+      analyticsSessions:Object.keys(analytics.reduce(function(acc,row){var sid=safeString_(row.session_id);if(sid)acc[sid]=true;return acc;},{})).length,
       leadsWithLanding:leads.filter(function(row){return!!safeString_(row.landing_key);}).length,
-      leadsWithLastLanding:leads.filter(function(row){return!!safeString_(row.last_landing_key);}).length,
       leadsWithSource:leads.filter(function(row){return!!safeString_(row.source);}).length,
-      leadsWithLastSource:leads.filter(function(row){return!!safeString_(row.last_source);}).length,
+      leadsWithSession:leads.filter(function(row){return!!safeString_(row.session_id);}).length,
+      linkedLeadSessions:Object.keys(traceableLeadSessions).filter(function(sid){return analytics.some(function(row){return safeString_(row.session_id)===sid;});}).length,
+      leadsWithLastLanding:leads.filter(function(row){return!!safeString_(row.last_landing_key);}).length,
       leadsWithVisitor:leads.filter(function(row){return!!safeString_(row.visitor_id);}).length,
-      leadsWithSession:linkedGlobal.withSession,
-      linkedLeadSessions:linkedGlobal.linked,
-      sessionCoverage:linkedGlobal.coverage,
       publishedLandings:landings.filter(function(row){return safeString_(row.status)===APP.STATUS.PUBLISHED&&!safeString_(row.archived_at);}).length
     }
   };
