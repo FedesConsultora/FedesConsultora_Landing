@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import HeroCampaignSlide from './HeroCampaignSlide'
-import { getActiveHeroCampaigns } from '../../../services/galiciaApi'
-import { getCampaignHeroRuntime } from '../../../services/campaignRuntime'
+import { getActiveCampaignHeroes } from '../../../services/campaignRuntime'
 import { trackEvent } from '../../../services/googleApi'
 import './HeroCampaignSlider.scss'
 
@@ -20,23 +19,17 @@ function hasRenderableHeroMedia(campaign) {
 
 function filterImmediatelyRenderableCampaigns(campaigns) {
   if (!Array.isArray(campaigns)) return []
-
   const now = Date.now()
-
   return campaigns
     .filter((campaign) => {
       if (!campaign || campaign.status !== 'published') return false
       if (!hasRenderableHeroMedia(campaign)) return false
-
       const banner = campaign.hero_banner
       if (!banner?.enabled) return false
-
       const startsAt = Date.parse(campaign.starts_at || '')
       if (Number.isFinite(startsAt) && startsAt > now) return false
-
       const endsAt = Date.parse(campaign.ends_at || '')
       if (Number.isFinite(endsAt) && endsAt < now) return false
-
       return true
     })
     .sort((a, b) => (Number(a.sort_order) || 0) - (Number(b.sort_order) || 0))
@@ -59,11 +52,9 @@ function readAdminPreviewCampaign() {
   try {
     const params = new URLSearchParams(window.location.search)
     if (params.get('previewHero') !== '1') return null
-
     const encodedPreview = params.get('previewCampaign')
     const queryPreview = decodePreviewCampaign(encodedPreview)
     if (queryPreview && hasRenderableHeroMedia(queryPreview)) return queryPreview
-
     const raw = sessionStorage.getItem('fedes_hero_banner_preview')
     if (!raw) return null
     const parsed = JSON.parse(raw)
@@ -72,15 +63,6 @@ function readAdminPreviewCampaign() {
   } catch {
     return null
   }
-}
-
-function mergeRuntimeCampaign(allCampaigns, runtime) {
-  const collection = Array.isArray(allCampaigns)
-    ? allCampaigns.filter((campaign) => String(campaign?.campaign_key || '') !== 'galicia-2026')
-    : []
-
-  if (runtime?.active && runtime.campaign) collection.push(runtime.campaign)
-  return filterImmediatelyRenderableCampaigns(collection)
 }
 
 export default function HeroCampaignSlider({ normalHero }) {
@@ -105,20 +87,15 @@ export default function HeroCampaignSlider({ normalHero }) {
       setCurrentIndex((prevIndex) => {
         const currentCampaign = currentCampaigns[prevIndex]
         if (currentCampaign && trackAdvance && !currentCampaign.__preview) {
-          trackEvent(
-            'Hero Campaign Banner',
-            isManual ? 'hero_banner_manual_advance' : 'hero_banner_auto_advance',
-            currentCampaign.campaign_key,
-            {
-              campaign_key: currentCampaign.campaign_key,
-              source: 'home_banner',
-              utm_source: 'fedesconsultora',
-              utm_medium: 'website',
-              utm_campaign: currentCampaign.campaign_key,
-              device_type: window.innerWidth <= 768 ? 'mobile' : 'desktop',
-              page_path: window.location.pathname,
-            }
-          )
+          trackEvent('Hero Campaign Banner', isManual ? 'hero_banner_manual_advance' : 'hero_banner_auto_advance', currentCampaign.campaign_key, {
+            campaign_key: currentCampaign.campaign_key,
+            source: 'home_banner',
+            utm_source: 'fedesconsultora',
+            utm_medium: 'website',
+            utm_campaign: currentCampaign.campaign_key,
+            device_type: window.innerWidth <= 768 ? 'mobile' : 'desktop',
+            page_path: window.location.pathname,
+          })
         }
         return prevIndex + 1
       })
@@ -129,8 +106,7 @@ export default function HeroCampaignSlider({ normalHero }) {
   useEffect(() => {
     let active = true
     const previewCampaign = readAdminPreviewCampaign()
-
-    try { window.localStorage.removeItem(LEGACY_HERO_CACHE_KEY) } catch { /* limpieza best effort */ }
+    try { window.localStorage.removeItem(LEGACY_HERO_CACHE_KEY) } catch { /* best effort */ }
 
     if (previewCampaign) {
       setCampaigns([previewCampaign])
@@ -139,36 +115,23 @@ export default function HeroCampaignSlider({ normalHero }) {
       return () => { active = false }
     }
 
-    async function resolvePublicHero() {
-      const [runtimeResult, campaignsResult] = await Promise.allSettled([
-        getCampaignHeroRuntime('galicia-2026'),
-        getActiveHeroCampaigns(),
-      ])
+    getActiveCampaignHeroes()
+      .then((runtimeCampaigns) => {
+        if (!active) return
+        // Esta respuesta no usa el snapshot del build ni el cache histórico del navegador.
+        // Si el Hero se oculta o pierde una imagen, desaparece en el próximo request.
+        setCampaigns(filterImmediatelyRenderableCampaigns(runtimeCampaigns))
+        setCurrentIndex(0)
+        setLoaded(true)
+      })
+      .catch(() => {
+        if (!active) return
+        // Fail closed: ante duda mostramos el Hero normal, nunca un banner stale.
+        setCampaigns([])
+        setLoaded(true)
+      })
 
-      if (!active) return
-
-      const runtime = runtimeResult.status === 'fulfilled'
-        ? runtimeResult.value
-        : { active: false, campaign: null, reason: 'runtime_unavailable' }
-      const allCampaigns = campaignsResult.status === 'fulfilled' ? campaignsResult.value : []
-
-      // El runtime es autoridad para Galicia. Nunca usamos snapshots de build ni
-      // localStorage para decidir visibilidad: ocultar el Hero o quitar una imagen
-      // debe prevalecer en el siguiente request, aunque el navegador tenga assets viejos.
-      setCampaigns(mergeRuntimeCampaign(allCampaigns, runtime))
-      setCurrentIndex(0)
-      setLoaded(true)
-    }
-
-    resolvePublicHero().catch(() => {
-      if (!active) return
-      setCampaigns([])
-      setLoaded(true)
-    })
-
-    return () => {
-      active = false
-    }
+    return () => { active = false }
   }, [])
 
   useEffect(() => {
@@ -178,85 +141,52 @@ export default function HeroCampaignSlider({ normalHero }) {
   useEffect(() => {
     if (!loaded || !bannerReady) return
     clearCurrentTimer()
-
     if (currentIndex < campaigns.length) {
       const activeCampaign = campaigns[currentIndex]
       if (activeCampaign) {
         if (!activeCampaign.__preview) {
-          trackEvent(
-            'Hero Campaign Banner',
-            'hero_banner_impression',
-            activeCampaign.campaign_key,
-            {
-              campaign_key: activeCampaign.campaign_key,
-              source: 'home_banner',
-              utm_source: 'fedesconsultora',
-              utm_medium: 'website',
-              utm_campaign: activeCampaign.campaign_key,
-              device_type: window.innerWidth <= 768 ? 'mobile' : 'desktop',
-              page_path: window.location.pathname,
-            }
-          )
+          trackEvent('Hero Campaign Banner', 'hero_banner_impression', activeCampaign.campaign_key, {
+            campaign_key: activeCampaign.campaign_key,
+            source: 'home_banner',
+            utm_source: 'fedesconsultora',
+            utm_medium: 'website',
+            utm_campaign: activeCampaign.campaign_key,
+            device_type: window.innerWidth <= 768 ? 'mobile' : 'desktop',
+            page_path: window.location.pathname,
+          })
         }
-
         const seconds = Number(activeCampaign.hero_banner?.display_seconds) || 6
-        timerRef.current = setTimeout(() => {
-          advanceNext(false)
-        }, Math.max(2, seconds) * 1000)
+        timerRef.current = setTimeout(() => advanceNext(false), Math.max(2, seconds) * 1000)
       }
     }
-
     return () => clearCurrentTimer()
   }, [loaded, bannerReady, currentIndex, campaigns, clearCurrentTimer, advanceNext])
 
   const handleBannerClick = (campaign, clickUrl) => {
     if (campaign.__preview) return
-    trackEvent(
-      'Hero Campaign Banner',
-      'hero_banner_click',
-      campaign.campaign_key,
-      {
-        campaign_key: campaign.campaign_key,
-        click_url: clickUrl,
-        source: 'home_banner',
-        utm_source: 'fedesconsultora',
-        utm_medium: 'website',
-        utm_campaign: campaign.campaign_key,
-        device_type: window.innerWidth <= 768 ? 'mobile' : 'desktop',
-        page_path: window.location.pathname,
-      }
-    )
+    trackEvent('Hero Campaign Banner', 'hero_banner_click', campaign.campaign_key, {
+      campaign_key: campaign.campaign_key,
+      click_url: clickUrl,
+      source: 'home_banner',
+      utm_source: 'fedesconsultora',
+      utm_medium: 'website',
+      utm_campaign: campaign.campaign_key,
+      device_type: window.innerWidth <= 768 ? 'mobile' : 'desktop',
+      page_path: window.location.pathname,
+    })
   }
 
   const isShowingBanner = loaded && campaigns.length > 0 && currentIndex < campaigns.length
   const currentCampaign = isShowingBanner ? campaigns[currentIndex] : null
 
   const slideVariants = shouldReduceMotion
-    ? {
-        initial: { opacity: 0 },
-        animate: { opacity: 1, transition: { duration: 0.4, ease: 'easeInOut' } },
-        exit: { opacity: 0, transition: { duration: 0.4, ease: 'easeInOut' } },
-      }
+    ? { initial: { opacity: 0 }, animate: { opacity: 1, transition: { duration: 0.4, ease: 'easeInOut' } }, exit: { opacity: 0, transition: { duration: 0.4, ease: 'easeInOut' } } }
     : {
         initialBanner: { opacity: 0, y: 8, scale: 0.997 },
-        animateBanner: {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
-        },
-        exitBanner: {
-          opacity: 0,
-          y: -14,
-          scale: 0.995,
-          transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] },
-        },
+        animateBanner: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
+        exitBanner: { opacity: 0, y: -14, scale: 0.995, transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] } },
         initialHero: { opacity: 0, y: 16 },
-        animateHero: {
-          opacity: 1,
-          y: 0,
-          transition: { duration: 0.58, ease: [0.22, 1, 0.36, 1], delay: 0.06 },
-        },
+        animateHero: { opacity: 1, y: 0, transition: { duration: 0.58, ease: [0.22, 1, 0.36, 1], delay: 0.06 } },
       }
 
   return (
@@ -271,28 +201,11 @@ export default function HeroCampaignSlider({ normalHero }) {
             exit={shouldReduceMotion ? slideVariants.exit : slideVariants.exitBanner}
             drag={window.innerWidth <= 768 ? 'x' : false}
             dragConstraints={{ left: 0, right: 0 }}
-            onDragEnd={(_, info) => {
-              if (info.offset.x < -60) advanceNext(true)
-            }}
+            onDragEnd={(_, info) => { if (info.offset.x < -60) advanceNext(true) }}
           >
-            <HeroCampaignSlide
-              campaign={currentCampaign}
-              onBannerClick={handleBannerClick}
-              onImageReady={() => setBannerReady(true)}
-              onImageUnavailable={() => advanceNext(false, { trackAdvance: false })}
-            />
-
+            <HeroCampaignSlide campaign={currentCampaign} onBannerClick={handleBannerClick} onImageReady={() => setBannerReady(true)} onImageUnavailable={() => advanceNext(false, { trackAdvance: false })} />
             {currentCampaign.__preview && <div className="hero-campaign-preview-badge">Vista previa del Backoffice</div>}
-
-            <button
-              type="button"
-              className="hero-campaign-skip-btn"
-              onClick={() => advanceNext(true)}
-              aria-label="Continuar al contenido principal"
-            >
-              <span>Continuar</span>
-              <ArrowRight size={15} />
-            </button>
+            <button type="button" className="hero-campaign-skip-btn" onClick={() => advanceNext(true)} aria-label="Continuar al contenido principal"><span>Continuar</span><ArrowRight size={15} /></button>
           </motion.div>
         ) : (
           <motion.div
