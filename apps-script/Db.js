@@ -1,17 +1,55 @@
+var DB_REQUEST_ACTIVE_ = false;
+var DB_REQUEST_SPREADSHEET_ = null;
+var DB_REQUEST_ROWS_ = {};
+var DB_REQUEST_HEADERS_ = {};
+
+function dbBeginRequest_() {
+  DB_REQUEST_ACTIVE_ = true;
+  DB_REQUEST_SPREADSHEET_ = null;
+  DB_REQUEST_ROWS_ = {};
+  DB_REQUEST_HEADERS_ = {};
+}
+
+function dbEndRequest_() {
+  DB_REQUEST_ACTIVE_ = false;
+  DB_REQUEST_SPREADSHEET_ = null;
+  DB_REQUEST_ROWS_ = {};
+  DB_REQUEST_HEADERS_ = {};
+}
+
+function dbInvalidateRequestCache_(sheetName) {
+  if (!DB_REQUEST_ACTIVE_) return;
+  if (sheetName) {
+    delete DB_REQUEST_ROWS_[sheetName];
+    delete DB_REQUEST_HEADERS_[sheetName];
+    return;
+  }
+  DB_REQUEST_ROWS_ = {};
+  DB_REQUEST_HEADERS_ = {};
+}
+
 function getSpreadsheet_() {
+  if (DB_REQUEST_ACTIVE_ && DB_REQUEST_SPREADSHEET_) return DB_REQUEST_SPREADSHEET_;
+
   var props = PropertiesService.getScriptProperties();
   var id = props.getProperty(APP.PROPS.SPREADSHEET_ID);
-  if (id) return SpreadsheetApp.openById(id);
+  var spreadsheet = id ? SpreadsheetApp.openById(id) : null;
 
-  var active = SpreadsheetApp.getActiveSpreadsheet();
-  if (active) {
-    props.setProperty(APP.PROPS.SPREADSHEET_ID, active.getId());
-    return active;
+  if (!spreadsheet) {
+    var active = SpreadsheetApp.getActiveSpreadsheet();
+    if (active) {
+      props.setProperty(APP.PROPS.SPREADSHEET_ID, active.getId());
+      spreadsheet = active;
+    }
   }
 
-  var created = SpreadsheetApp.create('FEDES Landing CMS DB');
-  props.setProperty(APP.PROPS.SPREADSHEET_ID, created.getId());
-  return created;
+  if (!spreadsheet) {
+    spreadsheet = SpreadsheetApp.create('FEDES Landing CMS DB');
+    props.setProperty(APP.PROPS.SPREADSHEET_ID, spreadsheet.getId());
+  }
+
+  if (DB_REQUEST_ACTIVE_) DB_REQUEST_SPREADSHEET_ = spreadsheet;
+  return spreadsheet;
 }
 
 function ensureSheet_(sheetName, headers) {
@@ -26,6 +64,7 @@ function ensureSheet_(sheetName, headers) {
     sheet.getRange(1,1,1,headers.length).setValues([headers]);
     sheet.setFrozenRows(1);
     sheet.getRange(1,1,1,headers.length).setFontWeight('bold');
+    dbInvalidateRequestCache_(sheetName);
     return sheet;
   }
 
@@ -33,32 +72,53 @@ function ensureSheet_(sheetName, headers) {
   if (missing.length) {
     var start = existingHeaders.length + 1;
     sheet.getRange(1,start,1,missing.length).setValues([missing]);
+    dbInvalidateRequestCache_(sheetName);
   }
   sheet.setFrozenRows(1);
   return sheet;
 }
 
 function dbHeaders_(sheet) {
+  var sheetName = sheet.getName();
+  if (DB_REQUEST_ACTIVE_ && DB_REQUEST_HEADERS_[sheetName]) return DB_REQUEST_HEADERS_[sheetName].slice();
   var lastColumn = sheet.getLastColumn();
   if (!lastColumn) return [];
-  return sheet.getRange(1,1,1,lastColumn).getValues()[0].map(function(v){ return String(v); });
+  var headers = sheet.getRange(1,1,1,lastColumn).getValues()[0].map(function(v){ return String(v); });
+  if (DB_REQUEST_ACTIVE_) DB_REQUEST_HEADERS_[sheetName] = headers.slice();
+  return headers;
 }
 
 function dbReadAll_(sheetName, options) {
   options = options || {};
-  var sheet = getSpreadsheet_().getSheetByName(sheetName);
-  if (!sheet || sheet.getLastRow() < 2) return [];
-  var headers = dbHeaders_(sheet);
-  var values = sheet.getRange(2,1,sheet.getLastRow()-1,headers.length).getValues();
-  var rows = values.map(function(row) {
-    var obj = {};
-    headers.forEach(function(h, i) { obj[h] = normalizeCellValue_(row[i]); });
-    return obj;
-  });
-  if (!options.includeArchived && headers.indexOf('archived_at') >= 0) {
-    rows = rows.filter(function(r){ return !safeString_(r.archived_at); });
+  var cachedRows = DB_REQUEST_ACTIVE_ ? DB_REQUEST_ROWS_[sheetName] : null;
+  var rows;
+
+  if (cachedRows) {
+    rows = cachedRows;
+  } else {
+    var sheet = getSpreadsheet_().getSheetByName(sheetName);
+    if (!sheet || sheet.getLastRow() < 2) {
+      rows = [];
+    } else {
+      var headers = dbHeaders_(sheet);
+      var values = sheet.getRange(2,1,sheet.getLastRow()-1,headers.length).getValues();
+      rows = values.map(function(row) {
+        var obj = {};
+        headers.forEach(function(h, i) { obj[h] = normalizeCellValue_(row[i]); });
+        return obj;
+      });
+    }
+    if (DB_REQUEST_ACTIVE_) DB_REQUEST_ROWS_[sheetName] = rows;
   }
-  return rows;
+
+  var result = rows;
+  if (!options.includeArchived) {
+    var schema = SCHEMA[sheetName] || [];
+    if (schema.indexOf('archived_at') >= 0) result = rows.filter(function(r){ return !safeString_(r.archived_at); });
+  }
+
+  // Los consumidores pueden ordenar/transformar sin contaminar el snapshot del request.
+  return result.map(function(row){ return Object.assign({}, row); });
 }
 
 function dbFindOne_(sheetName, predicate, options) {
@@ -96,6 +156,7 @@ function dbInsert_(sheetName, record) {
     if (headers.indexOf('created_at') >= 0 && !row.created_at) row.created_at = nowIso_();
     if (headers.indexOf('updated_at') >= 0 && !row.updated_at) row.updated_at = nowIso_();
     dbWriteRow_(sheet, headers, row, sheet.getLastRow()+1);
+    dbInvalidateRequestCache_(sheetName);
     return normalizeRecordForOutput_(row);
   } finally {
     lock.releaseLock();
@@ -125,6 +186,7 @@ function dbUpdateById_(sheetName, id, patch) {
         next[pk] = current[pk];
         if (headers.indexOf('updated_at') >= 0) next.updated_at = nowIso_();
         dbWriteRow_(sheet, headers, next, rowNum);
+        dbInvalidateRequestCache_(sheetName);
         return normalizeRecordForOutput_(next);
       }
     }
@@ -167,6 +229,7 @@ function dbDeleteWhere_(sheetName, predicate) {
       if (predicate(obj)) deleteRows.push(idx+2);
     });
     deleteRows.sort(function(a,b){ return b-a; }).forEach(function(r){ sheet.deleteRow(r); });
+    if (deleteRows.length) dbInvalidateRequestCache_(sheetName);
     return deleteRows.length;
   } finally { lock.releaseLock(); }
 }
