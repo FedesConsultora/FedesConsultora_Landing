@@ -1,7 +1,11 @@
-function adminGetDashboardOverview_(token) {
+function adminGetDashboardOverview_(token,analyticsWindow) {
   requireAdminSession_(token);
   ensureCampaignLandingFoundation_();
   ensureAnalyticsDimensionsSchema_(false);
+
+  var analytics=Array.isArray(analyticsWindow)?analyticsWindow:adminAnalyticsReadWindow_(30);
+  var analyticsSheet=getSpreadsheet_().getSheetByName(APP.SHEETS.ANALYTICS);
+  var analyticsTotal=analyticsSheet?Math.max(0,analyticsSheet.getLastRow()-1):0;
 
   var leads=dbReadAll_(APP.SHEETS.LEADS),
       contacts=dbReadAll_(APP.SHEETS.CONTACTS),
@@ -10,7 +14,6 @@ function adminGetDashboardOverview_(token) {
       onboarding=dbReadAll_(APP.SHEETS.ONBOARDING),
       mailings=dbReadAll_(APP.SHEETS.LEAD_MAILINGS),
       audit=dbReadAll_(APP.SHEETS.AUDIT,{includeArchived:true}),
-      analytics=dbReadAll_(APP.SHEETS.ANALYTICS,{includeArchived:true}),
       answers=dbReadAll_(APP.SHEETS.LEAD_ANSWERS);
 
   var complete=leads.filter(function(row){return safeString_(row.status)==='complete';});
@@ -67,6 +70,7 @@ function adminGetDashboardOverview_(token) {
       landings:campaignLandings.length,
       publishedLandings:campaignPublishedLandings.length,
       hero:hero,
+      analyticsWindowDays:30,
       interactions:campaignAnalytics.length,
       impressions:campaignImpressions.length,
       bannerClicks:campaignClicks.length,
@@ -97,6 +101,7 @@ function adminGetDashboardOverview_(token) {
   return {
     success:true,
     stats:{
+      analyticsWindowDays:30,
       interactions:campaignInteractionsTotal,
       heroImpressions:heroImpressions.length,
       heroClicks:heroClicks.length,
@@ -120,8 +125,10 @@ function adminGetDashboardOverview_(token) {
     recentAudit:audit.slice(-10).reverse(),
     health:{
       campaignIssues:campaignIssues,
-      analyticsEvents:analytics.length,
+      analyticsEvents:analyticsTotal,
+      analyticsRecentEvents:analytics.length,
       analyticsSessions:Object.keys(analyticsSessionSet).length,
+      analyticsWindowDays:30,
       leadsWithLanding:leads.filter(function(row){return!!safeString_(row.landing_key);}).length,
       leadsWithSource:leads.filter(function(row){return!!safeString_(row.source);}).length,
       leadsWithSession:leads.filter(function(row){return!!campaignLeadFirstAttribution_(row).sessionId;}).length,
