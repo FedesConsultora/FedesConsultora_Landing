@@ -117,7 +117,6 @@ function dbReadAll_(sheetName, options) {
     if (schema.indexOf('archived_at') >= 0) result = rows.filter(function(r){ return !safeString_(r.archived_at); });
   }
 
-  // Los consumidores pueden ordenar/transformar sin contaminar el snapshot del request.
   return result.map(function(row){ return Object.assign({}, row); });
 }
 
@@ -191,6 +190,50 @@ function dbUpdateById_(sheetName, id, patch) {
       }
     }
     return null;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function dbPatchWhere_(sheetName, predicate, patchFactory) {
+  var lock=LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var sheet=getSpreadsheet_().getSheetByName(sheetName);
+    if (!sheet || sheet.getLastRow()<2) return 0;
+    var headers=dbHeaders_(sheet);
+    var rowCount=sheet.getLastRow()-1;
+    var range=sheet.getRange(2,1,rowCount,headers.length);
+    var values=range.getValues();
+    var changed=0;
+    var updatedIndex=headers.indexOf('updated_at');
+
+    values.forEach(function(valuesRow,index){
+      var current={};
+      headers.forEach(function(header,column){current[header]=normalizeCellValue_(valuesRow[column]);});
+      if (!predicate(current,index)) return;
+      var patch=typeof patchFactory==='function'?patchFactory(Object.assign({},current),index):(patchFactory||{});
+      if (!patch || typeof patch!=='object') return;
+      var dirty=false;
+      Object.keys(patch).forEach(function(field){
+        var column=headers.indexOf(field);
+        if (column<0) return;
+        var next=patch[field];
+        var normalizedNext=next===undefined||next===null?'':next;
+        if (String(valuesRow[column]===undefined?'':valuesRow[column])===String(normalizedNext)) return;
+        valuesRow[column]=normalizedNext;
+        dirty=true;
+      });
+      if (!dirty) return;
+      if (updatedIndex>=0) valuesRow[updatedIndex]=nowIso_();
+      changed++;
+    });
+
+    if (changed) {
+      range.setValues(values);
+      dbInvalidateRequestCache_(sheetName);
+    }
+    return changed;
   } finally {
     lock.releaseLock();
   }
