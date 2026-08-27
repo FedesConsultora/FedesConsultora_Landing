@@ -1,4 +1,28 @@
 const API_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+const TRACKING_VISITOR_KEY = 'fedes_tracking_visitor_id:v1';
+const TRACKING_SESSION_KEY = 'fedes_tracking_session_id:v1';
+
+const randomTrackingId = (prefix) => {
+    if (window.crypto?.randomUUID) return `${prefix}_${window.crypto.randomUUID()}`;
+    return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+};
+
+const getOrCreateStorageId = (storage, key, prefix) => {
+    try {
+        const current = storage.getItem(key);
+        if (current) return current;
+        const created = randomTrackingId(prefix);
+        storage.setItem(key, created);
+        return created;
+    } catch {
+        return randomTrackingId(prefix);
+    }
+};
+
+export const getTrackingContext = () => ({
+    visitorId: getOrCreateStorageId(window.localStorage, TRACKING_VISITOR_KEY, 'visitor'),
+    sessionId: getOrCreateStorageId(window.sessionStorage, TRACKING_SESSION_KEY, 'session'),
+});
 
 /**
  * Formatea una fecha a dd/mm/aaaa
@@ -170,23 +194,29 @@ export const getOnboardingProgress = async (cuit) => {
 };
 
 /**
- * Registra un evento de analítica (clics, scroll, etc)
+ * Registra un evento de analítica (clics, impresiones, visitas, scroll, etc.).
+ * Los eventos incluyen un visitorId persistente y un sessionId por pestaña/sesión.
+ * keepalive evita perder el click cuando la navegación ocurre inmediatamente después.
  */
 export const trackEvent = async (category, label, value = "", extraData = {}) => {
     try {
+        if (!API_URL) return { success: false };
+        const tracking = getTrackingContext();
         const payload = {
             category,
             label,
             value,
             url: window.location.pathname,
             timestamp: new Date().toISOString(),
+            visitorId: extraData.visitorId || tracking.visitorId,
+            sessionId: extraData.sessionId || tracking.sessionId,
             ...extraData
         };
-        
-        // Enviamos los datos como un string JSON simple dentro del cuerpo
+
         await fetch(`${API_URL}?action=track`, {
             method: "POST",
             mode: "no-cors",
+            keepalive: true,
             // No ponemos headers de JSON para evitar el preflight de CORS
             body: JSON.stringify(payload),
         });
@@ -268,4 +298,3 @@ export const deleteGaleriaFoto = async (id) => {
         return { success: false, error: error.message };
     }
 };
-
