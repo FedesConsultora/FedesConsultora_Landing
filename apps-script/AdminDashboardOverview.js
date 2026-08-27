@@ -15,6 +15,7 @@ function adminGetDashboardOverview_(token) {
   var complete=leads.filter(function(row){return safeString_(row.status)==='complete';});
   var qualified=leads.filter(function(row){return safeString_(row.classification)==='CALIFICADO';});
   var landingViews=analytics.filter(function(row){return safeString_(row.label)==='campaign_landing_view';});
+  var linkedGlobal=campaignLinkedLeadStats_(leads,landingViews);
   var responderIds={};
   answers.forEach(function(row){var id=safeString_(row.lead_id);if(id)responderIds[id]=true;});
   var responders=leads.filter(function(row){return responderIds[safeString_(row.lead_id)];});
@@ -34,6 +35,7 @@ function adminGetDashboardOverview_(token) {
     var campaignLandings=landings.filter(function(row){return safeString_(row.campaign_key)===key&&!safeString_(row.archived_at);});
     var campaignPublishedLandings=campaignLandings.filter(function(row){return safeString_(row.status)===APP.STATUS.PUBLISHED;});
     var campaignVisits=landingViews.filter(function(row){return campaignAnalyticsMatches_(row,key,campaignLandings);});
+    var linked=campaignLinkedLeadStats_(campaignLeads,campaignVisits);
     var hero=campaignHeroRuntimeState_(campaign,mediaMap);
 
     return {
@@ -49,6 +51,10 @@ function adminGetDashboardOverview_(token) {
       views:campaignVisits.length,
       sessions:campaignAnalyticsUniqueSessions_(campaignVisits),
       leads:campaignLeads.length,
+      leadsWithSession:linked.withSession,
+      linkedLeads:linked.linked,
+      sessionCoverage:linked.coverage,
+      sessionToLead:linked.sessionToLead,
       responders:campaignResponders.length,
       complete:campaignComplete.length,
       viewToLead:campaignAnalyticsRate_(campaignLeads.length,campaignVisits.length),
@@ -69,6 +75,10 @@ function adminGetDashboardOverview_(token) {
     success:true,
     stats:{
       leads:leads.length,
+      leadsWithSession:linkedGlobal.withSession,
+      linkedLeads:linkedGlobal.linked,
+      sessionCoverage:linkedGlobal.coverage,
+      sessionToLead:linkedGlobal.sessionToLead,
       complete:complete.length,
       incomplete:leads.filter(function(row){return safeString_(row.status)==='incomplete';}).length,
       responders:responders.length,
@@ -89,8 +99,15 @@ function adminGetDashboardOverview_(token) {
     health:{
       campaignIssues:campaignIssues,
       analyticsEvents:analytics.length,
+      analyticsSessions:campaignAnalyticsUniqueSessions_(analytics),
       leadsWithLanding:leads.filter(function(row){return!!safeString_(row.landing_key);}).length,
+      leadsWithLastLanding:leads.filter(function(row){return!!safeString_(row.last_landing_key);}).length,
       leadsWithSource:leads.filter(function(row){return!!safeString_(row.source);}).length,
+      leadsWithLastSource:leads.filter(function(row){return!!safeString_(row.last_source);}).length,
+      leadsWithVisitor:leads.filter(function(row){return!!safeString_(row.visitor_id);}).length,
+      leadsWithSession:linkedGlobal.withSession,
+      linkedLeadSessions:linkedGlobal.linked,
+      sessionCoverage:linkedGlobal.coverage,
       publishedLandings:landings.filter(function(row){return safeString_(row.status)===APP.STATUS.PUBLISHED&&!safeString_(row.archived_at);}).length
     }
   };
