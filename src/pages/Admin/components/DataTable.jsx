@@ -64,38 +64,41 @@ export function FilterBar({ def, result, query, setQuery, onApply, onClear, onEx
   }
 
   return (
-    <div className="admin-filter-card admin-glass-soft" ref={rootRef}>
-      <div className="admin-filter-main admin-filter-main--compact">
-        <div className="admin-search-wrap"><Search size={17} /><input value={query.search} onChange={(event) => setQuery((current) => ({ ...current, search: event.target.value, page: 1 }))} onKeyDown={(event) => event.key === 'Enter' && onApply()} placeholder={`Buscar en ${def.label.toLowerCase()}…`} /></div>
-        <button type="button" className={`admin-button admin-button--ghost admin-filter-toggle ${open ? 'is-active' : ''}`} onClick={() => setOpen((current) => !current)} aria-expanded={open}><Filter size={16} />Filtros{activeFilters.length > 0 && <span>{activeFilters.length}</span>}<ChevronDown size={14} /></button>
-        <button type="button" className="admin-button admin-button--primary" onClick={onApply}><Search size={16} />Aplicar</button>
-        <button type="button" className="admin-button admin-button--ghost admin-button--icon-text" onClick={onExport}><Download size={16} />CSV</button>
-      </div>
-
-      {activeFilters.length > 0 && (
-        <div className="admin-active-filters">
-          {activeFilters.map((entry) => <button type="button" key={entry.key} onClick={() => removeActive(entry)} title="Quitar filtro"><span>{entry.label}</span><strong>{entry.value}</strong><X size={11} /></button>)}
-          <button type="button" className="admin-active-filters__clear" onClick={onClear}><span>Limpiar todo</span></button>
+    <>
+      {def.key === 'analytics' && <AnalyticsOverview />}
+      <div className="admin-filter-card admin-glass-soft" ref={rootRef}>
+        <div className="admin-filter-main admin-filter-main--compact">
+          <div className="admin-search-wrap"><Search size={17} /><input value={query.search} onChange={(event) => setQuery((current) => ({ ...current, search: event.target.value, page: 1 }))} onKeyDown={(event) => event.key === 'Enter' && onApply()} placeholder={`Buscar en ${def.label.toLowerCase()}…`} /></div>
+          <button type="button" className={`admin-button admin-button--ghost admin-filter-toggle ${open ? 'is-active' : ''}`} onClick={() => setOpen((current) => !current)} aria-expanded={open}><Filter size={16} />Filtros{activeFilters.length > 0 && <span>{activeFilters.length}</span>}<ChevronDown size={14} /></button>
+          <button type="button" className="admin-button admin-button--primary" onClick={onApply}><Search size={16} />Aplicar</button>
+          <button type="button" className="admin-button admin-button--ghost admin-button--icon-text" onClick={onExport}><Download size={16} />CSV</button>
         </div>
-      )}
 
-      {open && (
-        <div className="admin-filter-popover" role="dialog" aria-label="Filtros avanzados">
-          <div className="admin-filter-popover__head"><strong>Filtros</strong><button type="button" onClick={() => setOpen(false)} aria-label="Cerrar filtros"><X size={16} /></button></div>
-          <div className="admin-filter-grid admin-filter-grid--advanced">
-            {def.filterFields.map((name) => (
-              <label className="admin-field" key={name}><span>{fieldsByName[name]?.label || name}</span><select value={query.filters[name] || ''} onChange={(event) => updateFilter(name, event.target.value)}><option value="">Todos</option>{(result?.facets?.[name] || []).map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
-            ))}
-            <label className="admin-field"><span>Desde</span><input type="date" value={query.dateFrom} onChange={(event) => setQuery((current) => ({ ...current, dateFrom: event.target.value, page: 1 }))} /></label>
-            <label className="admin-field"><span>Hasta</span><input type="date" value={query.dateTo} onChange={(event) => setQuery((current) => ({ ...current, dateTo: event.target.value, page: 1 }))} /></label>
-            <label className="admin-field"><span>Ordenar por</span><select value={query.sortBy} onChange={(event) => setQuery((current) => ({ ...current, sortBy: event.target.value, page: 1 }))}><option value="">Predeterminado</option>{def.fields.filter((field) => !['json', 'textarea'].includes(field.type)).map((field) => <option key={field.name} value={field.name}>{field.label}</option>)}</select></label>
-            <label className="admin-field"><span>Dirección</span><select value={query.sortDir} onChange={(event) => setQuery((current) => ({ ...current, sortDir: event.target.value, page: 1 }))}><option value="desc">Más recientes primero</option><option value="asc">Más antiguos primero</option></select></label>
-            {def.fields.some((field) => field.name === 'archived_at') && <label className="admin-field"><span>Histórico</span><select value={query.includeArchived ? 'true' : 'false'} onChange={(event) => setQuery((current) => ({ ...current, includeArchived: event.target.value === 'true', page: 1 }))}><option value="false">Sólo activos</option><option value="true">Incluir bajas</option></select></label>}
+        {activeFilters.length > 0 && (
+          <div className="admin-active-filters">
+            {activeFilters.map((entry) => <button type="button" key={entry.key} onClick={() => removeActive(entry)} title="Quitar filtro"><span>{entry.label}</span><strong>{entry.value}</strong><X size={11} /></button>)}
+            <button type="button" className="admin-active-filters__clear" onClick={onClear}><span>Limpiar todo</span></button>
           </div>
-          <div className="admin-filter-popover__footer"><button type="button" className="admin-button admin-button--ghost" onClick={onClear}>Restablecer</button><button type="button" className="admin-button admin-button--primary" onClick={() => { onApply(); setOpen(false) }}><Filter size={15} />Aplicar filtros</button></div>
-        </div>
-      )}
-    </div>
+        )}
+
+        {open && (
+          <div className="admin-filter-popover" role="dialog" aria-label="Filtros avanzados">
+            <div className="admin-filter-popover__head"><strong>Filtros</strong><button type="button" onClick={() => setOpen(false)} aria-label="Cerrar filtros"><X size={16} /></button></div>
+            <div className="admin-filter-grid admin-filter-grid--advanced">
+              {def.filterFields.map((name) => (
+                <label className="admin-field" key={name}><span>{fieldsByName[name]?.label || name}</span><select value={query.filters[name] || ''} onChange={(event) => updateFilter(name, event.target.value)}><option value="">Todos</option>{(result?.facets?.[name] || []).map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+              ))}
+              <label className="admin-field"><span>Desde</span><input type="date" value={query.dateFrom} onChange={(event) => setQuery((current) => ({ ...current, dateFrom: event.target.value, page: 1 }))} /></label>
+              <label className="admin-field"><span>Hasta</span><input type="date" value={query.dateTo} onChange={(event) => setQuery((current) => ({ ...current, dateTo: event.target.value, page: 1 }))} /></label>
+              <label className="admin-field"><span>Ordenar por</span><select value={query.sortBy} onChange={(event) => setQuery((current) => ({ ...current, sortBy: event.target.value, page: 1 }))}><option value="">Predeterminado</option>{def.fields.filter((field) => !['json', 'textarea'].includes(field.type)).map((field) => <option key={field.name} value={field.name}>{field.label}</option>)}</select></label>
+              <label className="admin-field"><span>Dirección</span><select value={query.sortDir} onChange={(event) => setQuery((current) => ({ ...current, sortDir: event.target.value, page: 1 }))}><option value="desc">Más recientes primero</option><option value="asc">Más antiguos primero</option></select></label>
+              {def.fields.some((field) => field.name === 'archived_at') && <label className="admin-field"><span>Histórico</span><select value={query.includeArchived ? 'true' : 'false'} onChange={(event) => setQuery((current) => ({ ...current, includeArchived: event.target.value === 'true', page: 1 }))}><option value="false">Sólo activos</option><option value="true">Incluir bajas</option></select></label>}
+            </div>
+            <div className="admin-filter-popover__footer"><button type="button" className="admin-button admin-button--ghost" onClick={onClear}>Restablecer</button><button type="button" className="admin-button admin-button--primary" onClick={() => { onApply(); setOpen(false) }}><Filter size={15} />Aplicar filtros</button></div>
+          </div>
+        )}
+      </div>
+    </>
   )
 }
 
@@ -108,13 +111,12 @@ export default function DataTable({ def, result, selected, setSelected, onView, 
 
   return (
     <>
-      {def.key === 'analytics' && <AnalyticsOverview />}
       {selected.size > 0 && <div className="admin-bulk-bar"><span><strong>{selected.size}</strong> seleccionados</span><div>{def.permissions.deleteMode === 'archive' && <><button type="button" className="admin-button admin-button--danger admin-button--small" onClick={() => onBulk('archive')}><Archive size={14} />Dar de baja</button><button type="button" className="admin-button admin-button--success admin-button--small" onClick={() => onBulk('restore')}><RotateCcw size={14} />Restaurar</button></>}{def.permissions.deleteMode === 'hard' && <button type="button" className="admin-button admin-button--danger admin-button--small" onClick={() => onBulk('delete')}><Trash2 size={14} />Eliminar</button>}</div></div>}
       <div className="admin-table-shell admin-table-shell--data">
         <table className="admin-data-table">
           <thead><tr><th className="admin-checkbox-cell">{canSelect && <input type="checkbox" checked={rows.length > 0 && rows.every((row) => selected.has(String(row[def.pk])))} onChange={(event) => toggleAll(event.target.checked)} />}</th>{def.listColumns.map((name) => <th key={name}>{fields[name]?.label || name}</th>)}<th className="admin-actions-head">Acciones</th></tr></thead>
           <tbody>
-            {rows.length === 0 ? <tr><td colSpan={def.listColumns.length + 2}><div className="admin-empty-state"><strong>Sin resultados</strong><span>Probá quitando filtros o creando un registro.</span></div></td></tr> : rows.map((row) => {
+            {rows.length === 0 ? <tr><td colSpan={def.listColumns.length + 2}><div className="admin-empty-state"><strong>Sin resultados</strong><span>{def.readOnly ? 'No hay registros para estos filtros.' : 'Probá quitando filtros o creando un registro.'}</span></div></td></tr> : rows.map((row) => {
               const id = row[def.pk]
               const archived = Boolean(row.archived_at)
               const duplicable = ['settings', 'content', 'modules', 'cases', 'testimonials', 'team', 'blog', 'gallery', 'campaigns'].includes(def.key)
