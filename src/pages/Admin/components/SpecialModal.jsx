@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
-  Activity,
   BarChart3,
   Check,
   Copy,
@@ -24,6 +23,17 @@ import { adminCommand } from '../adminApi'
 
 function asBoolean(value) {
   return value === true || value === 1 || String(value).toLowerCase() === 'true' || String(value) === '1'
+}
+
+function parseObject(value) {
+  if (!value) return {}
+  if (typeof value === 'object') return Array.isArray(value) ? {} : value
+  try {
+    const parsed = JSON.parse(value)
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
+  } catch {
+    return {}
+  }
 }
 
 function Kpi({ label, value, note }) {
@@ -172,10 +182,11 @@ function CampaignLandingsPanel({ campaign, landings, funnelByLanding, onSetLandi
               <div className="admin-campaign-landing-card__meta">
                 <span><b>Beneficio</b>{landing.benefit_label || '—'}</span>
                 <span><b>Clave</b>{landing.landing_key || '—'}</span>
-                <span><b>Visitas</b>{funnel.views ?? 0} · {funnel.uniqueViews ?? 0} sesiones</span>
+                <span><b>Tráfico</b>{funnel.views ?? 0} vistas · {funnel.uniqueViews ?? 0} sesiones</span>
                 <span><b>Leads</b>{funnel.leads ?? 0} · {funnel.responders ?? 0} respondieron</span>
-                <span><b>Completos</b>{funnel.complete ?? 0}</span>
-                <span><b>Visita → lead</b>{`${funnel.viewToLead ?? 0}%`}</span>
+                <span><b>Sesiones enlazadas</b>{funnel.linkedLeads ?? 0} · {funnel.sessionCoverage ?? 0}% cobertura lead</span>
+                <span><b>Sesión → lead</b>{`${funnel.sessionToLead ?? 0}%`}</span>
+                <span><b>Completos</b>{funnel.complete ?? 0} · {funnel.leadToComplete ?? 0}% de leads</span>
                 <span><b>Origen</b>{landing.source_default || '—'}</span>
                 <span><b>UTM</b>{landing.utm_medium_default || '—'} · {landing.utm_campaign_default || '—'}</span>
               </div>
@@ -203,20 +214,23 @@ function FunnelOverview({ funnel }) {
   return (
     <section className="admin-panel admin-glass-soft admin-panel--span-4">
       <div className="admin-panel-heading-row">
-        <div><h3>Embudo real</h3><p>Visitas y clicks son tráfico. El lead nace cuando la persona deja sus datos.</p></div>
+        <div><h3>Embudo real</h3><p>Separa tráfico anónimo de personas identificadas. La conversión trazable usa session_id, no una aproximación por cantidad de eventos.</p></div>
       </div>
       <div className="admin-kpi-row admin-funnel-kpis">
         <Kpi label="Impresiones banner" value={stats.impressions ?? 0} />
         <Kpi label="Clicks banner" value={stats.bannerClicks ?? 0} />
-        <Kpi label="Entradas landing" value={stats.landingViews ?? 0} />
-        <Kpi label="Sesiones" value={stats.uniqueLandingSessions ?? 0} />
+        <Kpi label="Vistas landing" value={stats.landingViews ?? 0} />
+        <Kpi label="Sesiones landing" value={stats.uniqueLandingSessions ?? 0} />
         <Kpi label="Leads" value={stats.identifiedLeads ?? 0} />
+        <Kpi label="Leads con sesión" value={stats.leadsWithSession ?? 0} note={`${stats.sessionCoverage ?? 0}% cobertura`} />
+        <Kpi label="Sesiones enlazadas" value={stats.linkedLeads ?? 0} note="visita ↔ lead" />
         <Kpi label="Respondieron" value={stats.responders ?? 0} />
         <Kpi label="Completaron" value={stats.complete ?? 0} />
       </div>
-      <div className="admin-rate-strip">
-        <span><b>{stats.clickToVisit ?? 0}%</b> click → landing</span>
-        <span><b>{stats.viewToLead ?? 0}%</b> visita → lead</span>
+      <div className="admin-rate-strip admin-rate-strip--five">
+        <span><b>{stats.clickToVisit ?? 0}%</b> click → vista</span>
+        <span><b>{stats.sessionToLead ?? 0}%</b> sesión trazable → lead</span>
+        <span><b>{stats.sessionCoverage ?? 0}%</b> leads con session_id</span>
         <span><b>{stats.leadToResponse ?? 0}%</b> lead → respuesta</span>
         <span><b>{stats.leadToComplete ?? 0}%</b> lead → completo</span>
       </div>
@@ -236,7 +250,7 @@ function AudiencePanel({ data, onLead }) {
         <div className="admin-attention-list">
           {responders.length ? responders.map((lead) => (
             <button type="button" key={lead.lead_id} onClick={() => onLead?.(lead.lead_id)}>
-              <div><strong>{lead.company || lead.full_name || lead.email || 'Lead'}</strong><span>{lead.email || 'sin email'} · {lead.landing_key || 'sin landing'} · {lead.answer_count || 0} respuesta(s)</span></div>
+              <div><strong>{lead.company || lead.full_name || lead.email || 'Lead'}</strong><span>{lead.email || 'sin email'} · {lead.landing_key || 'sin landing'} · {lead.answer_count || 0} respuesta(s) · {lead.last_source || lead.source || 'sin origen'}</span></div>
               <StatusPill value={lead.status} />
             </button>
           )) : <div className="admin-empty-inline">Todavía nadie respondió preguntas.</div>}
@@ -268,8 +282,19 @@ function AudiencePanel({ data, onLead }) {
 }
 
 function AttributionPanel({ data }) {
+  const stats = data.funnel?.stats || {}
   return (
     <>
+      <section className="admin-panel admin-glass-soft admin-panel--span-4">
+        <div className="admin-panel-heading-row"><div><h3>Cobertura de atribución</h3><p>Cuánto del tráfico puede vincularse determinísticamente con un lead identificado.</p></div><span>{stats.sessionCoverage ?? 0}% de leads con sesión</span></div>
+        <div className="admin-kpi-row">
+          <Kpi label="Sesiones landing" value={stats.uniqueLandingSessions ?? 0} />
+          <Kpi label="Leads identificados" value={stats.identifiedLeads ?? 0} />
+          <Kpi label="Leads con session_id" value={stats.leadsWithSession ?? 0} />
+          <Kpi label="Sesiones enlazadas" value={stats.linkedLeads ?? 0} />
+          <Kpi label="Sesión → lead" value={`${stats.sessionToLead ?? 0}%`} />
+        </div>
+      </section>
       <section className="admin-panel admin-glass-soft"><h3>Entradas por origen</h3><Distribution data={data.funnel?.visitSources} /></section>
       <section className="admin-panel admin-glass-soft"><h3>Origen de leads</h3><Distribution data={data.sources} /></section>
       <section className="admin-panel admin-glass-soft"><h3>UTM source</h3><Distribution data={data.utmSources} /></section>
@@ -292,6 +317,7 @@ export function Campaign360Modal({
   onSetCampaignPublic,
   onSetLandingStatus,
   onEditLanding,
+  onRuntimeChange,
 }) {
   const [tab, setTab] = useState('overview')
   const [snapshot, setSnapshot] = useState(data)
@@ -319,7 +345,8 @@ export function Campaign360Modal({
     setHeroError('')
     try {
       await adminCommand('setCampaignHeroEnabled', { campaignKey: campaign.campaign_key, enabled: !hero.enabled })
-      await refreshLocal()
+      const fresh = await refreshLocal()
+      onRuntimeChange?.(fresh)
     } catch (error) {
       setHeroError(error.message || 'No se pudo cambiar el estado del Hero.')
     } finally {
@@ -399,20 +426,22 @@ export function Campaign360Modal({
         </div>
       )}
 
-      {tab === 'landings' && (
-        <div className="admin-special-grid">
-          <CampaignLandingsPanel campaign={campaign} landings={landings} funnelByLanding={funnel.byLanding} onSetLandingStatus={onSetLandingStatus} onEditLanding={onEditLanding} />
-        </div>
-      )}
-
+      {tab === 'landings' && <div className="admin-special-grid"><CampaignLandingsPanel campaign={campaign} landings={landings} funnelByLanding={funnel.byLanding} onSetLandingStatus={onSetLandingStatus} onEditLanding={onEditLanding} /></div>}
       {tab === 'audience' && <div className="admin-special-grid"><AudiencePanel data={snapshot} onLead={onLead} /></div>}
       {tab === 'attribution' && <div className="admin-special-grid"><AttributionPanel data={snapshot} /></div>}
     </ModalFrame>
   )
 }
 
+function AttributionValue({ label, value, technical = false }) {
+  return <div className={`admin-attribution-value ${technical ? 'is-technical' : ''}`}><span>{label}</span><strong title={String(value || '')}>{value || '—'}</strong></div>
+}
+
 export function Lead360Modal({ data, onClose, onEdit, onIssueResume }) {
   const lead = data.lead || {}
+  const metadata = useMemo(() => parseObject(lead.metadata_json), [lead.metadata_json])
+  const firstAttribution = metadata.firstAttribution || {}
+  const lastAttribution = metadata.lastAttribution || {}
   const [resume, setResume] = useState(null)
   const [resumeError, setResumeError] = useState('')
   const [resumeBusy, setResumeBusy] = useState(false)
@@ -433,16 +462,43 @@ export function Lead360Modal({ data, onClose, onEdit, onIssueResume }) {
     <ModalFrame
       title={lead.company || lead.full_name || lead.email || 'Lead'}
       subtitle={`${lead.email || ''} · ${lead.campaign_key || 'Sin campaña'} · ${lead.landing_key || 'Sin landing'} · ${lead.source || 'Sin origen'}`}
+      eyebrow="Lead 360°"
       onClose={onClose}
-      actions={<><button type="button" className="admin-button admin-button--ghost" onClick={onEdit}><Pencil size={15} />Modificar lead</button>{lead.campaign_key === 'galicia-2026' && <button type="button" className="admin-button admin-button--primary" disabled={resumeBusy} onClick={issueResume}><KeyRound size={15} />{resumeBusy ? 'Generando…' : 'Generar recuperación'}</button>}</>}
+      actions={<><button type="button" className="admin-button admin-button--ghost" onClick={onEdit}><Pencil size={15} />Modificar seguimiento</button>{lead.campaign_key === 'galicia-2026' && <button type="button" className="admin-button admin-button--primary" disabled={resumeBusy} onClick={issueResume}><KeyRound size={15} />{resumeBusy ? 'Generando…' : 'Generar recuperación'}</button>}</>}
     >
       <div className="admin-kpi-row"><Kpi label="Estado" value={lead.status} /><Kpi label="Score" value={lead.score_total ?? 0} /><Kpi label="Clasificación" value={lead.classification || '—'} /><Kpi label="Segmento" value={lead.mailing_segment || '—'} /><Kpi label="Paso" value={lead.current_step || 1} /><Kpi label="Revisión" value={lead.manual_review_status || '—'} /></div>
       {resumeError && <div className="admin-form-error">{resumeError}</div>}
       {resume && <div className="admin-resume-banner"><div><strong>Enlace de recuperación generado</strong><span>Vence: {new Date(resume.expiresAt).toLocaleString('es-AR')}</span></div><div><button type="button" onClick={copyResume}><Copy size={15} />Copiar</button><a href={`${window.location.origin}${resume.relativeUrl}`} target="_blank" rel="noreferrer"><ExternalLink size={15} />Abrir</a></div></div>}
+
       <div className="admin-special-grid">
-        <section className="admin-panel admin-glass-soft admin-panel--span-2"><h3>Perfil y seguimiento</h3><div className="admin-detail-grid">{['full_name','email','phone','company','website','owner','next_action_at','meeting_status','meeting_clicked_at','last_activity_at'].map((field) => <article className="admin-detail-card" key={field}><label>{field.replace(/_/g, ' ')}</label><div>{field === 'website' && lead[field] ? <a className="admin-inline-link" href={lead[field]} target="_blank" rel="noreferrer">{lead[field]} <ExternalLink size={12} /></a> : String(lead[field] ?? '—')}</div></article>)}</div></section>
-        <section className="admin-panel admin-glass-soft admin-panel--span-2"><h3>Evaluación interna y atribución</h3><div className="admin-detail-grid">{['campaign_key','landing_key','stage','status','score_total','knockout','classification','benefit','mailing_segment','manual_review_status','source','utm_source','utm_medium','utm_campaign','utm_content','referrer'].map((field) => <article className="admin-detail-card" key={field}><label>{field.replace(/_/g, ' ')}</label><div>{field === 'knockout' ? (asBoolean(lead[field]) ? 'Sí' : 'No') : String(lead[field] ?? '—')}</div></article>)}</div></section>
-        <section className="admin-panel admin-glass-soft admin-panel--span-4"><h3>Respuestas</h3><RowList rows={data.answers} columns={['question_key','answer_key','answer_text','score','knockout','updated_at']} /></section>
+        <section className="admin-panel admin-glass-soft admin-panel--span-2"><h3>Persona y seguimiento</h3><div className="admin-detail-grid">{['full_name','email','phone','company','website','owner','next_action_at','meeting_status','meeting_clicked_at','last_activity_at'].map((field) => <article className="admin-detail-card" key={field}><label>{field.replace(/_/g, ' ')}</label><div>{field === 'website' && lead[field] ? <a className="admin-inline-link" href={lead[field]} target="_blank" rel="noreferrer">{lead[field]} <ExternalLink size={12} /></a> : String(lead[field] ?? '—')}</div></article>)}</div></section>
+        <section className="admin-panel admin-glass-soft admin-panel--span-2"><h3>Evaluación comercial</h3><div className="admin-detail-grid">{['campaign_key','stage','status','score_total','knockout','classification','benefit','mailing_segment','manual_review_status'].map((field) => <article className="admin-detail-card" key={field}><label>{field.replace(/_/g, ' ')}</label><div>{field === 'knockout' ? (asBoolean(lead[field]) ? 'Sí' : 'No') : String(lead[field] ?? '—')}</div></article>)}</div></section>
+
+        <section className="admin-panel admin-glass-soft admin-panel--span-4 admin-lead-attribution">
+          <div className="admin-panel-heading-row"><div><h3>Recorrido y atribución</h3><p>Primera adquisición separada del último contacto conocido. Los IDs permiten unir CRM con AN_Events sin inferencias.</p></div><span>{lead.session_id ? 'Sesión vinculable' : 'Histórico sin session_id'}</span></div>
+          <div className="admin-attribution-columns">
+            <article>
+              <span className="admin-card-eyebrow">Primera adquisición</span>
+              <AttributionValue label="Landing" value={firstAttribution.landingKey || lead.landing_key} />
+              <AttributionValue label="Source" value={firstAttribution.source || lead.source} />
+              <AttributionValue label="UTM source" value={firstAttribution.utmSource || lead.utm_source} />
+              <AttributionValue label="UTM medium" value={firstAttribution.utmMedium || lead.utm_medium} />
+              <AttributionValue label="UTM campaign" value={firstAttribution.utmCampaign || lead.utm_campaign} />
+              <AttributionValue label="UTM content" value={firstAttribution.utmContent || lead.utm_content} />
+            </article>
+            <article>
+              <span className="admin-card-eyebrow">Último contacto</span>
+              <AttributionValue label="Landing" value={lastAttribution.landingKey || lead.last_landing_key || lead.landing_key} />
+              <AttributionValue label="Source" value={lastAttribution.source || lead.last_source || lead.source} />
+              <AttributionValue label="Referer" value={lastAttribution.referrer || lead.referrer} />
+              <AttributionValue label="Sesión actual" value={lead.session_id || lastAttribution.sessionId} technical />
+              <AttributionValue label="Visitor ID" value={lead.visitor_id || lastAttribution.visitorId || firstAttribution.visitorId} technical />
+              <AttributionValue label="Sesión de adquisición" value={firstAttribution.sessionId} technical />
+            </article>
+          </div>
+        </section>
+
+        <section className="admin-panel admin-glass-soft admin-panel--span-4"><div className="admin-panel-heading-row"><div><h3>Respuestas</h3><p>Qué contestó esta persona y cómo aportó al scoring.</p></div><span>{data.answers?.length || 0} respuestas</span></div><RowList rows={data.answers} columns={['question_key','answer_key','answer_text','score','knockout','updated_at']} /></section>
         <section className="admin-panel admin-glass-soft admin-panel--span-2"><h3>Mailings</h3><RowList rows={data.mailings} columns={['sequence_no','template_key','segment','status','scheduled_at','sent_at']} /></section>
         <section className="admin-panel admin-glass-soft admin-panel--span-2"><h3>Timeline</h3><RowList rows={data.events} columns={['landing_key','event_type','source','page_path','created_at']} /></section>
       </div>
