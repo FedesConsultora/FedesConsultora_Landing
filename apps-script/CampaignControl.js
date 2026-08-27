@@ -55,16 +55,22 @@ function campaignIntegritySummary_(campaign,landings,heroState) {
     checks.push({key:key,label:label,ok:!!ok,detail:safeString_(detail),severity:severity||(!ok?'warning':'ok')});
   }
 
-  push('campaign_status','Campaña publicable',safeString_(campaign&&campaign.status)===APP.STATUS.PUBLISHED,
-    safeString_(campaign&&campaign.status)||'sin estado');
+  var campaignPublished=safeString_(campaign&&campaign.status)===APP.STATUS.PUBLISHED;
+  var heroEnabled=!!(heroState&&heroState.enabled);
+  var heroMediaReady=!!(heroState&&heroState.desktopReady&&heroState.mobileReady);
+  var heroIntentOk=!heroEnabled||heroMediaReady;
+  var heroRuntimeOk=!heroEnabled||!campaignPublished||!!(heroState&&heroState.active)||['scheduled','ended'].indexOf(safeString_(heroState&&heroState.reason))>=0;
+
+  push('campaign_status','Estado de campaña',campaignPublished,
+    campaignPublished?'Publicada':'No pública: '+(safeString_(campaign&&campaign.status)||'sin estado'),campaignPublished?'ok':'info');
   push('campaign_dates','Vigencia configurada',!!safeString_(campaign&&campaign.starts_at),
     safeString_(campaign&&campaign.starts_at)?'Inicio configurado':'Falta fecha de inicio');
   push('landings','Landings configuradas',rows.length>0,rows.length+' configurada(s)');
-  push('published_landings','Landing pública disponible',published.length>0,published.length+' publicada(s)');
-  push('hero_media','Hero con medios válidos',heroState&&heroState.desktopReady&&heroState.mobileReady,
-    heroState&&heroState.desktopReady&&heroState.mobileReady?'Desktop y mobile listos':'Revisá las imágenes del Hero');
-  push('hero_runtime','Estado real del Hero',heroState&&heroState.active,
-    heroState&&heroState.active?'Visible ahora':'No visible: '+safeString_(heroState&&heroState.reason),heroState&&heroState.active?'ok':'info');
+  push('published_landings','Landing pública disponible',published.length>0,published.length+' publicada(s)',published.length?'ok':'warning');
+  push('hero_media','Configuración del Hero',heroIntentOk,
+    !heroEnabled?'Hero oculto intencionalmente':heroMediaReady?'Desktop y mobile listos':'Hero habilitado pero faltan medios');
+  push('hero_runtime','Estado real del Hero',heroRuntimeOk,
+    !heroEnabled?'Oculto por decisión administrativa':heroState&&heroState.active?'Visible ahora':'No visible: '+safeString_(heroState&&heroState.reason),heroRuntimeOk?'ok':'warning');
 
   published.forEach(function(landing){
     var key=safeString_(landing.landing_key)||safeString_(landing.path)||'landing';
@@ -73,12 +79,7 @@ function campaignIntegritySummary_(campaign,landings,heroState) {
   });
 
   var passed=checks.filter(function(check){return check.ok;}).length;
-  return {
-    passed:passed,
-    total:checks.length,
-    score:checks.length?Math.round(passed*100/checks.length):100,
-    checks:checks
-  };
+  return {passed:passed,total:checks.length,score:checks.length?Math.round(passed*100/checks.length):100,checks:checks};
 }
 
 function getHeroRuntimePublic_(campaignKey) {
@@ -88,15 +89,7 @@ function getHeroRuntimePublic_(campaignKey) {
 
   var media=publicMediaMap_();
   var state=campaignHeroRuntimeState_(campaign,media);
-  return {
-    success:true,
-    campaignKey:key,
-    active:state.active,
-    reason:state.reason,
-    revision:safeString_(campaign.updated_at),
-    checkedAt:state.checkedAt,
-    campaign:state.active?normalizePublicCampaign_(campaign,media):null
-  };
+  return {success:true,campaignKey:key,active:state.active,reason:state.reason,revision:safeString_(campaign.updated_at),checkedAt:state.checkedAt,campaign:state.active?normalizePublicCampaign_(campaign,media):null};
 }
 
 function getHeroRuntimesPublic_() {
@@ -110,12 +103,7 @@ function getHeroRuntimesPublic_() {
     var key=safeString_(campaign.campaign_key);
     if (!key) return;
     var state=campaignHeroRuntimeState_(campaign,media);
-    states[key]={
-      active:state.active,
-      enabled:state.enabled,
-      reason:state.reason,
-      revision:safeString_(campaign.updated_at)
-    };
+    states[key]={active:state.active,enabled:state.enabled,reason:state.reason,revision:safeString_(campaign.updated_at)};
     if (state.active) campaigns.push(normalizePublicCampaign_(campaign,media));
   });
 
@@ -134,11 +122,22 @@ function adminSetCampaignHeroEnabled_(token,campaignKey,enabled) {
   if (!metadata || typeof metadata!=='object' || Array.isArray(metadata)) metadata={};
   var banner=metadata.hero_banner;
   if (!banner || typeof banner!=='object' || Array.isArray(banner)) banner={};
-  banner=Object.assign({},banner,{enabled:safeBoolean_(enabled)});
+
+  var nextEnabled=safeBoolean_(enabled);
+  if (nextEnabled) {
+    var media=publicMediaMap_();
+    var desktop=media[safeString_(banner.desktop_media_id)]||null;
+    var mobile=media[safeString_(banner.mobile_media_id)]||null;
+    if (!desktop || !mediaPublicImageUrl_(desktop) || !mobile || !mediaPublicImageUrl_(mobile)) {
+      throw new Error('Para mostrar el Hero primero necesitás guardar imágenes válidas para Desktop y Mobile.');
+    }
+  }
+
+  banner=Object.assign({},banner,{enabled:nextEnabled});
   metadata.hero_banner=banner;
 
   var saved=dbUpdateById_(APP.SHEETS.CAMPAIGNS,campaign.campaign_id,{metadata_json:jsonStringify_(metadata)});
-  audit_(session.actor,'admin',APP.SHEETS.CAMPAIGNS,campaign.campaign_id,safeBoolean_(enabled)?'enable_hero':'disable_hero',campaign,saved,'react_admin');
+  audit_(session.actor,'admin',APP.SHEETS.CAMPAIGNS,campaign.campaign_id,nextEnabled?'enable_hero':'disable_hero',campaign,saved,'react_admin');
   invalidatePublicCache_();
 
   var state=campaignHeroRuntimeState_(saved||campaign,publicMediaMap_());
