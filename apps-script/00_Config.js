@@ -1,6 +1,6 @@
 const APP = Object.freeze({
   NAME: 'Fedes Landing CMS',
-  VERSION: '4.5.0',
+  VERSION: '4.6.0',
   SCHEMA_VERSION: 6,
   LOCALE: 'es-AR',
   TIMEZONE: 'America/Argentina/Buenos_Aires',
@@ -88,7 +88,7 @@ const ENTITY_DEFS = Object.freeze({
     sheet: APP.SHEETS.TEAM,
     pk: 'team_id',
     label: 'Equipo',
-    fields: ['team_key','name','role','bio','linkedin_url','media_id','sort_order','featured','status','metadata_json'],
+    fields: ['team_key','name','role','bio','linkedin_url','media_id','accent_color','sort_order','featured','status','metadata_json'],
   },
   blogPosts: {
     sheet: APP.SHEETS.BLOG,
