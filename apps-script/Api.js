@@ -14,6 +14,7 @@ function handlePublicApi_(e) {
       case 'campaign': payload=getCampaignPublic_(safeString_(e.parameter.key))||null;break;
       case 'campaigns': payload=getCampaignsPublic_();break;
       case 'hero-runtime': payload=getHeroRuntimePublic_(safeString_(e.parameter.key));break;
+      case 'hero-runtimes': payload=getHeroRuntimesPublic_();break;
       case 'campaign-landing': payload=getCampaignLandingPublic_(safeString_(e.parameter.path||e.parameter.key))||null;break;
       case 'campaign-landings': payload=getCampaignLandingsPublic_(safeString_(e.parameter.campaignKey||e.parameter.key));break;
       case 'lead-status': payload=getLeadPublicStatus_(safeString_(e.parameter.leadId));break;
@@ -39,7 +40,7 @@ function handleInternalApi_(data) {
   }
   if(action==='internalAudit') {
     var since2=safeString_(data.since),audit=dbReadAll_(APP.SHEETS.AUDIT,{includeArchived:true});
-    if(since2) audit=audit.filter(function(r){return String(r.created_at||'')>since2;});
+    if(since2) audit=audit.filter(function(r){return String(r.created_at||r.created_at||'')>since2;});
     return {success:true,data:audit.slice(-1000)};
   }
   return responseError_('Acción interna no válida','INVALID_INTERNAL_ACTION',404);
