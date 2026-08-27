@@ -5,6 +5,7 @@ const BACKEND_CHECK_TTL = 10 * 60 * 1000
 
 let backendCheck = null
 let backendCheckedAt = 0
+let bootstrapWarmup = null
 
 function opaqueId() {
   if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID().replace(/-/g, '')
@@ -79,7 +80,7 @@ async function ensureAdminBackend() {
 
 async function pollResult(requestId, clientSecret) {
   const started = Date.now()
-  let waitMs = 120
+  let waitMs = 180
   while (Date.now() - started < 30000) {
     const url = new URL(API_URL)
     url.searchParams.set('api', 'admin-result')
@@ -107,12 +108,12 @@ async function pollResult(requestId, clientSecret) {
     }
 
     await new Promise((resolve) => window.setTimeout(resolve, waitMs))
-    waitMs = Math.min(360, waitMs + 45)
+    waitMs = Math.min(480, waitMs + 60)
   }
   throw new Error('El backend tardó demasiado en responder')
 }
 
-export async function adminCommand(operation, payload = {}, token = getAdminToken(), options = {}) {
+async function runAdminCommand(operation, payload = {}, token = getAdminToken(), options = {}) {
   if (!API_URL) throw new Error('Falta VITE_GOOGLE_SCRIPT_URL')
   if (!options.skipBackendCheck) await ensureAdminBackend()
 
@@ -134,6 +135,15 @@ export async function adminCommand(operation, payload = {}, token = getAdminToke
   return result
 }
 
+export async function adminCommand(operation, payload = {}, token = getAdminToken(), options = {}) {
+  if (operation === 'bootstrap' && token && bootstrapWarmup?.token === token) {
+    const warm = bootstrapWarmup.promise
+    bootstrapWarmup = null
+    return warm
+  }
+  return runAdminCommand(operation, payload, token, options)
+}
+
 export function getAdminToken() {
   return sessionStorage.getItem(TOKEN_KEY) || ''
 }
@@ -144,20 +154,28 @@ export function setAdminToken(token) {
 }
 
 export async function loginAdmin(password) {
-  // Login no hace un health request previo: el propio resultado autenticado trae
-  // la versión del backend. Esto elimina un round-trip completo del camino crítico.
-  const result = await adminCommand('login', { password }, '', { skipBackendCheck: true })
+  const result = await runAdminCommand('login', { password }, '', { skipBackendCheck: true })
   if (!result?.token) throw new Error('El backend no devolvió una sesión válida')
 
   if (result.appVersion) markBackendCompatible(result.appVersion, { schemaVersion: result.schemaVersion })
   else await ensureAdminBackend()
 
   setAdminToken(result.token)
+
+  // El panel va a pedir bootstrap inmediatamente después de setear el token.
+  // Lo arrancamos ya para solapar el render de React con la lectura de Sheets.
+  const promise = runAdminCommand('bootstrap', {}, result.token).catch((error) => {
+    if (bootstrapWarmup?.token === result.token) bootstrapWarmup = null
+    throw error
+  })
+  bootstrapWarmup = { token: result.token, promise }
+
   return result
 }
 
 export async function logoutAdmin() {
   const token = getAdminToken()
+  bootstrapWarmup = null
   try {
     if (token) await adminCommand('logout', {}, token)
   } finally {
