@@ -80,6 +80,7 @@ function adminGetWorkspaceReact_(token) {
   ['leadAnswers','leadEvents'].forEach(function(tableName){
     var table=workspace.tables&&workspace.tables[tableName];
     if(!table)return;
+    table.group='Datos';
     table.readOnly=true;
     table.permissions={create:false,write:false,deleteMode:'none'};
     (table.fields||[]).forEach(function(field){field.readOnly=true;});
