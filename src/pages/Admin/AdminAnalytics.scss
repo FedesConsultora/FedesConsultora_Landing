@@ -267,21 +267,11 @@
   gap: 8px;
 }
 
-.admin-analytics-ranking__list button {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  text-align: left;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
+.admin-analytics-ranking__row {
+  min-width: 0;
 }
 
-.admin-analytics-ranking__list button:disabled {
-  cursor: default;
-}
-
-.admin-analytics-ranking__list button > div {
+.admin-analytics-ranking__row > div {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -289,7 +279,7 @@
   margin-bottom: 4px;
 }
 
-.admin-analytics-ranking__list button span {
+.admin-analytics-ranking__row span {
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
@@ -298,12 +288,12 @@
   font-size: 11px;
 }
 
-.admin-analytics-ranking__list button strong {
+.admin-analytics-ranking__row strong {
   color: #223043;
   font-size: 11px;
 }
 
-.admin-analytics-ranking__list button > i,
+.admin-analytics-ranking__row > i,
 .admin-analytics-coverage article > i {
   display: block;
   height: 5px;
@@ -312,16 +302,12 @@
   overflow: hidden;
 }
 
-.admin-analytics-ranking__list button > i b,
+.admin-analytics-ranking__row > i b,
 .admin-analytics-coverage article > i b {
   display: block;
   height: 100%;
   border-radius: inherit;
   background: #4a78ca;
-}
-
-.admin-analytics-ranking__list button:not(:disabled):hover span {
-  color: #1f5eb8;
 }
 
 .admin-analytics-coverage__grid {
