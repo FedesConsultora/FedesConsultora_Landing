@@ -1,3 +1,5 @@
+import { getTrackingContext } from './googleApi'
+
 const API_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL
 
 const DEFAULT_TIMEOUT = 30000
@@ -73,6 +75,15 @@ function normalizeGaliciaPagePath(value) {
   return value
 }
 
+function withTrackingContext(payload = {}) {
+  const tracking = getTrackingContext()
+  return {
+    ...payload,
+    visitorId: payload.visitorId || tracking.visitorId,
+    sessionId: payload.sessionId || tracking.sessionId,
+  }
+}
+
 async function postOpaque(action, payload) {
   assertApiUrl()
   const body = new URLSearchParams()
@@ -130,11 +141,12 @@ export async function waitForLead(leadId, predicate, attempts = POLL_ATTEMPTS) {
 }
 
 export async function startGaliciaLead(payload) {
-  await postOpaque('galiciaStart', payload)
+  const trackedPayload = withTrackingContext(payload)
+  await postOpaque('galiciaStart', trackedPayload)
   return {
     found: false,
-    leadId: payload.leadId,
-    landingKey: payload.landingKey || '',
+    leadId: trackedPayload.leadId,
+    landingKey: trackedPayload.landingKey || '',
     status: 'incomplete',
     stage: 'captured',
     pendingConfirmation: true,
@@ -142,24 +154,25 @@ export async function startGaliciaLead(payload) {
 }
 
 export async function saveGaliciaProgress(payload) {
-  await postOpaque('galiciaProgress', payload)
+  await postOpaque('galiciaProgress', withTrackingContext(payload))
   return { success: true, pendingConfirmation: true }
 }
 
 export async function completeGaliciaLead(payload) {
-  await postOpaque('galiciaComplete', payload)
-  return waitForLead(payload.leadId, (lead) => lead.status === 'complete')
+  const trackedPayload = withTrackingContext(payload)
+  await postOpaque('galiciaComplete', trackedPayload)
+  return waitForLead(trackedPayload.leadId, (lead) => lead.status === 'complete')
 }
 
 export async function markGaliciaMeetingClick(leadId, source, options = {}) {
   if (!leadId) return
   try {
-    await postOpaque('galiciaMeetingClick', {
+    await postOpaque('galiciaMeetingClick', withTrackingContext({
       leadId,
       source,
       landingKey: options.landingKey || '',
       pagePath: options.pagePath || GALICIA_LANDING_PATH,
-    })
+    }))
   } catch (error) {
     console.warn('[Galicia] No se pudo registrar meeting_click', error)
   }
