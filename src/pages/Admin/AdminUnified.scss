@@ -1,0 +1,415 @@
+@use '../../styles/_variables.scss' as *;
+
+/* Última capa visual del backoffice. Evita que estilos legacy oscuros ganen por especificidad. */
+.react-admin-shell,
+.admin-login-page,
+.admin-modal-layer {
+  color-scheme: light;
+}
+
+.react-admin-shell .admin-panel,
+.admin-modal-layer .admin-panel {
+  padding: 20px;
+}
+
+.react-admin-shell .admin-panel-head,
+.react-admin-shell .admin-panel-heading-row,
+.admin-modal-layer .admin-panel-head,
+.admin-modal-layer .admin-panel-heading-row {
+  padding-inline: 2px;
+}
+
+.react-admin-shell .admin-panel-head > div,
+.react-admin-shell .admin-panel-heading-row > div {
+  min-width: 0;
+}
+
+.react-admin-shell .admin-panel-head h3,
+.react-admin-shell .admin-panel-heading-row h3 {
+  margin: 3px 0 0;
+}
+
+.react-admin-shell .admin-panel-head p,
+.react-admin-shell .admin-panel-heading-row p {
+  margin-top: 4px;
+}
+
+/* Todos los controles quedan en el mismo lenguaje claro del panel. */
+.react-admin-shell .admin-field input:not([type='checkbox']),
+.react-admin-shell .admin-field select,
+.react-admin-shell .admin-field textarea,
+.react-admin-shell .admin-search-wrap input,
+.react-admin-shell .admin-pagination select,
+.admin-modal-layer .admin-field input:not([type='checkbox']),
+.admin-modal-layer .admin-field select,
+.admin-modal-layer .admin-field textarea {
+  color: #273343 !important;
+  background-color: #fff !important;
+  border-color: #d9e2ec !important;
+  box-shadow: none;
+  color-scheme: light;
+}
+
+.react-admin-shell .admin-field select,
+.react-admin-shell .admin-pagination select,
+.admin-modal-layer .admin-field select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2367778c' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 11px center !important;
+  background-size: 14px !important;
+}
+
+.react-admin-shell .admin-field select option,
+.react-admin-shell .admin-pagination option,
+.admin-modal-layer .admin-field select option {
+  color: #273343 !important;
+  background: #fff !important;
+}
+
+.react-admin-shell .admin-field input:focus,
+.react-admin-shell .admin-field select:focus,
+.react-admin-shell .admin-field textarea:focus,
+.react-admin-shell .admin-search-wrap input:focus,
+.admin-modal-layer .admin-field input:focus,
+.admin-modal-layer .admin-field select:focus,
+.admin-modal-layer .admin-field textarea:focus {
+  border-color: rgba(27, 94, 191, .5) !important;
+  box-shadow: 0 0 0 4px rgba(27, 94, 191, .08) !important;
+}
+
+/* Filtros al estilo operativo de Comercial: toolbar compacta + popover real. */
+.react-admin-shell .admin-filter-card {
+  position: relative;
+  z-index: 8;
+  overflow: visible;
+  padding: 10px;
+  border-radius: 16px;
+}
+
+.react-admin-shell .admin-filter-main--compact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.react-admin-shell .admin-filter-main--compact .admin-search-wrap {
+  flex: 1 1 420px;
+  min-width: 240px;
+}
+
+.react-admin-shell .admin-filter-main--compact .admin-search-wrap input {
+  min-height: 42px;
+  border-radius: 11px;
+}
+
+.react-admin-shell .admin-filter-toggle {
+  min-width: 110px;
+}
+
+.react-admin-shell .admin-filter-toggle > span {
+  min-width: 18px;
+  height: 18px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 5px;
+  border-radius: 999px;
+  color: #1b5ebf;
+  background: #eaf2ff;
+  font-size: 9px;
+}
+
+.react-admin-shell .admin-filter-toggle svg:last-child {
+  transition: transform .16s ease;
+}
+
+.react-admin-shell .admin-filter-toggle.is-active svg:last-child {
+  transform: rotate(180deg);
+}
+
+.react-admin-shell .admin-filter-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 10px;
+  z-index: 80;
+  width: min(760px, calc(100vw - 330px));
+  min-width: 560px;
+  overflow: hidden;
+  border: 1px solid #dbe3ed;
+  border-radius: 16px;
+  color: #273343;
+  background: rgba(255, 255, 255, .985);
+  box-shadow: 0 24px 70px rgba(37, 55, 82, .18);
+  backdrop-filter: blur(18px);
+}
+
+.react-admin-shell .admin-filter-popover__head,
+.react-admin-shell .admin-filter-popover__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+}
+
+.react-admin-shell .admin-filter-popover__head {
+  border-bottom: 1px solid #edf1f5;
+}
+
+.react-admin-shell .admin-filter-popover__head strong {
+  font-size: 13px;
+}
+
+.react-admin-shell .admin-filter-popover__head button {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: #748195;
+  background: transparent;
+  cursor: pointer;
+}
+
+.react-admin-shell .admin-filter-popover__head button:hover {
+  color: #273343;
+  background: #f2f5f9;
+}
+
+.react-admin-shell .admin-filter-grid--advanced {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  max-height: 52vh;
+  overflow-y: auto;
+  margin: 0;
+  padding: 14px;
+  border: 0;
+}
+
+.react-admin-shell .admin-filter-grid--advanced .admin-field {
+  min-width: 0;
+}
+
+.react-admin-shell .admin-filter-grid--advanced .admin-field > span {
+  font-size: 9px;
+}
+
+.react-admin-shell .admin-filter-grid--advanced .admin-field select,
+.react-admin-shell .admin-filter-grid--advanced .admin-field input {
+  min-height: 40px;
+  border-radius: 10px;
+}
+
+.react-admin-shell .admin-filter-popover__footer {
+  justify-content: flex-end;
+  border-top: 1px solid #edf1f5;
+  background: #fafbfd;
+}
+
+.react-admin-shell .admin-active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 2px 0;
+}
+
+.react-admin-shell .admin-active-filters button {
+  max-width: 300px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border: 1px solid #dce6f4;
+  border-radius: 999px;
+  color: #516173;
+  background: #f7faff;
+  font: inherit;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.react-admin-shell .admin-active-filters button strong {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #1b5ebf;
+}
+
+.react-admin-shell .admin-active-filters__clear {
+  color: #7b8797 !important;
+  background: #fff !important;
+}
+
+/* Tabla: sin bloques oscuros aislados y con acciones fijas pero discretas. */
+.react-admin-shell .admin-table-shell--data {
+  border-color: #dfe6ee;
+  background: #fff;
+}
+
+.react-admin-shell .admin-data-table th {
+  color: #748297;
+  background: #f7f9fc !important;
+}
+
+.react-admin-shell .admin-data-table td {
+  background: #fff;
+}
+
+.react-admin-shell .admin-actions-head,
+.react-admin-shell .admin-actions-cell {
+  background: #f7f9fc !important;
+  box-shadow: -10px 0 20px rgba(48, 67, 92, .04) !important;
+}
+
+.react-admin-shell .admin-actions-cell {
+  background: rgba(255, 255, 255, .985) !important;
+}
+
+.react-admin-shell .admin-data-table tbody tr:hover td,
+.react-admin-shell .admin-data-table tbody tr:hover .admin-actions-cell {
+  background: #f8fbff !important;
+}
+
+/* Inicio: métricas y secciones ocupan ancho real; ningún section genérico les quita padding. */
+.react-admin-shell .admin-dashboard-modern {
+  gap: 14px;
+}
+
+.react-admin-shell .admin-primary-kpi-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.react-admin-shell .admin-overview-kpi {
+  min-height: 112px;
+  padding: 15px;
+  border: 1px solid #e2e8f0;
+  background: rgba(255,255,255,.82);
+}
+
+.react-admin-shell .admin-overview-kpi__copy strong {
+  color: #202934;
+}
+
+.react-admin-shell .admin-compact-metrics,
+.react-admin-shell .admin-connection-grid {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0;
+  padding: 0 !important;
+  border: 1px solid #e1e7ee;
+  background: #fff;
+}
+
+.react-admin-shell .admin-compact-metric {
+  min-height: 82px;
+  padding: 14px 16px;
+  border-right: 1px solid #e9edf2;
+  background: #fff;
+}
+
+.react-admin-shell .admin-compact-metric strong {
+  color: #202934;
+}
+
+.react-admin-shell .admin-dashboard-grid--balanced {
+  gap: 12px;
+}
+
+/* Campañas se leen como filas operativas, no como una pila vertical de numeritos. */
+.react-admin-shell .admin-campaign-overview-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.react-admin-shell .admin-campaign-overview-card {
+  display: grid;
+  grid-template-columns: minmax(220px, .8fr) minmax(420px, 1.7fr) minmax(170px, .55fr);
+  grid-template-areas:
+    'head funnel action'
+    'runtime rates action';
+  align-items: center;
+  gap: 8px 20px;
+  padding: 16px 18px;
+  border: 1px solid #e1e7ee;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.react-admin-shell .admin-campaign-overview-card__head { grid-area: head; }
+.react-admin-shell .admin-campaign-overview-card__runtime { grid-area: runtime; margin-top: 0; }
+.react-admin-shell .admin-campaign-mini-funnel { grid-area: funnel; margin-top: 0; }
+.react-admin-shell .admin-campaign-overview-card__rates { grid-area: rates; margin-top: 0; }
+.react-admin-shell .admin-campaign-open { grid-area: action; width: 100%; margin: 0; }
+
+.react-admin-shell .admin-campaign-mini-funnel__track {
+  background: #edf1f6;
+}
+
+.react-admin-shell .admin-campaign-mini-funnel__track i {
+  background: #2d68cb;
+}
+
+.react-admin-shell .admin-runtime-pill {
+  color: #687789;
+  border-color: #dfe5ec;
+  background: #f8fafc;
+}
+
+.react-admin-shell .admin-runtime-pill.is-live {
+  color: #176a4e;
+  border-color: #cde8db;
+  background: #eef9f4;
+}
+
+/* Distribuciones: barras limpias, sin fondo oscuro. */
+.react-admin-shell .admin-distribution--modern .admin-distribution-row > div,
+.admin-modal-layer .admin-distribution--modern .admin-distribution-row > div {
+  background: #edf1f5;
+}
+
+.react-admin-shell .admin-distribution--modern .admin-distribution-row i,
+.admin-modal-layer .admin-distribution--modern .admin-distribution-row i {
+  background: #2f6fcf;
+}
+
+@media (max-width: 1180px) {
+  .react-admin-shell .admin-primary-kpi-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .react-admin-shell .admin-campaign-overview-card {
+    grid-template-columns: minmax(200px, .8fr) minmax(340px, 1.5fr);
+    grid-template-areas:
+      'head funnel'
+      'runtime rates'
+      'action action';
+  }
+}
+
+@media (max-width: 900px) {
+  .react-admin-shell .admin-filter-popover {
+    right: 0;
+    width: min(680px, calc(100vw - 32px));
+    min-width: 0;
+  }
+  .react-admin-shell .admin-filter-grid--advanced { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .react-admin-shell .admin-primary-kpi-grid,
+  .react-admin-shell .admin-compact-metrics,
+  .react-admin-shell .admin-connection-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+
+@media (max-width: 680px) {
+  .react-admin-shell .admin-filter-main--compact { flex-wrap: wrap; }
+  .react-admin-shell .admin-filter-main--compact .admin-search-wrap { flex-basis: 100%; }
+  .react-admin-shell .admin-filter-grid--advanced { grid-template-columns: 1fr; }
+  .react-admin-shell .admin-campaign-overview-card {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'head' 'runtime' 'funnel' 'rates' 'action';
+  }
+  .react-admin-shell .admin-primary-kpi-grid,
+  .react-admin-shell .admin-compact-metrics,
+  .react-admin-shell .admin-connection-grid { grid-template-columns: 1fr; }
+}
