@@ -2,6 +2,7 @@ import { readCmsConfig } from './clasp-utils.mjs'
 
 const config = readCmsConfig()
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+const REQUIRED_VERSION = '4.6.0'
 
 async function fetchJsonp(params, attemptLabel) {
   let lastError = null
@@ -46,6 +47,7 @@ async function fetchJsonp(params, attemptLabel) {
 try {
   const health = await fetchJsonp({ api: 'health' }, 'Health')
   if (!health?.success) throw new Error('Health no confirmó success=true')
+  if (health.version !== REQUIRED_VERSION) throw new Error(`Backend ${health.version || 'desconocido'}; se esperaba ${REQUIRED_VERSION}`)
   if (Number(health.schemaVersion || 0) < 6) throw new Error(`Schema ${health.schemaVersion || 0} es anterior al requerido (6)`)
   console.log(`✅ Health OK · ${health.app} v${health.version} · schema ${health.schemaVersion}`)
 
