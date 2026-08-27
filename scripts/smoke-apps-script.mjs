@@ -19,7 +19,7 @@ async function fetchJsonp(params, attemptLabel) {
       const response = await fetch(url, {
         redirect: 'follow',
         cache: 'no-store',
-        headers: { 'user-agent': 'Fedes-CMS-Smoke/2.0' },
+        headers: { 'user-agent': 'Fedes-CMS-Smoke/3.0' },
       })
       const body = await response.text()
       const prefix = `${callback}(`
@@ -46,7 +46,16 @@ async function fetchJsonp(params, attemptLabel) {
 try {
   const health = await fetchJsonp({ api: 'health' }, 'Health')
   if (!health?.success) throw new Error('Health no confirmó success=true')
+  if (Number(health.schemaVersion || 0) < 6) throw new Error(`Schema ${health.schemaVersion || 0} es anterior al requerido (6)`)
   console.log(`✅ Health OK · ${health.app} v${health.version} · schema ${health.schemaVersion}`)
+
+  const heroRuntimes = await fetchJsonp({ api: 'hero-runtimes' }, 'Hero runtime')
+  if (!heroRuntimes?.success || !heroRuntimes?.states || !heroRuntimes.states['galicia-2026']) {
+    throw new Error('Hero runtime no devolvió el estado de galicia-2026')
+  }
+  const galiciaHero = heroRuntimes.states['galicia-2026']
+  if (galiciaHero.active && !galiciaHero.enabled) throw new Error('Hero Galicia figura activo pero disabled')
+  console.log(`✅ Hero runtime OK · ${galiciaHero.active ? 'visible' : galiciaHero.reason || 'no visible'}`)
 
   const campaign = await fetchJsonp({
     api: config.smoke?.api || 'campaign',
@@ -55,16 +64,24 @@ try {
 
   if (campaign?.campaign_key === 'galicia-2026') {
     console.log(`✅ Campaña Galicia pública · ${campaign.status}`)
+
+    const landings = await fetchJsonp({ api: 'campaign-landings', campaignKey: 'galicia-2026' }, 'Landings Galicia')
+    if (!Array.isArray(landings)) throw new Error('campaign-landings no devolvió una colección')
+    console.log(`✅ Landings públicas · ${landings.length}`)
+
     const primaryLanding = await fetchJsonp({ api: 'campaign-landing', path: '/bonificacion-galicia' }, 'Landing principal')
-    if (Number(health.schemaVersion) >= 4 && primaryLanding?.landing_key !== 'charla-pymes') {
+    if (primaryLanding?.landing_key !== 'charla-pymes') {
       throw new Error('La landing principal de Galicia no resolvió como charla-pymes')
     }
-    if (primaryLanding?.landing_key) console.log(`✅ Landing principal OK · ${primaryLanding.path} · ${primaryLanding.benefit_percent}%`)
+    if (Number(primaryLanding?.benefit_percent || 0) !== 50) {
+      throw new Error('La landing principal de Galicia dejó de tener 50%')
+    }
+    console.log(`✅ Landing principal OK · ${primaryLanding.path} · ${primaryLanding.benefit_percent}%`)
   } else {
     console.log('ℹ️ Galicia no está pública; el smoke respeta el switch maestro y no exige una landing activa.')
   }
 
-  console.log(`✅ Smoke test OK`)
+  console.log('✅ Smoke test OK')
   console.log(`   ${config.webAppUrl}`)
 } catch (error) {
   console.error(`❌ Smoke test falló: ${error.message || 'error desconocido'}`)
