@@ -15,16 +15,19 @@ function jsonp(url, timeout = 15000) {
   return new Promise((resolve, reject) => {
     const callback = `__fedesAdmin_${opaqueId()}`
     const script = document.createElement('script')
-    const timer = window.setTimeout(() => finish(new Error('Tiempo de espera agotado')), timeout)
+    let settled = false
 
     const finish = (error, value) => {
+      if (settled) return
+      settled = true
       window.clearTimeout(timer)
-      delete window[callback]
+      try { delete window[callback] } catch { window[callback] = undefined }
       script.remove()
       if (error) reject(error)
       else resolve(value)
     }
 
+    const timer = window.setTimeout(() => finish(new Error('Tiempo de espera agotado')), timeout)
     window[callback] = (payload) => finish(null, payload)
     const target = new URL(url)
     target.searchParams.set('callback', callback)
@@ -39,6 +42,21 @@ function backendVersionError(version) {
   return new Error(`El backend de Apps Script está desactualizado (${detected}). El Backoffice React requiere backend v4 o superior. Actualizá la implementación existente de la Web App y volvé a intentar.`)
 }
 
+function assertCompatibleVersion(version) {
+  const value = String(version || '')
+  const major = Number(value.split('.')[0])
+  if (!Number.isFinite(major) || major < REQUIRED_BACKEND_MAJOR) throw backendVersionError(value)
+  return value
+}
+
+function markBackendCompatible(version, extra = {}) {
+  const normalized = assertCompatibleVersion(version)
+  const payload = { success: true, version: normalized, ...extra }
+  backendCheck = Promise.resolve(payload)
+  backendCheckedAt = Date.now()
+  return payload
+}
+
 async function ensureAdminBackend() {
   if (!API_URL) throw new Error('Falta VITE_GOOGLE_SCRIPT_URL')
   const now = Date.now()
@@ -47,14 +65,12 @@ async function ensureAdminBackend() {
   const url = new URL(API_URL)
   url.searchParams.set('api', 'health')
   backendCheck = jsonp(url.toString()).then((response) => {
-    const version = String(response?.version || '')
-    const major = Number(version.split('.')[0])
-    if (!response?.success || !Number.isFinite(major) || major < REQUIRED_BACKEND_MAJOR) {
-      throw backendVersionError(version)
-    }
+    if (!response?.success) throw backendVersionError(response?.version)
+    markBackendCompatible(response.version, response)
     return response
   }).catch((error) => {
     backendCheck = null
+    backendCheckedAt = 0
     throw error
   })
   backendCheckedAt = now
@@ -63,7 +79,7 @@ async function ensureAdminBackend() {
 
 async function pollResult(requestId, clientSecret) {
   const started = Date.now()
-  let waitMs = 140
+  let waitMs = 120
   while (Date.now() - started < 30000) {
     const url = new URL(API_URL)
     url.searchParams.set('api', 'admin-result')
@@ -73,14 +89,16 @@ async function pollResult(requestId, clientSecret) {
 
     if (response?.code === 'INVALID_API' || /API no válida/i.test(response?.error || '')) {
       backendCheck = null
+      backendCheckedAt = 0
       throw backendVersionError('')
     }
 
     if (!response?.pending) {
       const result = response?.result ?? response
       if (result?.success === false) {
-        if (result?.code === 'INVALID_API' || /API no válida/i.test(result?.error || '')) {
+        if (result?.code === 'INVALID_API' || /API no válida|operación administrativa inválida/i.test(result?.error || '')) {
           backendCheck = null
+          backendCheckedAt = 0
           throw backendVersionError('')
         }
         throw new Error(result.error || 'Error administrativo')
@@ -89,13 +107,15 @@ async function pollResult(requestId, clientSecret) {
     }
 
     await new Promise((resolve) => window.setTimeout(resolve, waitMs))
-    waitMs = Math.min(420, waitMs + 60)
+    waitMs = Math.min(360, waitMs + 45)
   }
   throw new Error('El backend tardó demasiado en responder')
 }
 
-export async function adminCommand(operation, payload = {}, token = getAdminToken()) {
-  await ensureAdminBackend()
+export async function adminCommand(operation, payload = {}, token = getAdminToken(), options = {}) {
+  if (!API_URL) throw new Error('Falta VITE_GOOGLE_SCRIPT_URL')
+  if (!options.skipBackendCheck) await ensureAdminBackend()
+
   const requestId = opaqueId()
   const clientSecret = opaqueId()
   const body = { action: 'adminCommand', operation, requestId, clientSecret, token: token || '', payload }
@@ -108,7 +128,10 @@ export async function adminCommand(operation, payload = {}, token = getAdminToke
     keepalive: false,
   })
 
-  return pollResult(requestId, clientSecret)
+  const result = await pollResult(requestId, clientSecret)
+  if (result?.appVersion) markBackendCompatible(result.appVersion, { schemaVersion: result.schemaVersion })
+  else if (result?.meta?.appVersion) markBackendCompatible(result.meta.appVersion, { schemaVersion: result.meta.schemaVersion })
+  return result
 }
 
 export function getAdminToken() {
@@ -121,8 +144,14 @@ export function setAdminToken(token) {
 }
 
 export async function loginAdmin(password) {
-  const result = await adminCommand('login', { password }, '')
+  // Login no hace un health request previo: el propio resultado autenticado trae
+  // la versión del backend. Esto elimina un round-trip completo del camino crítico.
+  const result = await adminCommand('login', { password }, '', { skipBackendCheck: true })
   if (!result?.token) throw new Error('El backend no devolvió una sesión válida')
+
+  if (result.appVersion) markBackendCompatible(result.appVersion, { schemaVersion: result.schemaVersion })
+  else await ensureAdminBackend()
+
   setAdminToken(result.token)
   return result
 }
