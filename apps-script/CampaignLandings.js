@@ -1,6 +1,7 @@
 var GALICIA_PRIMARY_LANDING_KEY = 'charla-pymes';
 var GALICIA_OFFICE_BANKING_LANDING_KEY = 'office-banking';
 var CAMPAIGN_LANDING_BACKFILL_KEY = 'campaign_landings_v1_backfill';
+var CAMPAIGN_ATTRIBUTION_BACKFILL_KEY = 'campaign_attribution_v2_backfill';
 var CAMPAIGN_LANDING_FOUNDATION_CACHE_KEY = 'campaign_landings_foundation:v2:schema-' + APP.SCHEMA_VERSION;
 
 function normalizeCampaignLandingPath_(value) {
@@ -95,6 +96,19 @@ function backfillCampaignLandingKeys_() {
   systemSet_(CAMPAIGN_LANDING_BACKFILL_KEY,'done');
 }
 
+function backfillCampaignAttribution_() {
+  if (systemGet_(CAMPAIGN_ATTRIBUTION_BACKFILL_KEY)==='done') return;
+  dbPatchWhere_(APP.SHEETS.LEADS,function(row){
+    return !safeString_(row.last_landing_key)||!safeString_(row.last_source);
+  },function(row){
+    var patch={};
+    if (!safeString_(row.last_landing_key)) patch.last_landing_key=safeString_(row.landing_key);
+    if (!safeString_(row.last_source)) patch.last_source=safeString_(row.source);
+    return patch;
+  });
+  systemSet_(CAMPAIGN_ATTRIBUTION_BACKFILL_KEY,'done');
+}
+
 function ensureCampaignLandingFoundation_(force) {
   var cache=CacheService.getScriptCache();
   if (!safeBoolean_(force) && cache.get(CAMPAIGN_LANDING_FOUNDATION_CACHE_KEY)==='ready') return;
@@ -111,6 +125,7 @@ function ensureCampaignLandingFoundation_(force) {
   });
 
   backfillCampaignLandingKeys_();
+  backfillCampaignAttribution_();
   cache.put(CAMPAIGN_LANDING_FOUNDATION_CACHE_KEY,'ready',21600);
 }
 
