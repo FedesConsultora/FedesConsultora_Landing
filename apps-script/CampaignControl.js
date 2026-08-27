@@ -99,6 +99,30 @@ function getHeroRuntimePublic_(campaignKey) {
   };
 }
 
+function getHeroRuntimesPublic_() {
+  var media=publicMediaMap_();
+  var rows=dbReadAll_(APP.SHEETS.CAMPAIGNS,{includeArchived:true});
+  var campaigns=[];
+  var states={};
+
+  rows.forEach(function(campaign){
+    if (safeString_(campaign.archived_at)) return;
+    var key=safeString_(campaign.campaign_key);
+    if (!key) return;
+    var state=campaignHeroRuntimeState_(campaign,media);
+    states[key]={
+      active:state.active,
+      enabled:state.enabled,
+      reason:state.reason,
+      revision:safeString_(campaign.updated_at)
+    };
+    if (state.active) campaigns.push(normalizePublicCampaign_(campaign,media));
+  });
+
+  campaigns.sort(function(a,b){return safeNumber_(a.sort_order,0)-safeNumber_(b.sort_order,0);});
+  return {success:true,campaigns:campaigns,states:states,checkedAt:nowIso_()};
+}
+
 function adminSetCampaignHeroEnabled_(token,campaignKey,enabled) {
   var session=requireAdminSession_(token);
   var key=safeString_(campaignKey);
