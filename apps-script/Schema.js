@@ -18,7 +18,7 @@ const SCHEMA = Object.freeze({
   'CRM_LeadEvents': ['event_id','lead_id','campaign_key','landing_key','event_type','page_path','source','metadata_json','created_at'],
   'CRM_LeadMailings': ['mailing_id','lead_id','campaign_key','segment','template_key','sequence_no','status','scheduled_at','sent_at','opened_at','clicked_at','provider','provider_message_id','attempt_count','error_message','metadata_json','created_at','updated_at','archived_at'],
   'ONB_Records': ['onboarding_id','cuit','company_name','contact_name','email','taxpayer_type','current_step','status','is_completed','data_json','created_at','updated_at','completed_at','archived_at'],
-  'AN_Events': ['event_id','category','label','value','page_path','session_id','source','metadata_json','created_at'],
+  'AN_Events': ['event_id','category','label','value','page_path','campaign_key','landing_key','visitor_id','session_id','source','utm_source','utm_medium','utm_campaign','utm_content','metadata_json','created_at'],
 });
 
 const PRIMARY_KEYS = Object.freeze({
