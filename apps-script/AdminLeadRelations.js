@@ -1,6 +1,6 @@
 function adminGetLead360Connected_(token,leadId) {
   requireAdminSession_(token);
-  ensureAnalyticsDimensionsSchema_(false);
+  ensureAnalyticsDimensions_(true);
 
   var lead=dbFindById_(APP.SHEETS.LEADS,safeString_(leadId),{includeArchived:true});
   if(!lead)throw new Error('Lead no encontrado');
@@ -16,12 +16,13 @@ function adminGetLead360Connected_(token,leadId) {
   var webEvents=[];
 
   if(sessionId||visitorId){
-    webEvents=dbReadAll_(APP.SHEETS.ANALYTICS,{includeArchived:true}).filter(function(row){
+    var candidates=adminFindRowsByExactFields_(APP.SHEETS.ANALYTICS,[
+      {field:'session_id',value:sessionId},
+      {field:'visitor_id',value:visitorId}
+    ]);
+
+    webEvents=candidates.filter(function(row){
       var meta=campaignAnalyticsMeta_(row);
-      var rowSession=safeString_(row.session_id)||safeString_(meta.session_id)||safeString_(meta.sessionId);
-      var rowVisitor=safeString_(row.visitor_id)||safeString_(meta.visitor_id)||safeString_(meta.visitorId);
-      var identityMatch=(sessionId&&rowSession===sessionId)||(visitorId&&rowVisitor===visitorId);
-      if(!identityMatch)return false;
       var rowCampaign=safeString_(row.campaign_key)||safeString_(meta.campaign_key)||safeString_(meta.campaignKey);
       return !campaignKey||!rowCampaign||rowCampaign===campaignKey;
     }).map(function(row){
