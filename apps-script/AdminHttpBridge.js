@@ -31,6 +31,8 @@ function adminExecuteHttpCommand_(data) {
   switch(op){
     case 'login': return adminLogin(safeString_(payload.password));
     case 'logout': return adminLogout(token);
+    case 'bootstrap': return adminGetBootstrapBundle_(token);
+    case 'overview': return adminGetOverviewBundle_(token);
     case 'workspace': return adminGetWorkspaceReact_(token);
     case 'dashboard': return adminGetDashboardOverview_(token);
     case 'insights': return adminGetInsights(token);
