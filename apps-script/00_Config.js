@@ -88,7 +88,7 @@ const ENTITY_DEFS = Object.freeze({
     sheet: APP.SHEETS.TEAM,
     pk: 'team_id',
     label: 'Equipo',
-    fields: ['team_key','name','role','bio','linkedin_url','media_id','accent_color','sort_order','featured','status','metadata_json'],
+    fields: ['team_key','name','role','bio','linkedin_url','media_id','sort_order','featured','status','metadata_json'],
   },
   blogPosts: {
     sheet: APP.SHEETS.BLOG,
