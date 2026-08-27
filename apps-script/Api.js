@@ -40,7 +40,7 @@ function handleInternalApi_(data) {
   }
   if(action==='internalAudit') {
     var since2=safeString_(data.since),audit=dbReadAll_(APP.SHEETS.AUDIT,{includeArchived:true});
-    if(since2) audit=audit.filter(function(r){return String(r.created_at||r.created_at||'')>since2;});
+    if(since2) audit=audit.filter(function(r){return String(r.created_at||'')>since2;});
     return {success:true,data:audit.slice(-1000)};
   }
   return responseError_('Acción interna no válida','INVALID_INTERNAL_ACTION',404);
