@@ -47,13 +47,47 @@ function campaignAnalyticsMatches_(row,campaignKey,landings) {
   return utmCampaign===campaignKey;
 }
 
-function campaignAnalyticsUniqueSessions_(rows) {
+function campaignAnalyticsSessionIds_(rows) {
   var seen={};
   (rows||[]).forEach(function(row){
     var id=safeString_(row.session_id);
     if (id) seen[id]=true;
   });
-  return Object.keys(seen).length;
+  return seen;
+}
+
+function campaignAnalyticsUniqueSessions_(rows) {
+  return Object.keys(campaignAnalyticsSessionIds_(rows)).length;
+}
+
+function campaignLeadFirstAttribution_(lead) {
+  var meta=jsonParse_(lead&&lead.metadata_json,{});
+  var first=meta&&meta.firstAttribution&&typeof meta.firstAttribution==='object'&&!Array.isArray(meta.firstAttribution)
+    ? meta.firstAttribution
+    : {};
+  return {
+    sessionId:safeString_(first.sessionId)||safeString_(lead&&lead.session_id),
+    visitorId:safeString_(first.visitorId)||safeString_(lead&&lead.visitor_id),
+    landingKey:safeString_(first.landingKey)||safeString_(lead&&lead.landing_key),
+    source:safeString_(first.source)||safeString_(lead&&lead.source)
+  };
+}
+
+function campaignLinkedLeadStats_(leads,visits) {
+  var visitSessions=campaignAnalyticsSessionIds_(visits);
+  var linked=0,withSession=0;
+  (leads||[]).forEach(function(lead){
+    var sessionId=campaignLeadFirstAttribution_(lead).sessionId;
+    if (!sessionId) return;
+    withSession++;
+    if (visitSessions[sessionId]) linked++;
+  });
+  return {
+    withSession:withSession,
+    linked:linked,
+    coverage:campaignAnalyticsRate_(withSession,(leads||[]).length),
+    sessionToLead:campaignAnalyticsRate_(linked,Object.keys(visitSessions).length)
+  };
 }
 
 function campaignAnalyticsRate_(numerator,denominator) {
@@ -93,6 +127,7 @@ function adminGetCampaignFunnel_(token,campaignKey) {
   var clicks=analytics.filter(function(row){return safeString_(row.label)==='hero_banner_click';});
   var visits=analytics.filter(function(row){return safeString_(row.label)==='campaign_landing_view';});
   var completed=leads.filter(function(row){return safeString_(row.status)==='complete';});
+  var linkedStats=campaignLinkedLeadStats_(leads,visits);
 
   var answerCountByLead={};
   var answerDistribution={};
@@ -116,9 +151,10 @@ function adminGetCampaignFunnel_(token,campaignKey) {
     var landingClicks=clicks.filter(function(row){
       return campaignAnalyticsLandingKey_(row,campaignAnalyticsMeta_(row),landings)===landingKey;
     });
-    var landingLeads=leads.filter(function(row){return safeString_(row.landing_key)===landingKey;});
+    var landingLeads=leads.filter(function(row){return campaignLeadFirstAttribution_(row).landingKey===landingKey;});
     var landingResponders=landingLeads.filter(function(row){return safeNumber_(answerCountByLead[safeString_(row.lead_id)],0)>0;});
     var landingComplete=landingLeads.filter(function(row){return safeString_(row.status)==='complete';});
+    var landingLinked=campaignLinkedLeadStats_(landingLeads,landingVisits);
 
     byLanding[landingKey]={
       landingKey:landingKey,
@@ -130,6 +166,10 @@ function adminGetCampaignFunnel_(token,campaignKey) {
       leads:landingLeads.length,
       responders:landingResponders.length,
       complete:landingComplete.length,
+      linkedLeads:landingLinked.linked,
+      leadsWithSession:landingLinked.withSession,
+      sessionCoverage:landingLinked.coverage,
+      sessionToLead:landingLinked.sessionToLead,
       viewToLead:campaignAnalyticsRate_(landingLeads.length,landingVisits.length),
       leadToResponse:campaignAnalyticsRate_(landingResponders.length,landingLeads.length),
       leadToComplete:campaignAnalyticsRate_(landingComplete.length,landingLeads.length),
@@ -146,7 +186,10 @@ function adminGetCampaignFunnel_(token,campaignKey) {
       company:safeString_(lead.company),
       email:safeString_(lead.email),
       landing_key:safeString_(lead.landing_key),
+      last_landing_key:safeString_(lead.last_landing_key),
       source:safeString_(lead.source),
+      last_source:safeString_(lead.last_source),
+      session_id:safeString_(lead.session_id),
       utm_source:safeString_(lead.utm_source),
       utm_medium:safeString_(lead.utm_medium),
       utm_campaign:safeString_(lead.utm_campaign),
@@ -167,6 +210,10 @@ function adminGetCampaignFunnel_(token,campaignKey) {
       landingViews:visits.length,
       uniqueLandingSessions:campaignAnalyticsUniqueSessions_(visits),
       identifiedLeads:leads.length,
+      leadsWithSession:linkedStats.withSession,
+      linkedLeads:linkedStats.linked,
+      sessionCoverage:linkedStats.coverage,
+      sessionToLead:linkedStats.sessionToLead,
       responders:responders.length,
       complete:completed.length,
       clickToVisit:campaignAnalyticsRate_(visits.length,clicks.length),
@@ -178,7 +225,7 @@ function adminGetCampaignFunnel_(token,campaignKey) {
     visitSources:campaignAnalyticsSourceCounts_(visits),
     answerDistribution:answerDistribution,
     responders:responderRows,
-    trackingNote:'Las impresiones/clicks históricos anteriores al session tracking pueden no tener session_id. Las visitas de landing se registran desde esta versión en adelante.'
+    trackingNote:'Sesión → lead usa únicamente sesiones que pueden vincularse de forma determinística entre AN_Events y CRM_Leads. Los registros históricos anteriores al tracking de sesión permanecen visibles, pero no se inventa su atribución.'
   };
 }
 
