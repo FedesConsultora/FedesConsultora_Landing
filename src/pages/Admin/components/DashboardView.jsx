@@ -1,17 +1,14 @@
 import {
   Activity,
   ArrowRight,
-  Building2,
   CheckCircle2,
   CircleAlert,
-  ContactRound,
   FileCheck2,
-  Mail,
-  Megaphone,
   MousePointerClick,
   Users,
 } from 'lucide-react'
 import { StatusPill } from './DataTable'
+import '../AdminModern.scss'
 
 function rate(numerator, denominator) {
   if (!denominator) return '0%'
@@ -43,18 +40,8 @@ function CompactMetric({ label, value, note }) {
 
 function Distribution({ rows = [] }) {
   if (!rows.length) return <div className="admin-empty-inline">Sin datos todavía.</div>
-  const max = Math.max(...rows.map((item) => Number(item.count) || 0), 1)
-  return (
-    <div className="admin-distribution admin-distribution--modern">
-      {rows.slice(0, 8).map((item) => (
-        <div className="admin-distribution-row" key={item.key}>
-          <span title={item.key}>{item.key}</span>
-          <div><i style={{ width: `${Math.max(4, Math.round(((Number(item.count) || 0) / max) * 100))}%` }} /></div>
-          <strong>{item.count}</strong>
-        </div>
-      ))}
-    </div>
-  )
+  const max = Math.max(...rows.map((item) => item.count), 1)
+  return <div className="admin-distribution admin-distribution--modern">{rows.slice(0, 8).map((item) => <div className="admin-distribution-row" key={item.key}><span title={item.key}>{item.key}</span><div><i style={{ width: `${Math.max(4, Math.round((item.count / max) * 100))}%` }} /></div><strong>{item.count}</strong></div>)}</div>
 }
 
 function CampaignFunnel({ campaign }) {
@@ -68,11 +55,10 @@ function CampaignFunnel({ campaign }) {
 
   return (
     <div className="admin-campaign-mini-funnel">
-      {stages.map(([label, value], index) => (
+      {stages.map(([label, value]) => (
         <div className="admin-campaign-mini-funnel__stage" key={label}>
           <div className="admin-campaign-mini-funnel__label"><span>{label}</span><strong>{value}</strong></div>
           <div className="admin-campaign-mini-funnel__track"><i style={{ width: `${Math.max(value ? 8 : 0, Math.round((value / max) * 100))}%` }} /></div>
-          {index < stages.length - 1 && <ArrowRight size={13} className="admin-campaign-mini-funnel__arrow" />}
         </div>
       ))}
     </div>
@@ -89,66 +75,30 @@ function HeroState({ hero }) {
     missing_desktop: 'Falta desktop',
     missing_mobile: 'Falta mobile',
   }
-  return (
-    <span className={`admin-runtime-pill ${active ? 'is-live' : 'is-off'}`}>
-      <span className="admin-runtime-dot" />
-      {active ? 'Hero visible' : reasonLabels[hero?.reason] || 'Hero no visible'}
-    </span>
-  )
+  return <span className={`admin-runtime-pill ${active ? 'is-live' : 'is-off'}`}><span className="admin-runtime-dot" />{active ? 'Hero visible' : reasonLabels[hero?.reason] || 'Hero no visible'}</span>
 }
 
 function CampaignCard({ campaign, onOpen }) {
   return (
     <article className="admin-campaign-overview-card admin-glass-soft">
       <div className="admin-campaign-overview-card__head">
-        <div>
-          <span className="admin-card-eyebrow">{campaign.campaign_key}</span>
-          <h3>{campaign.name || campaign.campaign_key}</h3>
-        </div>
+        <div><span className="admin-card-eyebrow">{campaign.campaign_key}</span><h3>{campaign.name || campaign.campaign_key}</h3></div>
         <StatusPill value={campaign.status} />
       </div>
-
-      <div className="admin-campaign-overview-card__runtime">
-        <HeroState hero={campaign.hero} />
-        <span>{campaign.publishedLandings || 0}/{campaign.landings || 0} landings públicas</span>
-      </div>
-
+      <div className="admin-campaign-overview-card__runtime"><HeroState hero={campaign.hero} /><span>{campaign.publishedLandings || 0}/{campaign.landings || 0} landings públicas</span></div>
       <CampaignFunnel campaign={campaign} />
-
-      <div className="admin-campaign-overview-card__rates">
-        <span><b>{campaign.viewToLead || 0}%</b> visita → lead</span>
-        <span><b>{campaign.leadToComplete || 0}%</b> lead → completo</span>
-        <span><b>{campaign.sessions || 0}</b> sesiones</span>
-      </div>
-
-      <button type="button" className="admin-button admin-button--ghost admin-campaign-open" onClick={() => onOpen(campaign.campaign_key)}>
-        Abrir centro de control <ArrowRight size={14} />
-      </button>
+      <div className="admin-campaign-overview-card__rates"><span><b>{campaign.viewToLead || 0}%</b> visita → lead</span><span><b>{campaign.leadToComplete || 0}%</b> lead → completo</span><span><b>{campaign.sessions || 0}</b> sesiones</span></div>
+      <button type="button" className="admin-button admin-button--ghost admin-campaign-open" onClick={() => onOpen(campaign.campaign_key)}>Abrir centro de control <ArrowRight size={14} /></button>
     </article>
   )
 }
 
 function CmsHealth({ cms = {}, onTable }) {
   const rows = [
-    ['Blog y Recursos', cms.blog, 'blog'],
-    ['Contenido Web', cms.content, 'content'],
-    ['Media', cms.media, 'media'],
-    ['Casos de éxito', cms.cases, 'cases'],
-    ['Equipo', cms.team, 'team'],
-    ['Testimonios', cms.testimonials, 'testimonials'],
+    ['Blog y Recursos', cms.blog, 'blog'], ['Contenido Web', cms.content, 'content'], ['Media', cms.media, 'media'],
+    ['Casos de éxito', cms.cases, 'cases'], ['Equipo', cms.team, 'team'], ['Testimonios', cms.testimonials, 'testimonials'],
   ]
-
-  return (
-    <div className="admin-cms-health-grid">
-      {rows.map(([label, data, table]) => (
-        <button type="button" key={table} onClick={() => onTable(table)}>
-          <span>{label}</span>
-          <strong>{data?.published || 0}<small> / {data?.total || 0}</small></strong>
-          <em>{data?.draft || 0} borradores · {data?.hidden || 0} ocultos</em>
-        </button>
-      ))}
-    </div>
-  )
+  return <div className="admin-cms-health-grid">{rows.map(([label, data, table]) => <button type="button" key={table} onClick={() => onTable(table)}><span>{label}</span><strong>{data?.published || 0}<small> / {data?.total || 0}</small></strong><em>{data?.draft || 0} borradores · {data?.hidden || 0} ocultos</em></button>)}</div>
 }
 
 export default function DashboardView({ dashboard, insights, onTable, onCampaign, onLead }) {
@@ -158,15 +108,8 @@ export default function DashboardView({ dashboard, insights, onTable, onCampaign
   return (
     <div className="admin-dashboard-stack admin-dashboard-modern">
       <section className="admin-dashboard-intro">
-        <div>
-          <span className="admin-card-eyebrow">Resumen operativo</span>
-          <h2>Qué está pasando en Fedes ahora</h2>
-          <p>Tráfico, identificación, respuestas y conversión separados para no confundir visitas con leads.</p>
-        </div>
-        <div className={`admin-health-badge ${health.campaignIssues ? 'has-warning' : ''}`}>
-          {health.campaignIssues ? <CircleAlert size={17} /> : <CheckCircle2 size={17} />}
-          <div><strong>{health.campaignIssues ? `${health.campaignIssues} campaña(s) para revisar` : 'Campañas operativas'}</strong><span>{health.analyticsEvents || 0} eventos registrados</span></div>
-        </div>
+        <div><span className="admin-card-eyebrow">Resumen operativo</span><h2>Qué está pasando en Fedes ahora</h2><p>Tráfico, identificación, respuestas y conversión separados para no confundir visitas con leads.</p></div>
+        <div className={`admin-health-badge ${health.campaignIssues ? 'has-warning' : ''}`}>{health.campaignIssues ? <CircleAlert size={17} /> : <CheckCircle2 size={17} />}<div><strong>{health.campaignIssues ? `${health.campaignIssues} campaña(s) para revisar` : 'Campañas operativas'}</strong><span>{health.analyticsEvents || 0} eventos registrados</span></div></div>
       </section>
 
       <div className="admin-primary-kpi-grid">
@@ -185,99 +128,29 @@ export default function DashboardView({ dashboard, insights, onTable, onCampaign
       </section>
 
       <section className="admin-panel admin-glass-soft admin-dashboard-campaigns">
-        <div className="admin-panel-head">
-          <div><span>Campañas</span><h3>Control de campañas</h3><p>Cada tarjeta combina estado público, Hero, landings y el embudo real.</p></div>
-          <button type="button" onClick={() => onTable('campaigns')}>Ver todas <ArrowRight size={14} /></button>
-        </div>
-        <div className="admin-campaign-overview-grid">
-          {(dashboard?.campaigns || []).length
-            ? dashboard.campaigns.map((campaign) => <CampaignCard key={campaign.campaign_key} campaign={campaign} onOpen={onCampaign} />)
-            : <div className="admin-empty-inline">Todavía no hay campañas.</div>}
-        </div>
+        <div className="admin-panel-head"><div><span>Campañas</span><h3>Control de campañas</h3><p>Cada tarjeta combina estado público, Hero, landings y el embudo real.</p></div><button type="button" onClick={() => onTable('campaigns')}>Ver todas <ArrowRight size={14} /></button></div>
+        <div className="admin-campaign-overview-grid">{(dashboard?.campaigns || []).length ? dashboard.campaigns.map((campaign) => <CampaignCard key={campaign.campaign_key} campaign={campaign} onOpen={onCampaign} />) : <div className="admin-empty-inline">Todavía no hay campañas.</div>}</div>
       </section>
 
       <div className="admin-dashboard-grid admin-dashboard-grid--balanced">
-        <section className="admin-panel admin-glass-soft">
-          <div className="admin-panel-head"><div><span>Operación</span><h3>Necesitan atención</h3><p>Registros incompletos de +24 h o revisión manual pendiente.</p></div></div>
-          <div className="admin-attention-list">
-            {(dashboard?.attention || []).length
-              ? dashboard.attention.map((lead) => (
-                <button type="button" key={lead.lead_id} onClick={() => onLead(lead.lead_id)}>
-                  <div><strong>{lead.company || lead.full_name || lead.email}</strong><span>{lead.landing_key || 'sin landing'} · {lead.last_activity_at ? new Date(lead.last_activity_at).toLocaleString('es-AR') : 'sin fecha'}</span></div>
-                  <StatusPill value={lead.status} />
-                </button>
-              ))
-              : <div className="admin-empty-inline">Todo al día.</div>}
-          </div>
-        </section>
-
-        <section className="admin-panel admin-glass-soft">
-          <div className="admin-panel-head"><div><span>CRM</span><h3>Leads recientes</h3><p>Últimos ingresos identificados.</p></div><button type="button" onClick={() => onTable('leads')}>Abrir <ArrowRight size={14} /></button></div>
-          <div className="admin-attention-list">
-            {(dashboard?.recentLeads || []).map((lead) => (
-              <button type="button" key={lead.lead_id} onClick={() => onLead(lead.lead_id)}>
-                <div><strong>{lead.company || lead.full_name || lead.email}</strong><span>{lead.campaign_key || 'Sin campaña'} · {lead.landing_key || 'sin landing'} · {lead.source || 'Sin origen'}</span></div>
-                <StatusPill value={lead.status} />
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="admin-panel admin-glass-soft">
-          <div className="admin-panel-head"><div><span>Analítica</span><h3>Páginas con actividad</h3><p>{insights?.analytics?.last30 || 0} eventos durante los últimos 30 días.</p></div><button type="button" onClick={() => onTable('analytics')}>Abrir <ArrowRight size={14} /></button></div>
-          <Distribution rows={insights?.analytics?.topPages || []} />
-        </section>
-
-        <section className="admin-panel admin-glass-soft">
-          <div className="admin-panel-head"><div><span>Atribución</span><h3>Fuentes de tráfico</h3><p>Origen de los eventos web recientes.</p></div></div>
-          <Distribution rows={insights?.analytics?.topSources || []} />
-        </section>
+        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>Operación</span><h3>Necesitan atención</h3><p>Registros incompletos de +24 h o revisión manual pendiente.</p></div></div><div className="admin-attention-list">{(dashboard?.attention || []).length ? dashboard.attention.map((lead) => <button type="button" key={lead.lead_id} onClick={() => onLead(lead.lead_id)}><div><strong>{lead.company || lead.full_name || lead.email}</strong><span>{lead.landing_key || 'sin landing'} · {lead.last_activity_at ? new Date(lead.last_activity_at).toLocaleString('es-AR') : 'sin fecha'}</span></div><StatusPill value={lead.status} /></button>) : <div className="admin-empty-inline">Todo al día.</div>}</div></section>
+        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>CRM</span><h3>Leads recientes</h3><p>Últimos ingresos identificados.</p></div><button type="button" onClick={() => onTable('leads')}>Abrir <ArrowRight size={14} /></button></div><div className="admin-attention-list">{(dashboard?.recentLeads || []).map((lead) => <button type="button" key={lead.lead_id} onClick={() => onLead(lead.lead_id)}><div><strong>{lead.company || lead.full_name || lead.email}</strong><span>{lead.campaign_key || 'Sin campaña'} · {lead.landing_key || 'sin landing'} · {lead.source || 'Sin origen'}</span></div><StatusPill value={lead.status} /></button>)}</div></section>
+        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>Analítica</span><h3>Páginas con actividad</h3><p>{insights?.analytics?.last30 || 0} eventos durante los últimos 30 días.</p></div><button type="button" onClick={() => onTable('analytics')}>Abrir <ArrowRight size={14} /></button></div><Distribution rows={insights?.analytics?.topPages || []} /></section>
+        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>Atribución</span><h3>Fuentes de tráfico</h3><p>Origen de los eventos web recientes.</p></div></div><Distribution rows={insights?.analytics?.topSources || []} /></section>
       </div>
 
-      <section className="admin-panel admin-glass-soft">
-        <div className="admin-panel-head"><div><span>Integridad</span><h3>Conexiones y cobertura de datos</h3><p>Indicadores simples para detectar si algo dejó de llegar al administrador.</p></div></div>
-        <div className="admin-connection-grid">
-          <CompactMetric label="Eventos analíticos" value={health.analyticsEvents || 0} note="AN_Events" />
-          <CompactMetric label="Leads con landing" value={`${health.leadsWithLanding || 0}/${stats.leads || 0}`} note="Atribución por landing" />
-          <CompactMetric label="Leads con origen" value={`${health.leadsWithSource || 0}/${stats.leads || 0}`} note="Source disponible" />
-          <CompactMetric label="Landings publicadas" value={health.publishedLandings || 0} note="URLs activas" />
-          <CompactMetric label="Problemas de campaña" value={health.campaignIssues || 0} note="Estado / landings / Hero" />
-        </div>
-      </section>
+      <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>Integridad</span><h3>Conexiones y cobertura de datos</h3><p>Indicadores simples para detectar si algo dejó de llegar al administrador.</p></div></div><div className="admin-connection-grid"><CompactMetric label="Eventos analíticos" value={health.analyticsEvents || 0} note="AN_Events" /><CompactMetric label="Leads con landing" value={`${health.leadsWithLanding || 0}/${stats.leads || 0}`} note="Atribución por landing" /><CompactMetric label="Leads con origen" value={`${health.leadsWithSource || 0}/${stats.leads || 0}`} note="Source disponible" /><CompactMetric label="Landings publicadas" value={health.publishedLandings || 0} note="URLs activas" /><CompactMetric label="Problemas de campaña" value={health.campaignIssues || 0} note="Estado / landings / Hero" /></div></section>
 
       <div className="admin-dashboard-grid admin-dashboard-grid--balanced">
-        <section className="admin-panel admin-glass-soft">
-          <div className="admin-panel-head"><div><span>CRM</span><h3>Etapas de leads</h3><p>Distribución general del pipeline.</p></div><button type="button" onClick={() => onTable('leads')}>Abrir <ArrowRight size={14} /></button></div>
-          <Distribution rows={insights?.crm?.leadStages || []} />
-        </section>
-        <section className="admin-panel admin-glass-soft">
-          <div className="admin-panel-head"><div><span>CRM</span><h3>Clasificación interna</h3><p>Calificados, evaluación y recursos.</p></div></div>
-          <Distribution rows={insights?.crm?.leadClassifications || []} />
-        </section>
+        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>CRM</span><h3>Etapas de leads</h3><p>Distribución general del pipeline.</p></div><button type="button" onClick={() => onTable('leads')}>Abrir <ArrowRight size={14} /></button></div><Distribution rows={insights?.crm?.leadStages || []} /></section>
+        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>CRM</span><h3>Clasificación interna</h3><p>Calificados, evaluación y recursos.</p></div></div><Distribution rows={insights?.crm?.leadClassifications || []} /></section>
       </div>
 
-      <section className="admin-panel admin-glass-soft">
-        <div className="admin-panel-head"><div><span>CMS</span><h3>Salud editorial</h3><p>Publicados versus total administrable.</p></div></div>
-        <CmsHealth cms={insights?.cms} onTable={onTable} />
-      </section>
+      <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>CMS</span><h3>Salud editorial</h3><p>Publicados versus total administrable.</p></div></div><CmsHealth cms={insights?.cms} onTable={onTable} /></section>
 
       <div className="admin-dashboard-grid admin-dashboard-grid--balanced">
-        <section className="admin-panel admin-glass-soft">
-          <div className="admin-panel-head"><div><span>Auditoría</span><h3>Actividad administrativa</h3><p>Últimos cambios registrados.</p></div><button type="button" onClick={() => onTable('audit')}>Historial <ArrowRight size={14} /></button></div>
-          <div className="admin-attention-list">
-            {(dashboard?.recentAudit || []).map((item) => (
-              <button type="button" key={item.audit_id} onClick={() => onTable('audit')}>
-                <div><strong>{item.action} · {item.entity}</strong><span>{item.actor || 'admin'} · {item.created_at ? new Date(item.created_at).toLocaleString('es-AR') : '—'}</span></div>
-                <ArrowRight size={15} />
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="admin-panel admin-glass-soft">
-          <div className="admin-panel-head"><div><span>Contactos</span><h3>Origen de consultas</h3><p>Distribución de formularios generales.</p></div><button type="button" onClick={() => onTable('contacts')}>Abrir <ArrowRight size={14} /></button></div>
-          <Distribution rows={insights?.crm?.contactSources || []} />
-        </section>
+        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>Auditoría</span><h3>Actividad administrativa</h3><p>Últimos cambios registrados.</p></div><button type="button" onClick={() => onTable('audit')}>Historial <ArrowRight size={14} /></button></div><div className="admin-attention-list">{(dashboard?.recentAudit || []).map((item) => <button type="button" key={item.audit_id} onClick={() => onTable('audit')}><div><strong>{item.action} · {item.entity}</strong><span>{item.actor || 'admin'} · {item.created_at ? new Date(item.created_at).toLocaleString('es-AR') : '—'}</span></div><ArrowRight size={15} /></button>)}</div></section>
+        <section className="admin-panel admin-glass-soft"><div className="admin-panel-head"><div><span>Contactos</span><h3>Origen de consultas</h3><p>Distribución de formularios generales.</p></div><button type="button" onClick={() => onTable('contacts')}>Abrir <ArrowRight size={14} /></button></div><Distribution rows={insights?.crm?.contactSources || []} /></section>
       </div>
     </div>
   )
