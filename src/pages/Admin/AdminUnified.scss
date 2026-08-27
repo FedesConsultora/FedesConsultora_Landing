@@ -20,17 +20,23 @@
 }
 
 .react-admin-shell .admin-panel-head > div,
-.react-admin-shell .admin-panel-heading-row > div {
+.react-admin-shell .admin-panel-heading-row > div,
+.admin-modal-layer .admin-panel-head > div,
+.admin-modal-layer .admin-panel-heading-row > div {
   min-width: 0;
 }
 
 .react-admin-shell .admin-panel-head h3,
-.react-admin-shell .admin-panel-heading-row h3 {
+.react-admin-shell .admin-panel-heading-row h3,
+.admin-modal-layer .admin-panel-head h3,
+.admin-modal-layer .admin-panel-heading-row h3 {
   margin: 3px 0 0;
 }
 
 .react-admin-shell .admin-panel-head p,
-.react-admin-shell .admin-panel-heading-row p {
+.react-admin-shell .admin-panel-heading-row p,
+.admin-modal-layer .admin-panel-head p,
+.admin-modal-layer .admin-panel-heading-row p {
   margin-top: 4px;
 }
 
@@ -347,6 +353,10 @@
 .react-admin-shell .admin-campaign-overview-card__rates { grid-area: rates; margin-top: 0; }
 .react-admin-shell .admin-campaign-open { grid-area: action; width: 100%; margin: 0; }
 
+.react-admin-shell .admin-campaign-mini-funnel--five {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
 .react-admin-shell .admin-campaign-mini-funnel__track {
   background: #edf1f6;
 }
@@ -365,6 +375,115 @@
   color: #176a4e;
   border-color: #cde8db;
   background: #eef9f4;
+}
+
+/* Centro de control y editores: mismo tema claro que el resto del admin. */
+.admin-modal-layer > .admin-modal {
+  color: #273343;
+  background: #fbfcfe !important;
+  border-color: #dce4ed !important;
+  box-shadow: 0 28px 90px rgba(35, 52, 77, .22) !important;
+}
+
+.admin-modal-layer .admin-glass-soft {
+  color: #273343;
+  background: rgba(255,255,255,.88) !important;
+  border-color: #e0e6ed !important;
+  box-shadow: 0 10px 34px rgba(45, 63, 88, .06) !important;
+}
+
+.admin-modal-layer .admin-control-tabs {
+  border-color: #dfe6ee;
+  background: #f4f7fb;
+}
+
+.admin-modal-layer .admin-control-tab {
+  color: #6d7a8d;
+}
+
+.admin-modal-layer .admin-control-tab:hover {
+  color: #26303c;
+}
+
+.admin-modal-layer .admin-control-tab.is-active {
+  color: #174f9f;
+  background: #eaf2ff;
+}
+
+.admin-modal-layer .admin-runtime-card,
+.admin-modal-layer .admin-mini-kpi,
+.admin-modal-layer .admin-answer-distribution-grid > article,
+.admin-modal-layer .admin-detail-card {
+  color: #273343;
+  border-color: #e0e6ed;
+  background: #fff !important;
+}
+
+.admin-modal-layer .admin-runtime-card strong,
+.admin-modal-layer .admin-mini-kpi strong,
+.admin-modal-layer .admin-detail-card > div {
+  color: #273343;
+}
+
+.admin-modal-layer .admin-runtime-card p,
+.admin-modal-layer .admin-mini-kpi span,
+.admin-modal-layer .admin-mini-kpi small,
+.admin-modal-layer .admin-detail-card label {
+  color: #728094;
+}
+
+.admin-modal-layer .admin-runtime-action {
+  color: #506074;
+  border-color: #dbe3ec;
+  background: #fff;
+}
+
+.admin-modal-layer .admin-runtime-action:hover:not(:disabled) {
+  color: #174f9f;
+  border-color: #c7d6e8;
+  background: #f4f8fe;
+}
+
+.admin-modal-layer .admin-runtime-action.is-danger {
+  color: #a9444c;
+  border-color: #efd1d4;
+  background: #fff5f6;
+}
+
+.admin-modal-layer .admin-rate-strip,
+.admin-modal-layer .admin-rate-strip--five {
+  border-color: #e0e6ed;
+  background: #e0e6ed;
+}
+
+.admin-modal-layer .admin-rate-strip span {
+  color: #758397;
+  background: #fff !important;
+}
+
+.admin-modal-layer .admin-rate-strip b {
+  color: #273343;
+}
+
+.admin-modal-layer .hero-banner-runtime-note,
+.admin-modal-layer .admin-form-note {
+  color: #5d6d80;
+  border-color: #d7e4f6;
+  background: #f4f8fe;
+}
+
+.admin-modal-layer .hero-banner-runtime-note strong {
+  color: #273343;
+}
+
+.admin-modal-layer .admin-landing-editor__preview {
+  color: #273343;
+  border-color: #dbe4ee;
+  background: rgba(255,255,255,.97) !important;
+}
+
+.admin-modal-layer .admin-landing-editor__preview code {
+  color: #3d4d60;
 }
 
 /* Distribuciones: barras limpias, sin fondo oscuro. */
@@ -409,6 +528,7 @@
     grid-template-columns: 1fr;
     grid-template-areas: 'head' 'runtime' 'funnel' 'rates' 'action';
   }
+  .react-admin-shell .admin-campaign-mini-funnel--five { grid-template-columns: 1fr 1fr; }
   .react-admin-shell .admin-primary-kpi-grid,
   .react-admin-shell .admin-compact-metrics,
   .react-admin-shell .admin-connection-grid { grid-template-columns: 1fr; }
