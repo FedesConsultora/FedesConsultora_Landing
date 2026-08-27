@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Archive, ChevronDown, ChevronLeft, ChevronRight, Copy, Download, Eye, Filter, Pencil, RotateCcw, Search, Trash2, X } from 'lucide-react'
+import AnalyticsOverview from './AnalyticsOverview'
 
 function formatDate(value) {
   if (!value) return '—'
@@ -107,6 +108,7 @@ export default function DataTable({ def, result, selected, setSelected, onView, 
 
   return (
     <>
+      {def.key === 'analytics' && <AnalyticsOverview />}
       {selected.size > 0 && <div className="admin-bulk-bar"><span><strong>{selected.size}</strong> seleccionados</span><div>{def.permissions.deleteMode === 'archive' && <><button type="button" className="admin-button admin-button--danger admin-button--small" onClick={() => onBulk('archive')}><Archive size={14} />Dar de baja</button><button type="button" className="admin-button admin-button--success admin-button--small" onClick={() => onBulk('restore')}><RotateCcw size={14} />Restaurar</button></>}{def.permissions.deleteMode === 'hard' && <button type="button" className="admin-button admin-button--danger admin-button--small" onClick={() => onBulk('delete')}><Trash2 size={14} />Eliminar</button>}</div></div>}
       <div className="admin-table-shell admin-table-shell--data">
         <table className="admin-data-table">
