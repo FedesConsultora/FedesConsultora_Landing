@@ -1,4 +1,6 @@
+import { useCallback, useEffect, useState } from 'react'
 import { Activity, BarChart3, Clock3, Eye, MousePointerClick, Radar, Users } from 'lucide-react'
+import { adminCommand } from '../adminApi'
 
 function compactNumber(value) {
   return new Intl.NumberFormat('es-AR', { notation: Number(value || 0) >= 10000 ? 'compact' : 'standard', maximumFractionDigits: 1 }).format(Number(value || 0))
@@ -88,17 +90,17 @@ function Heatmap({ data }) {
   )
 }
 
-function Ranking({ title, rows = [], field, onDrillDown }) {
+function Ranking({ title, rows = [] }) {
   const max = Math.max(...rows.map((row) => Number(row.count) || 0), 1)
   return (
     <section className="admin-analytics-ranking admin-glass-soft">
       <div className="admin-analytics-section-head"><h3>{title}</h3></div>
       <div className="admin-analytics-ranking__list">
         {rows.length ? rows.map((row) => (
-          <button type="button" key={row.key} onClick={() => field && onDrillDown?.(field, row.key)} disabled={!field}>
+          <div className="admin-analytics-ranking__row" key={row.key}>
             <div><span title={row.key}>{row.key}</span><strong>{compactNumber(row.count)}</strong></div>
             <i><b style={{ width: `${Math.max(4, Math.round((row.count / max) * 100))}%` }} /></i>
-          </button>
+          </div>
         )) : <div className="admin-empty-inline">Sin datos.</div>}
       </div>
     </section>
@@ -126,7 +128,26 @@ function Coverage({ data = {} }) {
   )
 }
 
-export default function AnalyticsOverview({ data, loading, days, onDays, onDrillDown }) {
+export default function AnalyticsOverview() {
+  const [days, setDays] = useState(30)
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  const load = useCallback(async (range) => {
+    setLoading(true)
+    setError('')
+    try {
+      setData(await adminCommand('analyticsOverview', { days: range }))
+    } catch (requestError) {
+      setError(requestError.message || 'No se pudo cargar el resumen visual.')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { load(days) }, [days, load])
+
   const stats = data?.stats || {}
   const top = data?.top || {}
 
@@ -134,10 +155,12 @@ export default function AnalyticsOverview({ data, loading, days, onDays, onDrill
     <div className="admin-analytics-overview">
       <div className="admin-analytics-toolbar">
         <div className="admin-segmented-control" aria-label="Período analítico">
-          {[7, 30, 90].map((value) => <button type="button" key={value} className={days === value ? 'is-active' : ''} onClick={() => onDays(value)}>{value} días</button>)}
+          {[7, 30, 90].map((value) => <button type="button" key={value} className={days === value ? 'is-active' : ''} onClick={() => setDays(value)}>{value} días</button>)}
         </div>
         {loading && <span className="admin-analytics-updating"><Activity size={13} />Actualizando</span>}
       </div>
+
+      {error && <div className="admin-form-error">{error}</div>}
 
       <div className="admin-analytics-kpi-grid">
         <StatCard label="Eventos" value={stats.events} note={`${stats.sessions || 0} sesiones`} icon={Radar} />
@@ -159,12 +182,12 @@ export default function AnalyticsOverview({ data, loading, days, onDays, onDrill
       </div>
 
       <div className="admin-analytics-ranking-grid">
-        <Ranking title="Campañas" rows={top.campaigns} field="campaign_key" onDrillDown={onDrillDown} />
-        <Ranking title="Landings" rows={top.landings} field="landing_key" onDrillDown={onDrillDown} />
-        <Ranking title="Fuentes" rows={top.sources} field="source" onDrillDown={onDrillDown} />
-        <Ranking title="Páginas" rows={top.pages} field="page_path" onDrillDown={onDrillDown} />
-        <Ranking title="Eventos" rows={top.events} field="label" onDrillDown={onDrillDown} />
-        <Ranking title="Categorías" rows={top.categories} field="category" onDrillDown={onDrillDown} />
+        <Ranking title="Campañas" rows={top.campaigns} />
+        <Ranking title="Landings" rows={top.landings} />
+        <Ranking title="Fuentes" rows={top.sources} />
+        <Ranking title="Páginas" rows={top.pages} />
+        <Ranking title="Eventos" rows={top.events} />
+        <Ranking title="Categorías" rows={top.categories} />
       </div>
 
       <Coverage data={data?.coverage} />
