@@ -77,7 +77,7 @@ function buildLandingTrackingUrl(landing) {
   return `${landing.path || '/'}${query ? `?${query}` : ''}`
 }
 
-function CampaignLandingsPanel({ campaign, landings, onSetLandingStatus, onEditLanding }) {
+function CampaignLandingsPanel({ campaign, landings, funnelByLanding, onSetLandingStatus, onEditLanding }) {
   const copyUrl = async (landing) => {
     const relative = buildLandingTrackingUrl(landing)
     if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(`${window.location.origin}${relative}`)
@@ -111,6 +111,7 @@ function CampaignLandingsPanel({ campaign, landings, onSetLandingStatus, onEditL
         {landings.map((landing) => {
           const relativeUrl = buildLandingTrackingUrl(landing)
           const publicNow = campaign.status === 'published' && landing.status === 'published'
+          const funnel = funnelByLanding?.[landing.landing_key] || {}
           return (
             <article className="admin-campaign-landing-card" key={landing.landing_id || landing.landing_key}>
               <div className="admin-campaign-landing-card__head">
@@ -120,6 +121,9 @@ function CampaignLandingsPanel({ campaign, landings, onSetLandingStatus, onEditL
               <div className="admin-campaign-landing-card__meta">
                 <span><b>Beneficio</b>{landing.benefit_label || '—'}</span>
                 <span><b>Landing key</b>{landing.landing_key || '—'}</span>
+                <span><b>Visitas registradas</b>{funnel.views ?? 0} · {funnel.uniqueViews ?? 0} sesiones</span>
+                <span><b>Leads</b>{funnel.leads ?? 0} · {funnel.responders ?? 0} respondieron · {funnel.complete ?? 0} completos</span>
+                <span><b>Conversión visita → lead</b>{`${funnel.viewToLead ?? 0}%`}</span>
                 <span><b>Origen</b>{landing.source_default || '—'}</span>
                 <span><b>UTM</b>{landing.utm_medium_default || '—'} · {landing.utm_campaign_default || '—'}</span>
               </div>
@@ -142,6 +146,68 @@ function CampaignLandingsPanel({ campaign, landings, onSetLandingStatus, onEditL
   )
 }
 
+function CampaignFunnelPanel({ funnel, onLead }) {
+  const stats = funnel?.stats || {}
+  const answerDistribution = funnel?.answerDistribution || {}
+  const responders = funnel?.responders || []
+
+  return (
+    <>
+      <section className="admin-panel admin-glass-soft admin-panel--span-4">
+        <div className="admin-panel-heading-row">
+          <div>
+            <h3>Embudo real de campaña</h3>
+            <p>Separa tráfico anónimo de leads identificados. Una visita o un click no es un lead hasta que la persona deja sus datos.</p>
+          </div>
+        </div>
+        <div className="admin-kpi-row">
+          <Kpi label="Impresiones banner" value={stats.impressions ?? 0} />
+          <Kpi label="Clicks banner web" value={stats.bannerClicks ?? 0} />
+          <Kpi label="Entradas a landing" value={stats.landingViews ?? 0} />
+          <Kpi label="Sesiones landing" value={stats.uniqueLandingSessions ?? 0} />
+          <Kpi label="Leads identificados" value={stats.identifiedLeads ?? 0} />
+          <Kpi label="Respondieron" value={stats.responders ?? 0} />
+          <Kpi label="Completaron" value={stats.complete ?? 0} />
+          <Kpi label="Visita → lead" value={`${stats.viewToLead ?? 0}%`} />
+          <Kpi label="Lead → respuesta" value={`${stats.leadToResponse ?? 0}%`} />
+          <Kpi label="Lead → completo" value={`${stats.leadToComplete ?? 0}%`} />
+        </div>
+        {funnel?.trackingNote && <p className="admin-empty-inline">{funnel.trackingNote}</p>}
+      </section>
+
+      <section className="admin-panel admin-glass-soft admin-panel--span-2">
+        <h3>Entradas a landings por origen</h3>
+        <Distribution data={funnel?.visitSources} />
+      </section>
+
+      <section className="admin-panel admin-glass-soft admin-panel--span-2">
+        <h3>Respuestas por pregunta</h3>
+        {Object.keys(answerDistribution).length ? Object.entries(answerDistribution).map(([question, values]) => (
+          <div key={question} style={{ marginBottom: 14 }}>
+            <strong>{question.toUpperCase()}</strong>
+            <Distribution data={values} />
+          </div>
+        )) : <div className="admin-empty-inline">Todavía no hay respuestas.</div>}
+      </section>
+
+      <section className="admin-panel admin-glass-soft admin-panel--span-4">
+        <h3>Quiénes respondieron</h3>
+        <div className="admin-attention-list">
+          {responders.length ? responders.map((lead) => (
+            <button type="button" key={lead.lead_id} onClick={() => onLead?.(lead.lead_id)}>
+              <div>
+                <strong>{lead.company || lead.full_name || lead.email || 'Lead'}</strong>
+                <span>{lead.email || 'sin email'} · {lead.landing_key || 'sin landing'} · {lead.source || 'sin origen'} · {lead.answer_count || 0} respuesta(s) · {lead.last_question_key || 'sin pregunta'}</span>
+              </div>
+              <StatusPill value={lead.status} />
+            </button>
+          )) : <div className="admin-empty-inline">Todavía nadie respondió preguntas.</div>}
+        </div>
+      </section>
+    </>
+  )
+}
+
 export function Campaign360Modal({
   data,
   onClose,
@@ -155,6 +221,7 @@ export function Campaign360Modal({
   const campaign = data.campaign || {}
   const stats = data.stats || {}
   const landings = data.landings || []
+  const funnel = data.funnel || {}
   const campaignPublished = campaign.status === 'published'
 
   const masterAction = campaignPublished ? (
@@ -182,7 +249,8 @@ export function Campaign360Modal({
         <Kpi label="Leads" value={stats.total || 0} /><Kpi label="Completos" value={stats.complete || 0} /><Kpi label="Incompletos" value={stats.incomplete || 0} /><Kpi label="Conversión" value={`${stats.conversion || 0}%`} /><Kpi label="Calificados" value={stats.qualified || 0} /><Kpi label="Revisión" value={stats.review || 0} /><Kpi label="Recursos" value={stats.resources || 0} /><Kpi label="Clicks reunión" value={stats.meetingClicks || 0} />
       </div>
       <div className="admin-special-grid">
-        <CampaignLandingsPanel campaign={campaign} landings={landings} onSetLandingStatus={onSetLandingStatus} onEditLanding={onEditLanding} />
+        <CampaignFunnelPanel funnel={funnel} onLead={onLead} />
+        <CampaignLandingsPanel campaign={campaign} landings={landings} funnelByLanding={funnel.byLanding} onSetLandingStatus={onSetLandingStatus} onEditLanding={onEditLanding} />
         <section className="admin-panel admin-glass-soft"><h3>Origen operativo</h3><Distribution data={data.sources} /></section>
         <section className="admin-panel admin-glass-soft"><h3>UTM source</h3><Distribution data={data.utmSources} /></section>
         <section className="admin-panel admin-glass-soft"><h3>UTM medium</h3><Distribution data={data.utmMediums} /></section>
