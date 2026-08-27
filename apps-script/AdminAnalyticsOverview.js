@@ -79,7 +79,11 @@ function adminAnalyticsBuildHeatmap_(rows){
   var max=0;
   (rows||[]).forEach(function(row){
     var t=Date.parse(row.created_at||'');if(!isFinite(t))return;
-    var date=new Date(t),jsDay=date.getDay(),dayIndex=(jsDay+6)%7,hour=date.getHours();
+    var date=new Date(t);
+    // ISO weekday: 1=lunes ... 7=domingo. Usamos explícitamente la TZ del CMS.
+    var isoDay=safeNumber_(Utilities.formatDate(date,APP.TIMEZONE,'u'),1);
+    var dayIndex=Math.min(6,Math.max(0,isoDay-1));
+    var hour=Math.min(23,Math.max(0,safeNumber_(Utilities.formatDate(date,APP.TIMEZONE,'H'),0)));
     matrix[dayIndex][hour]++;
     if(matrix[dayIndex][hour]>max)max=matrix[dayIndex][hour];
   });
