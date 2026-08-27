@@ -12,9 +12,11 @@ import { adminCommand, downloadCsv, getAdminToken, loginAdmin, logoutAdmin, setA
 import './AdminDashboard.scss'
 
 const WORKSPACE_CACHE_KEY = 'fedes_admin_workspace_v3'
+const OVERVIEW_CACHE_KEY = 'fedes_admin_overview_v2'
 const TABLE_CACHE_TTL = 60 * 1000
 const DASHBOARD_CACHE_TTL = 45 * 1000
-const PREFETCH_TABLES = ['campaigns', 'leads', 'contacts', 'onboarding', 'leadMailings', 'blog', 'media']
+const OVERVIEW_CACHE_TTL = 2 * 60 * 1000
+const PREFETCH_TABLES = ['campaigns', 'leads']
 
 const INITIAL_QUERY = {
   search: '', filters: {}, dateFrom: '', dateTo: '', includeArchived: false,
@@ -47,6 +49,31 @@ function writeWorkspaceCache(workspace) {
     else sessionStorage.removeItem(WORKSPACE_CACHE_KEY)
   } catch {
     // El panel sigue funcionando aunque el navegador no permita storage.
+  }
+}
+
+function readOverviewCache() {
+  try {
+    const parsed = JSON.parse(sessionStorage.getItem(OVERVIEW_CACHE_KEY) || 'null')
+    if (!parsed?.savedAt || Date.now() - parsed.savedAt > OVERVIEW_CACHE_TTL) {
+      sessionStorage.removeItem(OVERVIEW_CACHE_KEY)
+      return null
+    }
+    return parsed
+  } catch {
+    return null
+  }
+}
+
+function writeOverviewCache(dashboard, insights) {
+  try {
+    if (!dashboard || !insights) {
+      sessionStorage.removeItem(OVERVIEW_CACHE_KEY)
+      return
+    }
+    sessionStorage.setItem(OVERVIEW_CACHE_KEY, JSON.stringify({ dashboard, insights, savedAt: Date.now() }))
+  } catch {
+    // El resumen sigue siendo funcional sin cache local.
   }
 }
 
@@ -98,7 +125,7 @@ function LoginView({ onLogin, error, busy }) {
         {error && <div className="admin-form-error">{error}</div>}
         <button className="admin-button admin-button--primary admin-button--wide" type="submit" disabled={busy}>
           {busy ? <LoaderCircle className="is-spinning" size={17} /> : <ShieldCheck size={17} />}
-          {busy ? 'Cargando…' : 'Ingresar'}
+          {busy ? 'Validando acceso…' : 'Ingresar'}
         </button>
       </form>
     </main>
@@ -110,7 +137,7 @@ function BootView() {
     <main className="admin-login-page admin-boot-page">
       <div className="admin-boot-card admin-glass">
         <LoaderCircle className="is-spinning" size={24} />
-        <div><strong>Cargando panel…</strong><span>Preparando tu espacio de trabajo.</span></div>
+        <div><strong>Abriendo panel…</strong><span>Sincronizando el resumen operativo en una sola consulta.</span></div>
       </div>
     </main>
   )
@@ -131,9 +158,10 @@ function TableLoadingState({ hasData }) {
 
 export default function AdminDashboard() {
   const [token, setToken] = useState(() => getAdminToken())
+  const [cachedOverview] = useState(() => getAdminToken() ? readOverviewCache() : null)
   const [workspace, setWorkspace] = useState(() => getAdminToken() ? readWorkspaceCache() : null)
-  const [dashboard, setDashboard] = useState(null)
-  const [insights, setInsights] = useState(null)
+  const [dashboard, setDashboard] = useState(() => cachedOverview?.dashboard || null)
+  const [insights, setInsights] = useState(() => cachedOverview?.insights || null)
   const [view, setView] = useState('dashboard')
   const [tableKey, setTableKey] = useState(null)
   const [result, setResult] = useState(null)
@@ -151,7 +179,7 @@ export default function AdminDashboard() {
   const tableCacheRef = useRef(new Map())
   const tableRequestsRef = useRef(new Map())
   const activeTableRef = useRef({ key: null, cacheKey: '' })
-  const dashboardFetchedAtRef = useRef(0)
+  const dashboardFetchedAtRef = useRef(cachedOverview?.savedAt || 0)
   const prefetchStartedRef = useRef(false)
 
   const tables = workspace?.tables || {}
@@ -166,8 +194,11 @@ export default function AdminDashboard() {
     if (/sesión vencida|sesión inválida/i.test(error.message)) {
       setAdminToken('')
       writeWorkspaceCache(null)
+      writeOverviewCache(null, null)
       setToken('')
       setWorkspace(null)
+      setDashboard(null)
+      setInsights(null)
       setAuthError('La sesión venció. Ingresá nuevamente.')
     } else notify(error.message, 'error')
   }, [notify])
@@ -176,6 +207,11 @@ export default function AdminDashboard() {
     for (const cacheKey of tableCacheRef.current.keys()) {
       if (cacheKey.startsWith(`${key}|`)) tableCacheRef.current.delete(cacheKey)
     }
+  }, [])
+
+  const invalidateOverview = useCallback(() => {
+    dashboardFetchedAtRef.current = 0
+    writeOverviewCache(null, null)
   }, [])
 
   const fetchTable = useCallback(async (key, nextQuery, options = {}) => {
@@ -237,19 +273,20 @@ export default function AdminDashboard() {
       for (const key of PREFETCH_TABLES) {
         if (!getAdminToken()) break
         try { await fetchTable(key, freshQuery(), { updateView: false }) } catch { /* navegación seguirá funcionando con carga local */ }
-        await new Promise((resolve) => window.setTimeout(resolve, 80))
+        await new Promise((resolve) => window.setTimeout(resolve, 120))
       }
-    }, 350)
+    }, 1200)
   }, [fetchTable])
 
   const loadDashboard = useCallback(async ({ force = false } = {}) => {
     if (!force && dashboardFetchedAtRef.current && Date.now() - dashboardFetchedAtRef.current < DASHBOARD_CACHE_TTL) return
     setDashboardLoading(true)
     try {
-      const [dashboardData, insightData] = await Promise.all([adminCommand('dashboard'), adminCommand('insights')])
-      setDashboard(dashboardData)
-      setInsights(insightData)
+      const bundle = await adminCommand('overview')
+      setDashboard(bundle.dashboard)
+      setInsights(bundle.insights)
       dashboardFetchedAtRef.current = Date.now()
+      writeOverviewCache(bundle.dashboard, bundle.insights)
     } catch (error) {
       handleCommandError(error)
     } finally {
@@ -261,15 +298,12 @@ export default function AdminDashboard() {
     if (!getAdminToken()) return
     setBooting(true)
     try {
-      const [workspaceData, dashboardData, insightData] = await Promise.all([
-        adminCommand('workspace'),
-        adminCommand('dashboard'),
-        adminCommand('insights'),
-      ])
-      setWorkspace(workspaceData)
-      writeWorkspaceCache(workspaceData)
-      setDashboard(dashboardData)
-      setInsights(insightData)
+      const bundle = await adminCommand('bootstrap')
+      setWorkspace(bundle.workspace)
+      writeWorkspaceCache(bundle.workspace)
+      setDashboard(bundle.dashboard)
+      setInsights(bundle.insights)
+      writeOverviewCache(bundle.dashboard, bundle.insights)
       dashboardFetchedAtRef.current = Date.now()
       startBackgroundPrefetch()
     } catch (error) {
@@ -300,6 +334,7 @@ export default function AdminDashboard() {
     setActionBusy(true)
     try { await logoutAdmin() } catch { setAdminToken('') }
     writeWorkspaceCache(null)
+    writeOverviewCache(null, null)
     tableCacheRef.current.clear()
     tableRequestsRef.current.clear()
     prefetchStartedRef.current = false
@@ -355,7 +390,7 @@ export default function AdminDashboard() {
       if (mode === 'create') await adminCommand('create', { tableKey, record: payload })
       else await adminCommand('update', { tableKey, id: record[activeDef.pk], record: payload })
       invalidateTableCache(tableKey)
-      dashboardFetchedAtRef.current = 0
+      invalidateOverview()
       setModal(null)
       notify(mode === 'create' ? 'Alta creada.' : 'Modificación guardada.')
       await fetchTable(tableKey, query, { updateView: true, force: true })
@@ -372,7 +407,7 @@ export default function AdminDashboard() {
     try {
       await adminCommand(operation, { tableKey, id: row[activeDef.pk] })
       invalidateTableCache(tableKey)
-      dashboardFetchedAtRef.current = 0
+      invalidateOverview()
       notify(message)
       await fetchTable(tableKey, query, { updateView: true, force: true })
     } catch (error) {
@@ -389,7 +424,7 @@ export default function AdminDashboard() {
       const response = await adminCommand('bulk', { tableKey, ids: Array.from(selected), action })
       const failed = (response.results || []).filter((item) => !item.success)
       invalidateTableCache(tableKey)
-      dashboardFetchedAtRef.current = 0
+      invalidateOverview()
       notify(failed.length ? `Operación terminada con ${failed.length} error(es).` : 'Operación masiva completada.', failed.length ? 'error' : 'success')
       await fetchTable(tableKey, query, { updateView: true, force: true })
     } catch (error) {
@@ -440,13 +475,7 @@ export default function AdminDashboard() {
     return openRecord(row, 'view')
   }
 
-  const loadCampaign360Data = async (campaignKey) => {
-    const [campaignData, landingData] = await Promise.all([
-      adminCommand('campaign360', { campaignKey }),
-      adminCommand('campaignLandings', { campaignKey }),
-    ])
-    return { ...campaignData, landings: landingData?.landings || [] }
-  }
+  const loadCampaign360Data = async (campaignKey) => adminCommand('campaign360', { campaignKey })
 
   const openCampaign360 = async (campaignKey) => {
     setActionBusy(true)
@@ -471,7 +500,7 @@ export default function AdminDashboard() {
     try {
       await adminCommand('setCampaignPublicState', { campaignKey, enabled })
       invalidateTableCache('campaigns')
-      dashboardFetchedAtRef.current = 0
+      invalidateOverview()
       notify(enabled ? 'Campaña publicada.' : 'Campaña pública desactivada.')
       await refreshCampaign360(campaignKey)
       if (tableKey === 'campaigns') fetchTable('campaigns', query, { updateView: false, force: true }).catch(() => {})
@@ -487,6 +516,7 @@ export default function AdminDashboard() {
     setActionBusy(true)
     try {
       await adminCommand('setCampaignLandingStatus', { landingId: landing.landing_id, status })
+      invalidateOverview()
       notify(status === 'published' ? 'Landing publicada.' : 'Landing ocultada.')
       await refreshCampaign360(campaignKey)
     } catch (error) {
@@ -504,6 +534,7 @@ export default function AdminDashboard() {
     setActionBusy(true)
     try {
       await adminCommand('updateCampaignLanding', { landingId: landing.landing_id, patch })
+      invalidateOverview()
       notify('Landing actualizada.')
       await refreshCampaign360(campaignKey)
     } catch (error) {
@@ -517,6 +548,7 @@ export default function AdminDashboard() {
   const closeCampaignLandingEditor = async (campaignKey) => {
     setActionBusy(true)
     try {
+      invalidateOverview()
       await refreshCampaign360(campaignKey)
     } catch (error) {
       handleCommandError(error)
@@ -541,6 +573,7 @@ export default function AdminDashboard() {
   const uploadMedia = async (payload) => {
     const response = await adminCommand('uploadMedia', payload)
     invalidateTableCache('media')
+    invalidateOverview()
     notify('Imagen subida correctamente.')
     if (tableKey === 'media') await fetchTable('media', query, { updateView: true, force: true })
     return response
