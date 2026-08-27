@@ -1,7 +1,11 @@
 function saveGaliciaProgressSafe_(data) {
-  var result=saveGaliciaProgress_(data||{});
+  data=data||{};
+  var result=saveGaliciaProgress_(data);
   var lead=resolveGaliciaLead_(safeString_(data&&data.leadId));
   if (!lead || safeString_(lead.status)==='complete') return result;
+
+  touchGaliciaLeadAttribution_(data,lead.lead_id);
+  lead=resolveGaliciaLead_(lead.lead_id)||lead;
 
   var highest=highestAnsweredQuestion_(getLeadAnswersMap_(lead.lead_id));
   if (highest && highest!==safeString_(lead.last_question_key)) {
