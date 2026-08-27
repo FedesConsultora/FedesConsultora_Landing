@@ -3,17 +3,53 @@ function adminGetWorkspaceReact_(token) {
   var workspace = adminGetWorkspace(token);
   var galicia = dbFindOne_(APP.SHEETS.CAMPAIGNS, function(row){ return safeString_(row.campaign_key) === GALICIA.CAMPAIGN_KEY; }, {includeArchived:true});
   if (galicia) ensureGaliciaCampaignPath_(galicia);
+
   var leads = workspace.tables && workspace.tables.leads;
   if (leads && leads.fields) {
+    var attributionLabels={
+      landing_key:'Landing de adquisición',
+      last_landing_key:'Última landing',
+      source:'Origen de adquisición',
+      last_source:'Último origen',
+      visitor_id:'ID visitante',
+      session_id:'ID sesión'
+    };
+    var protectedLeadFields={
+      resume_expires_at:true,
+      resume_token_hash:true,
+      landing_key:true,
+      last_landing_key:true,
+      source:true,
+      last_source:true,
+      visitor_id:true,
+      session_id:true,
+      utm_source:true,
+      utm_medium:true,
+      utm_campaign:true,
+      utm_content:true,
+      referrer:true
+    };
+
     leads.fields.forEach(function(field){
-      if (field.name === 'resume_expires_at' || field.name === 'resume_token_hash' || field.name === 'landing_key') field.readOnly = true;
+      if (attributionLabels[field.name]) field.label=attributionLabels[field.name];
+      if (protectedLeadFields[field.name]) field.readOnly=true;
     });
-    if (leads.listColumns.indexOf('landing_key') < 0) {
-      var campaignIndex=leads.listColumns.indexOf('campaign_key');
-      leads.listColumns.splice(campaignIndex >= 0 ? campaignIndex + 1 : 0, 0, 'landing_key');
-    }
-    if (leads.filterFields.indexOf('landing_key') < 0) leads.filterFields.push('landing_key');
-    if (leads.searchFields.indexOf('landing_key') < 0) leads.searchFields.push('landing_key');
+
+    // El listado por defecto prioriza identidad + primera/última atribución + estado.
+    // Las UTMs completas siguen disponibles en filtros, búsqueda y Vista 360° sin
+    // convertir la tabla principal en una sábana horizontal.
+    leads.listColumns=[
+      'full_name','company','email','campaign_key','landing_key','last_landing_key',
+      'source','last_source','status','classification','last_activity_at'
+    ];
+
+    ['landing_key','last_landing_key','source','last_source','utm_source','utm_medium','utm_campaign','status','stage','classification','mailing_segment','manual_review_status','owner','meeting_status'].forEach(function(field){
+      if (leads.filterFields.indexOf(field)<0) leads.filterFields.push(field);
+    });
+
+    ['landing_key','last_landing_key','source','last_source','visitor_id','session_id','utm_source','utm_medium','utm_campaign','utm_content'].forEach(function(field){
+      if (leads.searchFields.indexOf(field)<0) leads.searchFields.push(field);
+    });
   }
   return workspace;
 }
@@ -31,13 +67,17 @@ function adminQueryTableList_(token, tableKey, query) {
   if (!safeBoolean_(q.includeArchived) && (SCHEMA[def.sheet] || []).indexOf('archived_at') >= 0) base = base.filter(function(row){ return !safeString_(row.archived_at); });
   var facets = {};
   var facetFields=(def.filters||[]).slice();
-  if (safeString_(tableKey)==='leads' && facetFields.indexOf('landing_key')<0) facetFields.push('landing_key');
+  if (safeString_(tableKey)==='leads') {
+    ['landing_key','last_landing_key','last_source'].forEach(function(field){if(facetFields.indexOf(field)<0)facetFields.push(field);});
+  }
   facetFields.forEach(function(field){var seen={};base.forEach(function(row){var value=String(row[field]===undefined?'':row[field]);if(value!=='')seen[value]=true;});facets[field]=Object.keys(seen).sort();});
   var rows = base;
   var search = safeString_(q.search).toLowerCase();
   if (search) {
     var searchFields=(def.search||[]).slice();
-    if (safeString_(tableKey)==='leads' && searchFields.indexOf('landing_key')<0) searchFields.push('landing_key');
+    if (safeString_(tableKey)==='leads') {
+      ['landing_key','last_landing_key','last_source','visitor_id','session_id'].forEach(function(field){if(searchFields.indexOf(field)<0)searchFields.push(field);});
+    }
     rows=rows.filter(function(row){return searchFields.some(function(field){return String(row[field]===undefined?'':row[field]).toLowerCase().indexOf(search)>=0;});});
   }
   var filters=q.filters||{};
@@ -47,12 +87,14 @@ function adminQueryTableList_(token, tableKey, query) {
   var sortBy=safeString_(q.sortBy)||def.dateField||def.pk,sortDir=safeString_(q.sortDir).toLowerCase()==='asc'?1:-1;
   rows.sort(function(a,b){var av=a[sortBy],bv=b[sortBy],ad=Date.parse(av||''),bd=Date.parse(bv||'');if(isFinite(ad)&&isFinite(bd))return(ad-bd)*sortDir;var an=Number(av),bn=Number(bv);if(isFinite(an)&&isFinite(bn)&&String(av)!==''&&String(bv)!=='')return(an-bn)*sortDir;return String(av===undefined?'':av).localeCompare(String(bv===undefined?'':bv))*sortDir;});
   var total=rows.length,page=Math.max(1,safeNumber_(q.page,1)),pageSize=Math.min(100,Math.max(10,safeNumber_(q.pageSize,50))),start=(page-1)*pageSize;
-  return {success:true,tableKey:tableKey,total:total,page:page,pageSize:pageSize,pages:Math.max(1,Math.ceil(total/pageSize)),rows:rows.slice(start,start+pageSize).map(function(row){return adminListProjection_(def,row);}),facets:facets};
+  return {success:true,tableKey:tableKey,total:total,page:page,pageSize:pageSize,pages:Math.max(1,Math.ceil(total/pageSize)),rows:rows.slice(start,start+pageSize).map(function(row){return adminListProjection_(def,row,tableKey);}),facets:facets};
 }
 
-function adminListProjection_(def,row){
+function adminListProjection_(def,row,tableKey){
   var out={},fields=[def.pk].concat(def.list||[]);
-  if(def.sheet===APP.SHEETS.LEADS&&fields.indexOf('landing_key')<0){var idx=fields.indexOf('campaign_key');fields.splice(idx>=0?idx+1:1,0,'landing_key');}
+  if(safeString_(tableKey)==='leads'||def.sheet===APP.SHEETS.LEADS){
+    fields=fields.concat(['landing_key','last_landing_key','last_source']);
+  }
   if((SCHEMA[def.sheet]||[]).indexOf('archived_at')>=0)fields.push('archived_at');
   if(def.sheet===APP.SHEETS.MEDIA)fields=fields.concat(['file_id','drive_url','public_url']);
   fields.forEach(function(field){if(out[field]===undefined)out[field]=row[field];});
@@ -70,9 +112,10 @@ function adminUpdateDataReact_(token,tableKey,id,record){return adminUpdateData(
 function adminProtectTechnicalFields_(tableKey,record){
   var key=safeString_(tableKey),clean=Object.assign({},record||{});
   if(key==='leads'){
-    delete clean.resume_token_hash;
-    delete clean.resume_expires_at;
-    delete clean.landing_key;
+    [
+      'resume_token_hash','resume_expires_at','landing_key','last_landing_key','source','last_source',
+      'visitor_id','session_id','utm_source','utm_medium','utm_campaign','utm_content','referrer'
+    ].forEach(function(field){delete clean[field];});
   }
   if(key==='campaigns'&&safeString_(clean.campaign_key)===GALICIA.CAMPAIGN_KEY){
     clean.landing_path=GALICIA_PRODUCTION_PATH;
