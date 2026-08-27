@@ -2,16 +2,12 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import HeroCampaignSlide from './HeroCampaignSlide'
-import {
-  getActiveHeroCampaigns,
-  getGaliciaCampaign,
-} from '../../../services/galiciaApi'
+import { getActiveHeroCampaigns } from '../../../services/galiciaApi'
+import { getCampaignHeroRuntime } from '../../../services/campaignRuntime'
 import { trackEvent } from '../../../services/googleApi'
-import { HERO_CAMPAIGN_BOOTSTRAP } from '../../../generated/heroCampaignBootstrap.js'
 import './HeroCampaignSlider.scss'
 
-const HERO_CAMPAIGNS_CACHE_KEY = 'fedes_hero_campaigns_cache:v1'
-const HERO_CAMPAIGNS_CACHE_TTL = 12 * 60 * 60 * 1000
+const LEGACY_HERO_CACHE_KEY = 'fedes_hero_campaigns_cache:v1'
 
 function hasRenderableHeroMedia(campaign) {
   const banner = campaign?.hero_banner
@@ -36,7 +32,7 @@ function filterImmediatelyRenderableCampaigns(campaigns) {
       if (!banner?.enabled) return false
 
       const startsAt = Date.parse(campaign.starts_at || '')
-      if (!Number.isFinite(startsAt) || startsAt > now) return false
+      if (Number.isFinite(startsAt) && startsAt > now) return false
 
       const endsAt = Date.parse(campaign.ends_at || '')
       if (Number.isFinite(endsAt) && endsAt < now) return false
@@ -44,74 +40,6 @@ function filterImmediatelyRenderableCampaigns(campaigns) {
       return true
     })
     .sort((a, b) => (Number(a.sort_order) || 0) - (Number(b.sort_order) || 0))
-}
-
-function readHeroCampaignCache() {
-  if (typeof window === 'undefined') return []
-
-  try {
-    const raw = window.localStorage.getItem(HERO_CAMPAIGNS_CACHE_KEY)
-    if (!raw) return []
-
-    const parsed = JSON.parse(raw)
-    const savedAt = Number(parsed?.saved_at)
-    if (!savedAt || Date.now() - savedAt > HERO_CAMPAIGNS_CACHE_TTL) {
-      window.localStorage.removeItem(HERO_CAMPAIGNS_CACHE_KEY)
-      return []
-    }
-
-    return filterImmediatelyRenderableCampaigns(parsed?.campaigns)
-  } catch {
-    return []
-  }
-}
-
-function readBuildBootstrapCampaigns() {
-  const campaign = HERO_CAMPAIGN_BOOTSTRAP?.campaign
-  if (!campaign) return []
-  return filterImmediatelyRenderableCampaigns([campaign])
-}
-
-function readInitialHeroCampaigns() {
-  const cachedCampaigns = readHeroCampaignCache()
-  if (cachedCampaigns.length) return cachedCampaigns
-  return readBuildBootstrapCampaigns()
-}
-
-function writeHeroCampaignCache(campaigns) {
-  if (typeof window === 'undefined') return
-
-  try {
-    const normalized = Array.isArray(campaigns) ? campaigns : []
-    if (!normalized.length) {
-      window.localStorage.removeItem(HERO_CAMPAIGNS_CACHE_KEY)
-      return
-    }
-
-    window.localStorage.setItem(
-      HERO_CAMPAIGNS_CACHE_KEY,
-      JSON.stringify({
-        saved_at: Date.now(),
-        campaigns: normalized,
-      }),
-    )
-  } catch {
-    /* localStorage puede estar deshabilitado; el Hero sigue funcionando sin caché */
-  }
-}
-
-function mergeCampaignByKey(campaigns, campaign) {
-  if (!campaign || typeof campaign !== 'object') return Array.isArray(campaigns) ? campaigns : []
-
-  const current = Array.isArray(campaigns) ? campaigns.slice() : []
-  const key = String(campaign.campaign_key || '').trim()
-  if (!key) return current
-
-  const index = current.findIndex((item) => String(item?.campaign_key || '').trim() === key)
-  if (index >= 0) current[index] = campaign
-  else current.push(campaign)
-
-  return current
 }
 
 function decodePreviewCampaign(value) {
@@ -146,11 +74,19 @@ function readAdminPreviewCampaign() {
   }
 }
 
+function mergeRuntimeCampaign(allCampaigns, runtime) {
+  const collection = Array.isArray(allCampaigns)
+    ? allCampaigns.filter((campaign) => String(campaign?.campaign_key || '') !== 'galicia-2026')
+    : []
+
+  if (runtime?.active && runtime.campaign) collection.push(runtime.campaign)
+  return filterImmediatelyRenderableCampaigns(collection)
+}
+
 export default function HeroCampaignSlider({ normalHero }) {
-  const [initialCampaigns] = useState(() => readInitialHeroCampaigns())
-  const [campaigns, setCampaigns] = useState(initialCampaigns)
+  const [campaigns, setCampaigns] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [loaded, setLoaded] = useState(initialCampaigns.length > 0)
+  const [loaded, setLoaded] = useState(false)
   const [bannerReady, setBannerReady] = useState(false)
   const timerRef = useRef(null)
   const shouldReduceMotion = useReducedMotion()
@@ -194,6 +130,8 @@ export default function HeroCampaignSlider({ normalHero }) {
     let active = true
     const previewCampaign = readAdminPreviewCampaign()
 
+    try { window.localStorage.removeItem(LEGACY_HERO_CACHE_KEY) } catch { /* limpieza best effort */ }
+
     if (previewCampaign) {
       setCampaigns([previewCampaign])
       setCurrentIndex(0)
@@ -201,40 +139,32 @@ export default function HeroCampaignSlider({ normalHero }) {
       return () => { active = false }
     }
 
-    // Fast path: Galicia se consulta directamente y puede montar la imagen sin
-    // esperar a que termine la consulta de toda la colección de campañas.
-    getGaliciaCampaign()
-      .then((galiciaCampaign) => {
-        if (!active || !galiciaCampaign) return
+    async function resolvePublicHero() {
+      const [runtimeResult, campaignsResult] = await Promise.allSettled([
+        getCampaignHeroRuntime('galicia-2026'),
+        getActiveHeroCampaigns(),
+      ])
 
-        setCampaigns((currentCampaigns) => {
-          const nextCampaigns = filterImmediatelyRenderableCampaigns(
-            mergeCampaignByKey(currentCampaigns, galiciaCampaign),
-          )
-          writeHeroCampaignCache(nextCampaigns)
-          return nextCampaigns
-        })
-        setCurrentIndex(0)
-        setLoaded(true)
-      })
-      .catch(() => {
-        /* La carga completa de campañas sigue corriendo en segundo plano. */
-      })
+      if (!active) return
 
-    // Revalidación completa en background. El snapshot generado en build solo
-    // sirve para pintar rápido; Apps Script sigue siendo la fuente de verdad.
-    getActiveHeroCampaigns()
-      .then((activeCampaigns) => {
-        if (!active) return
-        const freshCampaigns = Array.isArray(activeCampaigns) ? activeCampaigns : []
-        setCampaigns(freshCampaigns)
-        setCurrentIndex(0)
-        setLoaded(true)
-        writeHeroCampaignCache(freshCampaigns)
-      })
-      .catch(() => {
-        if (active) setLoaded(true)
-      })
+      const runtime = runtimeResult.status === 'fulfilled'
+        ? runtimeResult.value
+        : { active: false, campaign: null, reason: 'runtime_unavailable' }
+      const allCampaigns = campaignsResult.status === 'fulfilled' ? campaignsResult.value : []
+
+      // El runtime es autoridad para Galicia. Nunca usamos snapshots de build ni
+      // localStorage para decidir visibilidad: ocultar el Hero o quitar una imagen
+      // debe prevalecer en el siguiente request, aunque el navegador tenga assets viejos.
+      setCampaigns(mergeRuntimeCampaign(allCampaigns, runtime))
+      setCurrentIndex(0)
+      setLoaded(true)
+    }
+
+    resolvePublicHero().catch(() => {
+      if (!active) return
+      setCampaigns([])
+      setLoaded(true)
+    })
 
     return () => {
       active = false
