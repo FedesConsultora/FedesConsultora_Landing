@@ -258,8 +258,8 @@ const Consultora = () => {
                 </div>
             </div>
 
-            {/* Bloque 4: Casos de éxito */}
-            <Consultora1 />
+            {/* Bloque 4: Casos de éxito (ocultos temporalmente) */}
+            {/* <Consultora1 /> */}
         </section >
     );
 };
